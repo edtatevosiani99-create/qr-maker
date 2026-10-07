@@ -416,23 +416,6 @@ class _QRStudioAppState extends State<QRStudioApp> {
     });
   }
 
-  void setQuickColor(bool background, Color color){
-    if(!_safeColorPair(background ? fg : color, background ? color : bg)){
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content:Text(background ? t('lowContrastBg') : t('lowContrastQr'))),
-      );
-      return;
-    }
-    setState((){
-      if(background){
-        bg=color;
-        transparentBg=false;
-      }else{
-        fg=color;
-      }
-    });
-  }
-
   Future<void> colorPicker(bool background) async {
     final colors=<Color>[
       const Color(0xFF000000),const Color(0xFFFFFFFF),const Color(0xFF263238),
