@@ -26,10 +26,10 @@ class _QRStudioAppState extends State<QRStudioApp> {
   final c = {for (final k in ['main','name','phone','email','subject','message','ssid','password','lat','lon','address']) k: TextEditingController()};
 
   final labels = const {
-    'Русский': {'title':'QR Studio','type':'Тип QR-кода','data':'Данные','fg':'Цвет QR','bg':'Фон','size':'Размер','error':'Коррекция ошибок','save':'Сохранить PNG','share':'Поделиться','name':'Имя','phone':'Телефон','email':'Email','subject':'Тема','message':'Сообщение','ssid':'Название Wi‑Fi','password':'Пароль','security':'Защита','lat':'Широта','lon':'Долгота','address':'Адрес','photo':'Выбрать фото','logoSize':'Размер логотипа','small':'Маленький','medium':'Средний','large':'Большой'},
-    'English': {'title':'QR Studio','type':'QR type','data':'Data','fg':'QR color','bg':'Background','size':'Size','error':'Error correction','save':'Save PNG','share':'Share','name':'Name','phone':'Phone','email':'Email','subject':'Subject','message':'Message','ssid':'Wi‑Fi name','password':'Password','security':'Security','lat':'Latitude','lon':'Longitude','address':'Address','photo':'Choose photo','logoSize':'Logo size','small':'Small','medium':'Medium','large':'Large'},
-    'Deutsch': {'title':'QR Studio','type':'QR-Typ','data':'Daten','fg':'QR-Farbe','bg':'Hintergrund','size':'Größe','error':'Fehlerkorrektur','save':'PNG speichern','share':'Teilen','name':'Name','phone':'Telefon','email':'E-Mail','subject':'Betreff','message':'Nachricht','ssid':'WLAN-Name','password':'Passwort','security':'Sicherheit','lat':'Breitengrad','lon':'Längengrad','address':'Adresse','photo':'Foto auswählen','logoSize':'Logo-Größe','small':'Klein','medium':'Mittel','large':'Groß'},
-    'ქართული': {'title':'QR Studio','type':'QR ტიპი','data':'მონაცემები','fg':'QR ფერი','bg':'ფონი','size':'ზომა','error':'შეცდომის გასწორება','save':'PNG შენახვა','share':'გაზიარება','name':'სახელი','phone':'ტელეფონი','email':'ელფოსტა','subject':'თემა','message':'შეტყობინება','ssid':'Wi‑Fi სახელი','password':'პაროლი','security':'დაცვა','lat':'გრძედი','lon':'განედი','address':'მისამართი','photo':'ფოტოს არჩევა','logoSize':'ლოგოს ზომა','small':'პატარა','medium':'საშუალო','large':'დიდი'}
+    'Русский': {'title':'QR Studio','type':'Тип QR-кода','data':'Данные','fg':'Цвет QR','bg':'Фон','chooseFg':'Выбрать цвет','chooseBg':'Выбрать цвет фона','size':'Размер','error':'Коррекция ошибок','save':'Сохранить PNG','share':'Поделиться','name':'Имя','phone':'Телефон','email':'Email','subject':'Тема','message':'Сообщение','ssid':'Название Wi‑Fi','password':'Пароль','security':'Защита','lat':'Широта','lon':'Долгота','address':'Адрес','photo':'Выбрать фото','logoSize':'Размер логотипа','small':'Маленький','medium':'Средний','large':'Большой'},
+    'English': {'title':'QR Studio','type':'QR type','data':'Data','fg':'QR color','bg':'Background','chooseFg':'Choose color','chooseBg':'Choose background color','size':'Size','error':'Error correction','save':'Save PNG','share':'Share','name':'Name','phone':'Phone','email':'Email','subject':'Subject','message':'Message','ssid':'Wi‑Fi name','password':'Password','security':'Security','lat':'Latitude','lon':'Longitude','address':'Address','photo':'Choose photo','logoSize':'Logo size','small':'Small','medium':'Medium','large':'Large'},
+    'Deutsch': {'title':'QR Studio','type':'QR-Typ','data':'Daten','fg':'QR-Farbe','bg':'Hintergrund','chooseFg':'Farbe auswählen','chooseBg':'Hintergrundfarbe auswählen','size':'Größe','error':'Fehlerkorrektur','save':'PNG speichern','share':'Teilen','name':'Name','phone':'Telefon','email':'E-Mail','subject':'Betreff','message':'Nachricht','ssid':'WLAN-Name','password':'Passwort','security':'Sicherheit','lat':'Breitengrad','lon':'Längengrad','address':'Adresse','photo':'Foto auswählen','logoSize':'Logo-Größe','small':'Klein','medium':'Mittel','large':'Groß'},
+    'ქართული': {'title':'QR Studio','type':'QR ტიპი','data':'მონაცემები','fg':'QR ფერი','bg':'ფონი','chooseFg':'ფერის არჩევა','chooseBg':'ფონის ფერის არჩევა','size':'ზომა','error':'შეცდომის გასწორება','save':'PNG შენახვა','share':'გაზიარება','name':'სახელი','phone':'ტელეფონი','email':'ელფოსტა','subject':'თემა','message':'შეტყობინება','ssid':'Wi‑Fi სახელი','password':'პაროლი','security':'დაცვა','lat':'გრძედი','lon':'განედი','address':'მისამართი','photo':'ფოტოს არჩევა','logoSize':'ლოგოს ზომა','small':'პატარა','medium':'საშუალო','large':'დიდი'}
   };
   String t(String k) => labels[lang]![k] ?? k;
   String v(String k) => c[k]!.text.trim();
@@ -132,8 +132,8 @@ class _QRStudioAppState extends State<QRStudioApp> {
     const SizedBox(height:18),specific(),
     if(type==QRType.wifi)DropdownButtonFormField<String>(value:security,decoration:InputDecoration(labelText:t('security'),border:const OutlineInputBorder()),items:const ['WPA','WEP','None'].map((x)=>DropdownMenuItem(value:x,child:Text(x))).toList(),onChanged:(x)=>setState(()=>security=x!)),
     if(type==QRType.location)...[input('lat',t('lat'),keyboard:TextInputType.number),input('lon',t('lon'),keyboard:TextInputType.number),input('address',t('address'))],
-    Text(t('fg')),const SizedBox(height:5),colorButton(fg,(x)=>setState(()=>fg=x)),const SizedBox(height:12),
-    Text(t('bg')),const SizedBox(height:5),colorButton(bg,(x)=>setState(()=>bg=x)),const SizedBox(height:12),
+    Text(t('fg')),const SizedBox(height:5),colorButton(t('chooseFg'),fg,(x)=>setState(()=>fg=x)),const SizedBox(height:12),
+    Text(t('bg')),const SizedBox(height:5),colorButton(t('chooseBg'),bg,(x)=>setState(()=>bg=x)),const SizedBox(height:12),
     Text('${t('size')}: ${size.round()} px'),Slider(min:128,max:1024,value:size,onChanged:(x)=>setState(()=>size=x)),
     Text(t('error')),DropdownButton<String>(value:error,items:const ['L','M','Q','H'].map((x)=>DropdownMenuItem(value:x,child:Text(x))).toList(),onChanged:(x)=>setState(()=>error=x!)),
     if(photoBytes!=null)...[
@@ -183,11 +183,28 @@ class _QRStudioAppState extends State<QRStudioApp> {
     const SizedBox(height:12),SelectableText(data.isEmpty?' ':data,textAlign:TextAlign.center,maxLines:7),
   ]));
 
-  Widget colorButton(Color color,ValueChanged<Color> cb)=>InkWell(
-    onTap:()=>showModalBottomSheet(context:context,builder:(_)=>Padding(padding:const EdgeInsets.all(24),child:Wrap(spacing:14,runSpacing:14,children:[
-      Colors.black,Colors.white,Colors.indigo,Colors.blue,Colors.red,Colors.green,Colors.orange,Colors.purple,Colors.teal
-    ].map((x)=>GestureDetector(onTap:(){cb(x);Navigator.pop(context);},child:Container(width:44,height:44,decoration:BoxDecoration(color:x,shape:BoxShape.circle,border:Border.all())))).toList()))),
-    child:Container(height:48,decoration:BoxDecoration(color:color,borderRadius:BorderRadius.circular(8),border:Border.all())));
+  Widget colorButton(String label,Color color,ValueChanged<Color> cb)=>OutlinedButton.icon(
+    onPressed:()=>showModalBottomSheet(context:context,builder:(_)=>SafeArea(child:Padding(
+      padding:const EdgeInsets.all(24),
+      child:Column(mainAxisSize:MainAxisSize.min,crossAxisAlignment:CrossAxisAlignment.stretch,children:[
+        Text(label,style:Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height:16),
+        Wrap(spacing:14,runSpacing:14,children:[
+          Colors.black,Colors.white,Colors.grey,Colors.indigo,Colors.blue,Colors.red,
+          Colors.green,Colors.orange,Colors.purple,Colors.teal
+        ].map((x)=>GestureDetector(
+          onTap:(){cb(x);Navigator.pop(context);},
+          child:Container(width:48,height:48,decoration:BoxDecoration(
+            color:x,shape:BoxShape.circle,border:Border.all(color:Colors.grey,width:1.5)
+          ))
+        )).toList()),
+        const SizedBox(height:12),
+        Container(height:10,decoration:BoxDecoration(color:color,borderRadius:BorderRadius.circular(5))),
+      ])
+    ))),
+    icon:Container(width:24,height:24,decoration:BoxDecoration(color:color,shape:BoxShape.circle,border:Border.all())),
+    label:Text(label),
+  );
 }
 
 class QRStudioApp extends StatefulWidget {
