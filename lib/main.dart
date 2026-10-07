@@ -24,7 +24,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
   QRType type = QRType.url;
   Color fg = Colors.black, bg = Colors.white;
   double size = 684;
-  double logoScale = .22;
+  double logoScale = .15;
   String error = 'M', security = 'WPA';
   bool transparentBg = false;
   Uint8List? photoBytes;
@@ -206,7 +206,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
           style:const TextStyle(fontSize:12,fontWeight:FontWeight.w700)),
       Slider(
         min:.10,
-        max:.35,
+        max:.20,
         divisions:25,
         value:logoScale,
         activeColor:const Color(0xFF5B2DFF),
