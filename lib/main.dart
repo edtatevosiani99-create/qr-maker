@@ -56,7 +56,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
   }
 
   bool _safeColorPair(Color qr, Color background) =>
-      _contrast(qr, background) >= 4.5 && _luminance(qr) < _luminance(background);
+      _contrast(qr, background) >= 4.5;
 
   void _setQrColor(Color color) {
     if (!_safeColorPair(color, bg)) {
@@ -352,23 +352,77 @@ class _QRStudioAppState extends State<QRStudioApp> {
         );
       }),
       const SizedBox(height:7),
-      OutlinedButton.icon(
-        onPressed:()=>colorPicker(background),
-        icon:const Icon(Icons.palette_outlined,size:18),
-        label:Text(background ? t('bgColorButton') : t('qrColorButton')),
-        style:OutlinedButton.styleFrom(
-          minimumSize:const Size.fromHeight(42),
-          shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(12)),
-        ),
+      Row(
+        children:[
+          _quickColor(background, const Color(0xFF000000)),
+          const SizedBox(width:10),
+          _quickColor(background, const Color(0xFFFFFFFF)),
+          const SizedBox(width:10),
+          Expanded(
+            child:OutlinedButton.icon(
+              onPressed:()=>colorPicker(background),
+              icon:const Icon(Icons.palette_outlined,size:18),
+              label:Text(background ? t('bgColorButton') : t('qrColorButton')),
+              style:OutlinedButton.styleFrom(
+                minimumSize:const Size.fromHeight(42),
+                shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(12)),
+              ),
+            ),
+          ),
+        ],
       ),
     ],
   );
+
+  Widget _quickColor(bool background, Color color){
+    final selected = (background ? bg : fg).value == color.value && !(background && transparentBg);
+    return InkWell(
+      onTap:()=>setQuickColor(background,color),
+      borderRadius:BorderRadius.circular(24),
+      child:Container(
+        width:42,
+        height:42,
+        decoration:BoxDecoration(
+          color:color,
+          shape:BoxShape.circle,
+          border:Border.all(
+            color:color.computeLuminance()>.75 ? Colors.black45 : Colors.white70,
+            width:selected ? 3 : 1,
+          ),
+          boxShadow:selected
+            ? [BoxShadow(color:color.withOpacity(.5),blurRadius:5,spreadRadius:1)]
+            : null,
+        ),
+        child:selected
+          ? Icon(Icons.check,color:color.computeLuminance()>.55 ? Colors.black : Colors.white,size:20)
+          : null,
+      ),
+    );
+  }
 
   double currentHue(Color color) => HSVColor.fromColor(color).hue;
 
   void setColorFromPosition(bool background,double x,double width){
     final p=(x/width).clamp(0.0,1.0);
     final color=HSVColor.fromAHSV(1,p*360,1,1).toColor();
+    if(!_safeColorPair(background ? fg : color, background ? color : bg)) return;
+    setState((){
+      if(background){
+        bg=color;
+        transparentBg=false;
+      }else{
+        fg=color;
+      }
+    });
+  }
+
+  void setQuickColor(bool background, Color color){
+    if(!_safeColorPair(background ? fg : color, background ? color : bg)){
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content:Text(background ? t('lowContrastBg') : t('lowContrastQr'))),
+      );
+      return;
+    }
     setState((){
       if(background){
         bg=color;
@@ -455,17 +509,15 @@ class _QRStudioAppState extends State<QRStudioApp> {
     );
 
     if(!mounted || picked==null) return;
-    setState((){
-      if(background){
-        if(picked.value==0x00000000){
-          transparentBg=true;
-        }else{
-          _setBackgroundColor(picked);
-        }
+    if(background){
+      if(picked.value==0x00000000){
+        setState(()=>transparentBg=true);
       }else{
-        _setQrColor(picked);
+        _setBackgroundColor(picked);
       }
-    });
+    }else{
+      _setQrColor(picked);
+    }
   }
 
   Widget backgroundSelector()=>GestureDetector(
