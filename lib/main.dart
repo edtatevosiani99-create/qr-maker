@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'dart:typed_data';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:gal/gal.dart';
@@ -31,6 +32,8 @@ class _QRStudioAppState extends State<QRStudioApp> {
   ui.Image? photoImage;
   ui.Image? qrLogoImage;
   final picker = ImagePicker();
+  Timer? _logoRefreshTimer;
+  int _logoRefreshSerial = 0;
   final c = {for (final k in ['main','name','phone','email','subject','message','ssid','password','lat','lon','address']) k: TextEditingController()};
 
   final labels = const {
@@ -59,17 +62,19 @@ class _QRStudioAppState extends State<QRStudioApp> {
   int get errorLevel => photoImage != null ? 2 : (const {'L':1,'M':0,'Q':3,'H':2}[error] ?? 0);
 
   @override void initState() { super.initState(); c['main']!.text = 'https://example.com'; }
-  @override void dispose() { photoImage?.dispose(); qrLogoImage?.dispose(); for (final x in c.values) x.dispose(); super.dispose(); }
+  @override void dispose() { _logoRefreshTimer?.cancel(); photoImage?.dispose(); qrLogoImage?.dispose(); for (final x in c.values) x.dispose(); super.dispose(); }
 
-  Future<ui.Image> _makeQrLogo(ui.Image source) async {
+  Future<ui.Image> _makeQrLogo(ui.Image source, Color borderColor) async {
     const canvasSize = 1000.0;
+    const border = 20.0;
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
     final paint = Paint()..filterQuality = FilterQuality.high;
-    canvas.drawRect(const Rect.fromLTWH(0, 0, canvasSize, canvasSize), Paint()..color = Colors.white);
+    canvas.drawRect(const Rect.fromLTWH(0, 0, canvasSize, canvasSize), Paint()..color = borderColor);
     final sw = source.width.toDouble();
     final sh = source.height.toDouble();
-    final scale = (canvasSize * .78 / sw).clamp(0.0, canvasSize * .78 / sh);
+    final inner = canvasSize - border * 2;
+    final scale = (inner / sw).clamp(0.0, inner / sh);
     final dw = sw * scale;
     final dh = sh * scale;
     final dst = Rect.fromLTWH((canvasSize - dw) / 2, (canvasSize - dh) / 2, dw, dh);
@@ -109,7 +114,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
         qrLogoImage = null;
         error = 'H';
       });
-      final prepared = await _makeQrLogo(frame.image);
+      final prepared = await _makeQrLogo(frame.image, transparentBg ? Colors.transparent : bg);
       if (!mounted) { prepared.dispose(); return; }
       setState(() {
         qrLogoImage = prepared;
@@ -138,8 +143,14 @@ class _QRStudioAppState extends State<QRStudioApp> {
   }
 
   Future<Uint8List?> pngBytes() async {
-    final p = QrPainter(data:data.isEmpty ? ' ' : data, version:QrVersions.auto, errorCorrectionLevel:errorLevel, gapless:true, color:fg, emptyColor:transparentBg ? Colors.transparent : bg, embeddedImage:qrLogoImage, embeddedImageStyle:qrLogoImage == null ? null : QrEmbeddedImageStyle(size:Size(size * logoScale, size * logoScale)));
+    ui.Image? freshLogo;
+    if (photoImage != null) {
+      freshLogo = await _makeQrLogo(photoImage!, transparentBg ? Colors.transparent : bg);
+    }
+    final logo = freshLogo ?? qrLogoImage;
+    final p = QrPainter(data:data.isEmpty ? ' ' : data, version:QrVersions.auto, errorCorrectionLevel:errorLevel, gapless:true, color:fg, emptyColor:transparentBg ? Colors.transparent : bg, embeddedImage:logo, embeddedImageStyle:logo == null ? null : QrEmbeddedImageStyle(size:Size(size * logoScale, size * logoScale)));
     final d = await p.toImageData(size, format:ui.ImageByteFormat.png);
+    freshLogo?.dispose();
     return d?.buffer.asUint8List();
   }
 
@@ -383,6 +394,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
       onTap:(){
         if(background){
           setState((){ bg=color; transparentBg=false; });
+          scheduleQrLogoRefresh();
         }else{
           setState((){ fg=color; });
         }
@@ -413,6 +425,24 @@ class _QRStudioAppState extends State<QRStudioApp> {
 
   double currentHue(Color color) => HSVColor.fromColor(color).hue;
 
+  void scheduleQrLogoRefresh() {
+    if (photoImage == null) return;
+    _logoRefreshTimer?.cancel();
+    final serial = ++_logoRefreshSerial;
+    _logoRefreshTimer = Timer(const Duration(milliseconds:120), () async {
+      final source = photoImage;
+      if (source == null) return;
+      final prepared = await _makeQrLogo(source, transparentBg ? Colors.transparent : bg);
+      if (!mounted || serial != _logoRefreshSerial || photoImage != source) {
+        prepared.dispose();
+        return;
+      }
+      final old = qrLogoImage;
+      setState(() => qrLogoImage = prepared);
+      old?.dispose();
+    });
+  }
+
   void setColorFromPosition(bool background,double x,double width){
     final p=(x/width).clamp(0.0,1.0);
     final color=HSVColor.fromAHSV(1,p*360,1,1).toColor();
@@ -420,6 +450,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
       if(background){
         bg=color;
         transparentBg=false;
+        scheduleQrLogoRefresh();
       }else{
         fg=color;
       }
