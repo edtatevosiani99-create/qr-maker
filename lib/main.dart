@@ -334,10 +334,53 @@ class _QRStudioAppState extends State<QRStudioApp> {
             textAlign:TextAlign.center,
             style:TextStyle(fontSize:11,color:Theme.of(context).colorScheme.onSurfaceVariant,fontWeight:FontWeight.w600),
           ),
+          const SizedBox(height:8),
+          Row(
+            mainAxisAlignment:MainAxisAlignment.center,
+            children:[
+              colorQuickButton(Colors.black, background),
+              const SizedBox(width:10),
+              colorQuickButton(Colors.white, background),
+            ],
+          ),
         ],
       );
     },
   );
+
+  Widget colorQuickButton(Color color, bool background) {
+    final selected = (background ? bg : fg).value == color.value;
+    return GestureDetector(
+      onTap:(){
+        if(background){
+          setState((){ bg=color; transparentBg=false; });
+        }else{
+          setState((){ fg=color; });
+        }
+        if(_contrast(background ? fg : color, background ? color : bg) < 4.5){
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content:Text(t('contrastWarning'))),
+          );
+        }
+      },
+      child:Container(
+        width:54,
+        height:34,
+        decoration:BoxDecoration(
+          color:color,
+          borderRadius:BorderRadius.circular(9),
+          border:Border.all(
+            color:selected ? const Color(0xFF7A00FF) : Theme.of(context).colorScheme.outline,
+            width:selected ? 3 : 1.5,
+          ),
+          boxShadow:const [BoxShadow(color:Color(0x33000000),blurRadius:3,offset:Offset(0,1))],
+        ),
+        child:selected
+          ? Icon(Icons.check,size:19,color:color.computeLuminance() > .5 ? Colors.black : Colors.white)
+          : null,
+      ),
+    );
+  }
 
   double currentHue(Color color) => HSVColor.fromColor(color).hue;
 
