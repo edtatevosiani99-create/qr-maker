@@ -420,6 +420,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
     decoration:BoxDecoration(gradient:const LinearGradient(begin:Alignment.topLeft,end:Alignment.bottomRight,colors:[Color(0xFF061B3B),Color(0xFF0A2D59),Color(0xFF350066)]),borderRadius:BorderRadius.circular(18)),
     child:Row(children:[
       Container(width:112,height:112,padding:const EdgeInsets.all(8),decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(14)),child:CustomPaint(
+        key:ValueKey('\${fg.value}-\${bg.value}-\${transparentBg}-\${error}-\${photoImage != null}-\${data}'),
         size:const Size(96,96),
         painter:QrPainter(
           data:data.isEmpty?' ':data,
