@@ -228,7 +228,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
     ],
   );
 
-  void colorPicker(bool background){
+  Future<void> colorPicker(bool background) async {
     final colors=<Color>[
       const Color(0xFF000000),const Color(0xFFFFFFFF),const Color(0xFF263238),
       const Color(0xFFFF0000),const Color(0xFFFF5722),const Color(0xFFFF9800),const Color(0xFFFFC107),
@@ -238,88 +238,84 @@ class _QRStudioAppState extends State<QRStudioApp> {
       const Color(0xFFFF1493),const Color(0xFFFF4081),const Color(0xFF795548),const Color(0xFF9E9E9E),
       const Color(0xFFBDBDBD),const Color(0xFFF5F5F5),
     ];
-    showModalBottomSheet(
+
+    final picked=await showDialog<Color>(
       context:context,
-      isScrollControlled:true,
-      backgroundColor:Theme.of(context).colorScheme.surface,
-      shape:const RoundedRectangleBorder(
-        borderRadius:BorderRadius.vertical(top:Radius.circular(24)),
-      ),
-      builder:(_)=>SafeArea(
-        child:Padding(
-          padding:const EdgeInsets.fromLTRB(20,14,20,24),
-          child:Column(
-            mainAxisSize:MainAxisSize.min,
-            children:[
-              Container(width:42,height:4,decoration:BoxDecoration(color:Theme.of(context).colorScheme.outlineVariant,borderRadius:BorderRadius.circular(4))),
-              const SizedBox(height:12),
-              Text(
-                background ? 'Выберите цвет фона' : 'Выберите цвет QR',
-                style:const TextStyle(fontSize:18,fontWeight:FontWeight.w800),
-              ),
-              const SizedBox(height:6),
-              Text(
-                'Нажмите на любой цвет',
-                style:TextStyle(fontSize:12,color:Theme.of(context).colorScheme.onSurfaceVariant),
-              ),
-              const SizedBox(height:16),
-              GridView.builder(
-                shrinkWrap:true,
-                physics:const NeverScrollableScrollPhysics(),
-                itemCount:colors.length,
-                gridDelegate:const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount:6,
-                  crossAxisSpacing:10,
-                  mainAxisSpacing:10,
-                ),
-                itemBuilder:(_,i){
-                  final x=colors[i];
-                  final selected=background ? (!transparentBg && bg.value==x.value) : fg.value==x.value;
-                  return GestureDetector(
-                    onTap:(){
-                      setState((){
-                        if(background){bg=x;transparentBg=false;}else{fg=x;}
-                      });
-                      Navigator.pop(context);
-                    },
-                    child:Container(
-                      decoration:BoxDecoration(
-                        color:x,
-                        shape:BoxShape.circle,
-                        border:Border.all(
-                          color:x.computeLuminance()>.75 ? Colors.black26 : Colors.white70,
-                          width:1,
-                        ),
-                        boxShadow:selected ? [BoxShadow(color:x.withOpacity(.55),blurRadius:8,spreadRadius:2)] : null,
+      builder:(dialogContext)=>AlertDialog(
+        title:Text(background ? 'Выберите цвет фона' : 'Выберите цвет QR'),
+        content:SizedBox(
+          width:320,
+          child:GridView.builder(
+            shrinkWrap:true,
+            itemCount:colors.length,
+            gridDelegate:const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount:5,
+              crossAxisSpacing:12,
+              mainAxisSpacing:12,
+              childAspectRatio:1,
+            ),
+            itemBuilder:(_,i){
+              final x=colors[i];
+              final selected=background
+                  ? (!transparentBg && bg.value==x.value)
+                  : fg.value==x.value;
+              return Material(
+                color:Colors.transparent,
+                child:InkWell(
+                  borderRadius:BorderRadius.circular(30),
+                  onTap:()=>Navigator.of(dialogContext).pop(x),
+                  child:Container(
+                    decoration:BoxDecoration(
+                      color:x,
+                      shape:BoxShape.circle,
+                      border:Border.all(
+                        color:x.computeLuminance()>.75 ? Colors.black45 : Colors.white70,
+                        width:selected ? 3 : 1,
                       ),
-                      child:selected ? Icon(
-                        Icons.check,
-                        color:x.computeLuminance()>.55 ? Colors.black : Colors.white,
-                        size:22,
-                      ) : null,
+                      boxShadow:selected
+                          ? [BoxShadow(color:x.withOpacity(.6),blurRadius:6,spreadRadius:1)]
+                          : null,
                     ),
-                  );
-                },
-              ),
-              if(background)...[
-                const SizedBox(height:12),
-                ListTile(
-                  shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(12)),
-                  tileColor:Theme.of(context).colorScheme.surfaceContainerHighest,
-                  leading:const Icon(Icons.texture),
-                  title:Text(t('transparent')),
-                  trailing:transparentBg ? const Icon(Icons.check) : null,
-                  onTap:(){
-                    setState(()=>transparentBg=true);
-                    Navigator.pop(context);
-                  },
+                    child:selected
+                        ? Icon(
+                            Icons.check,
+                            color:x.computeLuminance()>.55 ? Colors.black : Colors.white,
+                            size:22,
+                          )
+                        : null,
+                  ),
                 ),
-              ],
-            ],
+              );
+            },
           ),
         ),
+        actions:[
+          if(background)
+            TextButton(
+              onPressed:()=>Navigator.of(dialogContext).pop(const Color(0x00000000)),
+              child:Text(t('transparent')),
+            ),
+          TextButton(
+            onPressed:()=>Navigator.of(dialogContext).pop(),
+            child:Text(MaterialLocalizations.of(dialogContext).cancelButtonLabel),
+          ),
+        ],
       ),
     );
+
+    if(!mounted || picked==null) return;
+    setState((){
+      if(background){
+        if(picked.value==0x00000000){
+          transparentBg=true;
+        }else{
+          bg=picked;
+          transparentBg=false;
+        }
+      }else{
+        fg=picked;
+      }
+    });
   }
 
   Widget backgroundSelector()=>GestureDetector(
