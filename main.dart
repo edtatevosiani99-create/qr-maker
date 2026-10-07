@@ -55,9 +55,8 @@ class _QRStudioAppState extends State<QRStudioApp> {
   void _setQrColor(Color color) {
     if (!_safePair(color, bg)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Низкий контраст: выберите более тёмный цвет QR относительно фона.')),
+        const SnackBar(content: Text('Предупреждение: низкий контраст QR и фона — сканирование может быть затруднено.')),
       );
-      return;
     }
     setState(() => fg = color);
   }
@@ -65,9 +64,8 @@ class _QRStudioAppState extends State<QRStudioApp> {
   void _setBackgroundColor(Color color) {
     if (!_safePair(fg, color)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Низкий контраст: фон должен быть светлее цвета QR.')),
+        const SnackBar(content: Text('Предупреждение: низкий контраст QR и фона — сканирование может быть затруднено.')),
       );
-      return;
     }
     setState(() => bg = color);
   }
