@@ -163,7 +163,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
     Container(color:bg,padding:const EdgeInsets.all(8),child:QrImageView(data:data.isEmpty?' ':data,size:size.clamp(180,340),version:QrVersions.auto,errorCorrectionLevel:errorLevel,foregroundColor:fg,backgroundColor:bg)),
     const SizedBox(height:12),SelectableText(data.isEmpty?' ':data,textAlign:TextAlign.center,maxLines:7),
     if(photoBytes!=null)Padding(padding:const EdgeInsets.only(top:12),child:Image.memory(photoBytes!,height:90))
-  ]));
+  ])));
 
   Widget colorButton(Color color,ValueChanged<Color> cb)=>InkWell(
     onTap:()=>showModalBottomSheet(context:context,builder:(_)=>Padding(padding:const EdgeInsets.all(24),child:Wrap(spacing:14,runSpacing:14,children:[
