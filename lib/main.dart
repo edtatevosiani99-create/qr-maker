@@ -200,7 +200,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
   void colorPicker(bool background){
     final colors=[Colors.black,Colors.white,const Color(0xFF00BFFF),const Color(0xFF3155FF),const Color(0xFF8B00FF),const Color(0xFFE000FF),const Color(0xFFFF4D00),const Color(0xFFFFB000),const Color(0xFF00A86B)];
     showModalBottomSheet(context:context,builder:(_)=>Padding(padding:const EdgeInsets.all(24),child:Wrap(spacing:14,runSpacing:14,children:colors.map((x)=>GestureDetector(
-      onTap:(){setState(()){if(background){bg=x;transparentBg=false;}else{fg=x;}};Navigator.pop(context);},
+      onTap:(){setState((){if(background){bg=x;transparentBg=false;}else{fg=x;}});Navigator.pop(context);},
       child:Container(width:46,height:46,decoration:BoxDecoration(color:x,shape:BoxShape.circle,border:Border.all(color:Theme.of(context).colorScheme.outline))),
     )).toList())));
   }
