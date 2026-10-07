@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui' as ui;
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -60,7 +61,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
 
   Future<Uint8List?> pngBytes() async {
     final p=QrPainter(data:data.isEmpty?' ':data,version:QrVersions.auto,errorCorrectionLevel:error,gapless:true,color:fg,emptyColor:bg);
-    final d=await p.toImageData(size,format:ImageByteFormat.png);
+    final d=await p.toImageData(size,format:ui.ImageByteFormat.png);
     return d?.buffer.asUint8List();
   }
 
