@@ -29,6 +29,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
   bool transparentBg = false;
   Uint8List? photoBytes;
   ui.Image? photoImage;
+  ui.Image? qrLogoImage;
   final picker = ImagePicker();
   final c = {for (final k in ['main','name','phone','email','subject','message','ssid','password','lat','lon','address']) k: TextEditingController()};
 
@@ -58,7 +59,24 @@ class _QRStudioAppState extends State<QRStudioApp> {
   int get errorLevel => const {'L':1,'M':0,'Q':3,'H':2}[error] ?? 0;
 
   @override void initState() { super.initState(); c['main']!.text = 'https://example.com'; }
-  @override void dispose() { photoImage?.dispose(); for (final x in c.values) x.dispose(); super.dispose(); }
+  @override void dispose() { photoImage?.dispose(); qrLogoImage?.dispose(); for (final x in c.values) x.dispose(); super.dispose(); }
+
+  Future<ui.Image> _makeQrLogo(ui.Image source) async {
+    const canvasSize = 1000.0;
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    final paint = Paint()..filterQuality = FilterQuality.high;
+    canvas.drawRect(const Rect.fromLTWH(0, 0, canvasSize, canvasSize), Paint()..color = Colors.white);
+    final sw = source.width.toDouble();
+    final sh = source.height.toDouble();
+    final scale = (canvasSize * .78 / sw).clamp(0.0, canvasSize * .78 / sh);
+    final dw = sw * scale;
+    final dh = sh * scale;
+    final dst = Rect.fromLTWH((canvasSize - dw) / 2, (canvasSize - dh) / 2, dw, dh);
+    canvas.drawImageRect(source, Rect.fromLTWH(0, 0, sw, sh), dst, paint);
+    final picture = recorder.endRecording();
+    return picture.toImage(canvasSize.toInt(), canvasSize.toInt());
+  }
 
   String get data {
     switch (type) {
@@ -87,7 +105,13 @@ class _QRStudioAppState extends State<QRStudioApp> {
       setState(() {
         photoBytes = b;
         photoImage = frame.image;
+        qrLogoImage = null;
         error = 'H';
+      });
+      final prepared = await _makeQrLogo(frame.image);
+      if (!mounted) { prepared.dispose(); return; }
+      setState(() {
+        qrLogoImage = prepared;
       });
       old?.dispose();
     } catch (_) {
@@ -101,15 +125,18 @@ class _QRStudioAppState extends State<QRStudioApp> {
 
   void removePhoto() {
     final old = photoImage;
+    final oldQr = qrLogoImage;
     setState(() {
       photoBytes = null;
       photoImage = null;
+      qrLogoImage = null;
     });
     old?.dispose();
+    oldQr?.dispose();
   }
 
   Future<Uint8List?> pngBytes() async {
-    final p = QrPainter(data:data.isEmpty ? ' ' : data, version:QrVersions.auto, errorCorrectionLevel:errorLevel, gapless:true, color:fg, emptyColor:transparentBg ? Colors.transparent : bg, embeddedImage:photoImage, embeddedImageStyle:photoImage == null ? null : QrEmbeddedImageStyle(size:Size(size * logoScale, size * logoScale)));
+    final p = QrPainter(data:data.isEmpty ? ' ' : data, version:QrVersions.auto, errorCorrectionLevel:errorLevel, gapless:true, color:fg, emptyColor:transparentBg ? Colors.transparent : bg, embeddedImage:qrLogoImage, embeddedImageStyle:qrLogoImage == null ? null : QrEmbeddedImageStyle(size:Size(size * logoScale, size * logoScale)));
     final d = await p.toImageData(size, format:ui.ImageByteFormat.png);
     return d?.buffer.asUint8List();
   }
@@ -430,8 +457,8 @@ class _QRStudioAppState extends State<QRStudioApp> {
           gapless:true,
           color:fg,
           emptyColor:transparentBg?Colors.transparent:bg,
-          embeddedImage:photoImage,
-          embeddedImageStyle:photoImage == null ? null : QrEmbeddedImageStyle(size:Size(96 * logoScale,96 * logoScale)),
+          embeddedImage:qrLogoImage,
+          embeddedImageStyle:qrLogoImage == null ? null : QrEmbeddedImageStyle(size:Size(96 * logoScale,96 * logoScale)),
         ),
       )),
       const SizedBox(width:14),
