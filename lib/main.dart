@@ -319,8 +319,8 @@ class _QRStudioAppState extends State<QRStudioApp> {
         return GestureDetector(
           behavior:HitTestBehavior.opaque,
           onTapDown:(d)=>setColorFromPosition(background,d.localPosition.dx,width),
-          onHorizontalDragStart:(d)=>setColorFromPosition(background,d.localPosition.dx,width),
-          onHorizontalDragUpdate:(d)=>setColorFromPosition(background,d.localPosition.dx,width),
+          onPanStart:(d)=>setColorFromPosition(background,d.localPosition.dx,width),
+          onPanUpdate:(d)=>setColorFromPosition(background,d.localPosition.dx,width),
           child:Container(
             height:48,
             decoration:BoxDecoration(
@@ -405,7 +405,6 @@ class _QRStudioAppState extends State<QRStudioApp> {
   void setColorFromPosition(bool background,double x,double width){
     final p=(x/width).clamp(0.0,1.0);
     final color=HSVColor.fromAHSV(1,p*360,1,1).toColor();
-    if(!_safeColorPair(background ? fg : color, background ? color : bg)) return;
     setState((){
       if(background){
         bg=color;
