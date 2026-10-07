@@ -1,8 +1,10 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'dart:typed_data';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:gal/gal.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
@@ -29,10 +31,10 @@ class _QRStudioAppState extends State<QRStudioApp> {
   final c = {for (final k in ['main','name','phone','email','subject','message','ssid','password','lat','lon','address']) k: TextEditingController()};
 
   final labels = const {
-    'Русский': {'title':'QR Studio','type':'Тип QR-кода','data':'Данные','fg':'Цвет QR','bg':'Фон','size':'Размер','error':'Коррекция ошибок','save':'Сохранить PNG','share':'Поделиться','name':'Имя','phone':'Телефон','email':'Email','subject':'Тема','message':'Сообщение','ssid':'Название Wi‑Fi','password':'Пароль','security':'Защита','lat':'Широта','lon':'Долгота','address':'Адрес','photo':'Выбрать фото'},
-    'English': {'title':'QR Studio','type':'QR type','data':'Data','fg':'QR color','bg':'Background','size':'Size','error':'Error correction','save':'Save PNG','share':'Share','name':'Name','phone':'Phone','email':'Email','subject':'Subject','message':'Message','ssid':'Wi‑Fi name','password':'Password','security':'Security','lat':'Latitude','lon':'Longitude','address':'Address','photo':'Choose photo'},
-    'Deutsch': {'title':'QR Studio','type':'QR-Typ','data':'Daten','fg':'QR-Farbe','bg':'Hintergrund','size':'Größe','error':'Fehlerkorrektur','save':'PNG speichern','share':'Teilen','name':'Name','phone':'Telefon','email':'E-Mail','subject':'Betreff','message':'Nachricht','ssid':'WLAN-Name','password':'Passwort','security':'Sicherheit','lat':'Breitengrad','lon':'Längengrad','address':'Adresse','photo':'Foto auswählen'},
-    'ქართული': {'title':'QR Studio','type':'QR ტიპი','data':'მონაცემები','fg':'QR ფერი','bg':'ფონი','size':'ზომა','error':'შეცდომის გასწორება','save':'PNG შენახვა','share':'გაზიარება','name':'სახელი','phone':'ტელეფონი','email':'ელფოსტა','subject':'თემა','message':'შეტყობინება','ssid':'Wi‑Fi სახელი','password':'პაროლი','security':'დაცვა','lat':'გრძედი','lon':'განედი','address':'მისამართი','photo':'ფოტოს არჩევა'}
+    'Русский': {'title':'QR Studio','type':'Тип QR-кода','data':'Данные','fg':'Цвет QR','bg':'Фон','size':'Размер','error':'Коррекция ошибок','save':'Сохранить PNG','share':'Поделиться','name':'Имя','phone':'Телефон','email':'Email','subject':'Тема','message':'Сообщение','ssid':'Название Wi‑Fi','password':'Пароль','security':'Защита','lat':'Широта','lon':'Долгота','address':'Адрес','photo':'Выбрать фото','saved':'PNG сохранён в галерею','permission':'Разрешите доступ к галерее'},
+    'English': {'title':'QR Studio','type':'QR type','data':'Data','fg':'QR color','bg':'Background','size':'Size','error':'Error correction','save':'Save PNG','share':'Share','name':'Name','phone':'Phone','email':'Email','subject':'Subject','message':'Message','ssid':'Wi‑Fi name','password':'Password','security':'Security','lat':'Latitude','lon':'Longitude','address':'Address','photo':'Choose photo','saved':'PNG saved to gallery','permission':'Please allow gallery access'},
+    'Deutsch': {'title':'QR Studio','type':'QR-Typ','data':'Daten','fg':'QR-Farbe','bg':'Hintergrund','size':'Größe','error':'Fehlerkorrektur','save':'PNG speichern','share':'Teilen','name':'Name','phone':'Telefon','email':'E-Mail','subject':'Betreff','message':'Nachricht','ssid':'WLAN-Name','password':'Passwort','security':'Sicherheit','lat':'Breitengrad','lon':'Längengrad','address':'Adresse','photo':'Foto auswählen','saved':'PNG in Galerie gespeichert','permission':'Bitte Galeriezugriff erlauben'},
+    'ქართული': {'title':'QR Studio','type':'QR ტიპი','data':'მონაცემები','fg':'QR ფერი','bg':'ფონი','size':'ზომა','error':'შეცდომის გასწორება','save':'PNG შენახვა','share':'გაზიარება','name':'სახელი','phone':'ტელეფონი','email':'ელფოსტა','subject':'თემა','message':'შეტყობინება','ssid':'Wi‑Fi სახელი','password':'პაროლი','security':'დაცვა','lat':'გრძედი','lon':'განედი','address':'მისამართი','photo':'ფოტოს არჩევა','saved':'PNG გალერეაში შეინახა','permission':'გთხოვთ დაუშვათ გალერეაზე წვდომა'}
   };
   String t(String k) => labels[lang]![k] ?? k;
   String v(String k) => c[k]!.text.trim();
@@ -68,9 +70,19 @@ class _QRStudioAppState extends State<QRStudioApp> {
 
   Future<void> savePng() async {
     final b=await pngBytes(); if(b==null)return;
-    final dir=await getApplicationDocumentsDirectory();
-    await File('${dir.path}/QR_${DateTime.now().millisecondsSinceEpoch}.png').writeAsBytes(b);
-    if(mounted)ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('PNG saved')));
+    try {
+      if (!await Gal.hasAccess()) {
+        final ok = await Gal.requestAccess();
+        if (!ok) {
+          if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t('permission'))));
+          return;
+        }
+      }
+      await Gal.putImageBytes(b, album: 'QR Studio');
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t('saved'))));
+    } catch (_) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t('permission'))));
+    }
   }
 
   Future<void> sharePng() async {
@@ -160,7 +172,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
 
   Widget preview()=>Card(child:Padding(padding:const EdgeInsets.all(20),child:Column(children:[
     Text('Preview',style:Theme.of(context).textTheme.titleLarge),const SizedBox(height:16),
-    Container(color:bg,padding:const EdgeInsets.all(8),child:QrImageView(data:data.isEmpty?' ':data,size:size.clamp(180,340),version:QrVersions.auto,errorCorrectionLevel:errorLevel,foregroundColor:fg,backgroundColor:bg)),
+    Container(color:bg,padding:const EdgeInsets.all(8),child:QrImageView(key:ValueKey('$data-$fg-$bg-$error-$size'),data:data.isEmpty?' ':data,size:size.clamp(180,340),version:QrVersions.auto,errorCorrectionLevel:errorLevel,foregroundColor:fg,backgroundColor:bg)),
     const SizedBox(height:12),SelectableText(data.isEmpty?' ':data,textAlign:TextAlign.center,maxLines:7),
     if(photoBytes!=null)Padding(padding:const EdgeInsets.only(top:12),child:Image.memory(photoBytes!,height:90))
   ])));
