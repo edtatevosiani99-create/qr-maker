@@ -189,31 +189,162 @@ class _QRStudioAppState extends State<QRStudioApp> {
     }
   }
 
-  Widget gradientColorBar(bool background)=>Row(children:[
-    Expanded(child:GestureDetector(
-      onTap:()=>colorPicker(background),
-      child:Container(height:48,decoration:BoxDecoration(gradient:const LinearGradient(colors:[Color(0xFF00D9FF),Color(0xFF195CFF),Color(0xFF7B00FF),Color(0xFFE000FF),Color(0xFFFF4D00),Color(0xFFFFB000)]),borderRadius:BorderRadius.circular(10)),alignment:Alignment.centerRight,padding:const EdgeInsets.only(right:10),child:Container(width:18,height:18,decoration:BoxDecoration(shape:BoxShape.circle,color:background?bg:fg,border:Border.all(color:Colors.white,width:2))))),
-    const SizedBox(width:9),
-    IconButton(onPressed:()=>colorPicker(background),icon:const Icon(Icons.palette_outlined,size:19),style:IconButton.styleFrom(side:BorderSide(color:Theme.of(context).colorScheme.outlineVariant),shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(10)))),
-  ]);
+  Widget gradientColorBar(bool background)=>Column(
+    crossAxisAlignment:CrossAxisAlignment.stretch,
+    children:[
+      GestureDetector(
+        onTap:()=>colorPicker(background),
+        child:Container(
+          height:48,
+          decoration:BoxDecoration(
+            gradient:const LinearGradient(colors:[Color(0xFF00D9FF),Color(0xFF195CFF),Color(0xFF7B00FF),Color(0xFFE000FF),Color(0xFFFF4D00),Color(0xFFFFB000)]),
+            borderRadius:BorderRadius.circular(10),
+          ),
+          alignment:Alignment.centerRight,
+          padding:const EdgeInsets.only(right:10),
+          child:Container(
+            width:22,height:22,
+            decoration:BoxDecoration(
+              shape:BoxShape.circle,
+              color:background?bg:fg,
+              border:Border.all(color:Colors.white,width:2),
+              boxShadow:[BoxShadow(color:Colors.black.withOpacity(.25),blurRadius:4)],
+            ),
+          ),
+        ),
+      ),
+      const SizedBox(height:7),
+      OutlinedButton.icon(
+        onPressed:()=>colorPicker(background),
+        icon:const Icon(Icons.palette_outlined,size:18),
+        label:Text(background ? 'Выбрать цвет фона' : 'Выбрать цвет QR'),
+        style:OutlinedButton.styleFrom(
+          minimumSize:const Size.fromHeight(42),
+          shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(12)),
+        ),
+      ),
+    ],
+  );
 
   void colorPicker(bool background){
-    final colors=[Colors.black,Colors.white,const Color(0xFF00BFFF),const Color(0xFF3155FF),const Color(0xFF8B00FF),const Color(0xFFE000FF),const Color(0xFFFF4D00),const Color(0xFFFFB000),const Color(0xFF00A86B)];
-    showModalBottomSheet(context:context,builder:(_)=>Padding(padding:const EdgeInsets.all(24),child:Wrap(spacing:14,runSpacing:14,children:colors.map((x)=>GestureDetector(
-      onTap:(){setState((){if(background){bg=x;transparentBg=false;}else{fg=x;}});Navigator.pop(context);},
-      child:Container(width:46,height:46,decoration:BoxDecoration(color:x,shape:BoxShape.circle,border:Border.all(color:Theme.of(context).colorScheme.outline))),
-    )).toList())));
+    final colors=<Color>[
+      const Color(0xFF000000),const Color(0xFFFFFFFF),const Color(0xFF263238),
+      const Color(0xFFFF0000),const Color(0xFFFF5722),const Color(0xFFFF9800),const Color(0xFFFFC107),
+      const Color(0xFFFFFF00),const Color(0xFF8BC34A),const Color(0xFF00A86B),const Color(0xFF00C853),
+      const Color(0xFF00BCD4),const Color(0xFF00D9FF),const Color(0xFF2196F3),const Color(0xFF3155FF),
+      const Color(0xFF3F51B5),const Color(0xFF673AB7),const Color(0xFF8B00FF),const Color(0xFFE000FF),
+      const Color(0xFFFF1493),const Color(0xFFFF4081),const Color(0xFF795548),const Color(0xFF9E9E9E),
+      const Color(0xFFBDBDBD),const Color(0xFFF5F5F5),
+    ];
+    showModalBottomSheet(
+      context:context,
+      isScrollControlled:true,
+      backgroundColor:Theme.of(context).colorScheme.surface,
+      shape:const RoundedRectangleBorder(
+        borderRadius:BorderRadius.vertical(top:Radius.circular(24)),
+      ),
+      builder:(_)=>SafeArea(
+        child:Padding(
+          padding:const EdgeInsets.fromLTRB(20,14,20,24),
+          child:Column(
+            mainAxisSize:MainAxisSize.min,
+            children:[
+              Container(width:42,height:4,decoration:BoxDecoration(color:Theme.of(context).colorScheme.outlineVariant,borderRadius:BorderRadius.circular(4))),
+              const SizedBox(height:12),
+              Text(
+                background ? 'Выберите цвет фона' : 'Выберите цвет QR',
+                style:const TextStyle(fontSize:18,fontWeight:FontWeight.w800),
+              ),
+              const SizedBox(height:6),
+              Text(
+                'Нажмите на любой цвет',
+                style:TextStyle(fontSize:12,color:Theme.of(context).colorScheme.onSurfaceVariant),
+              ),
+              const SizedBox(height:16),
+              GridView.builder(
+                shrinkWrap:true,
+                physics:const NeverScrollableScrollPhysics(),
+                itemCount:colors.length,
+                gridDelegate:const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount:6,
+                  crossAxisSpacing:10,
+                  mainAxisSpacing:10,
+                ),
+                itemBuilder:(_,i){
+                  final x=colors[i];
+                  final selected=background ? (!transparentBg && bg.value==x.value) : fg.value==x.value;
+                  return GestureDetector(
+                    onTap:(){
+                      setState((){
+                        if(background){bg=x;transparentBg=false;}else{fg=x;}
+                      });
+                      Navigator.pop(context);
+                    },
+                    child:Container(
+                      decoration:BoxDecoration(
+                        color:x,
+                        shape:BoxShape.circle,
+                        border:Border.all(
+                          color:x.computeLuminance()>.75 ? Colors.black26 : Colors.white70,
+                          width:1,
+                        ),
+                        boxShadow:selected ? [BoxShadow(color:x.withOpacity(.55),blurRadius:8,spreadRadius:2)] : null,
+                      ),
+                      child:selected ? Icon(
+                        Icons.check,
+                        color:x.computeLuminance()>.55 ? Colors.black : Colors.white,
+                        size:22,
+                      ) : null,
+                    ),
+                  );
+                },
+              ),
+              if(background)...[
+                const SizedBox(height:12),
+                ListTile(
+                  shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(12)),
+                  tileColor:Theme.of(context).colorScheme.surfaceContainerHighest,
+                  leading:const Icon(Icons.texture),
+                  title:Text(t('transparent')),
+                  trailing:transparentBg ? const Icon(Icons.check) : null,
+                  onTap:(){
+                    setState(()=>transparentBg=true);
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget backgroundSelector()=>GestureDetector(
-    onTap:()=>showModalBottomSheet(context:context,builder:(_)=>Padding(padding:const EdgeInsets.all(20),child:Column(mainAxisSize:MainAxisSize.min,children:[
-      ListTile(leading:const Icon(Icons.texture),title:Text(t('transparent')),trailing:transparentBg?const Icon(Icons.check):null,onTap:(){setState(()=>transparentBg=true);Navigator.pop(context);}),
-      ListTile(leading:const Icon(Icons.square),title:const Text('White'),trailing:!transparentBg&&bg==Colors.white?const Icon(Icons.check):null,onTap:(){setState((){bg=Colors.white;transparentBg=false;});Navigator.pop(context);}),
-      ListTile(leading:const Icon(Icons.palette_outlined),title:const Text('Custom'),trailing:!transparentBg&&bg!=Colors.white?const Icon(Icons.check):null,onTap:(){Navigator.pop(context);colorPicker(true);}),
-    ]))),
-    child:Container(height:48,padding:const EdgeInsets.symmetric(horizontal:14),decoration:BoxDecoration(color:Theme.of(context).colorScheme.surface,borderRadius:BorderRadius.circular(10),border:Border.all(color:Theme.of(context).colorScheme.outlineVariant)),child:Row(children:[
-      Icon(transparentBg?Icons.texture:Icons.checkerboard_outlined,size:18,color:Theme.of(context).colorScheme.onSurfaceVariant),const SizedBox(width:9),Expanded(child:Text(transparentBg?t('transparent'):'White',style:const TextStyle(fontSize:12))),const Icon(Icons.keyboard_arrow_down,size:20),
-    ])),
+    onTap:()=>colorPicker(true),
+    child:Container(
+      height:48,
+      padding:const EdgeInsets.symmetric(horizontal:14),
+      decoration:BoxDecoration(
+        color:Theme.of(context).colorScheme.surface,
+        borderRadius:BorderRadius.circular(10),
+        border:Border.all(color:Theme.of(context).colorScheme.outlineVariant),
+      ),
+      child:Row(children:[
+        Container(
+          width:24,height:24,
+          decoration:BoxDecoration(
+            color:transparentBg ? Colors.transparent : bg,
+            shape:BoxShape.circle,
+            border:Border.all(color:Theme.of(context).colorScheme.outlineVariant),
+          ),
+          child:transparentBg ? const Icon(Icons.texture,size:15) : null,
+        ),
+        const SizedBox(width:9),
+        Expanded(child:Text(transparentBg?t('transparent'):'Цвет фона',style:const TextStyle(fontSize:12))),
+        const Icon(Icons.keyboard_arrow_down,size:20),
+      ]),
+    ),
   );
 
   Widget preview()=>Column(children:[previewCard(),const SizedBox(height:18),footerButtons()]);
