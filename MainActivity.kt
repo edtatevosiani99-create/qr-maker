@@ -1,4 +1,4 @@
-package com.qrstudio.app
+package com.example.qr_studio
 
 import android.Manifest
 import android.app.NotificationChannel
@@ -6,8 +6,6 @@ import android.app.NotificationManager
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
