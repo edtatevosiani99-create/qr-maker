@@ -151,7 +151,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
     debugShowCheckedModeBanner:false,themeMode:themeMode,
     theme:ThemeData(useMaterial3:true,colorSchemeSeed:Colors.indigo),
     darkTheme:ThemeData(useMaterial3:true,colorSchemeSeed:Colors.indigo,brightness:Brightness.dark),
-    home:Scaffold(appBar:AppBar(title:Text(t('title')),actions:[
+    home:Scaffold(appBar:AppBar(title:Row(mainAxisSize:MainAxisSize.min,children:[Image.asset('app_icon.png',width:32,height:32,fit:BoxFit.contain),const SizedBox(width:8),Text(t('title'))]),actions:[
       DropdownButton<String>(value:lang,underline:const SizedBox(),items:labels.keys.map((x)=>DropdownMenuItem(value:x,child:Text(x))).toList(),onChanged:(x)=>setState(()=>lang=x!)),
       IconButton(onPressed:()=>setState(()=>themeMode=themeMode==ThemeMode.light?ThemeMode.dark:ThemeMode.light),icon:Icon(themeMode==ThemeMode.light?Icons.dark_mode:Icons.light_mode))
     ]),
