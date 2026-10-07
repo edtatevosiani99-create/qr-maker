@@ -41,14 +41,13 @@ class MainActivity : FlutterActivity() {
                     result.success(false)
                     return@setMethodCallHandler
                 }
-                val notification = NotificationCompat.Builder(this, notificationChannelId)
-                    .setSmallIcon(com.qrstudio.app.R.mipmap.ic_launcher)
+                val notificationManager = getSystemService(NotificationManager::class.java)
+                val builder = android.app.Notification.Builder(this, notificationChannelId)
+                    .setSmallIcon(R.mipmap.ic_launcher)
                     .setContentTitle("QR Studio")
                     .setContentText("QR-код сохранён в галерею")
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                     .setAutoCancel(true)
-                    .build()
-                NotificationManagerCompat.from(this).notify(1001, notification)
+                notificationManager.notify(1001, builder.build())
                 result.success(true)
             } else {
                 result.notImplemented()
