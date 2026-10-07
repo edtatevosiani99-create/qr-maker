@@ -1,4 +1,5 @@
 name: Build Android APK
+# QR Studio release build
 
 on:
   workflow_dispatch:
