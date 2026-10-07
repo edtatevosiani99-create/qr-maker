@@ -65,7 +65,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
   }
 
   Future<Uint8List?> pngBytes() async {
-    final p = QrPainter(data:data.isEmpty ? ' ' : data, version:QrVersions.auto, errorCorrectionLevel:errorLevel, gapless:true, eyeStyle: QrEyeStyle(color:fg), dataModuleStyle: QrDataModuleStyle(color:fg), color:fg, emptyColor:transparentBg ? Colors.transparent : bg);
+    final p = QrPainter(data:data.isEmpty ? ' ' : data, version:QrVersions.auto, errorCorrectionLevel:errorLevel, gapless:true, color:fg, emptyColor:transparentBg ? Colors.transparent : bg);
     final d = await p.toImageData(size, format:ui.ImageByteFormat.png);
     return d?.buffer.asUint8List();
   }
@@ -357,7 +357,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
     child:Row(children:[
       Container(width:112,height:112,padding:const EdgeInsets.all(8),decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(14)),child:QrImageView(
         key:ValueKey(data+fg.toString()+bg.toString()+error+size.toString()+transparentBg.toString()),
-        data:data.isEmpty?' ':data,size:96,version:QrVersions.auto,errorCorrectionLevel:errorLevel,foregroundColor:fg,eyeStyle:QrEyeStyle(color:fg),dataModuleStyle:QrDataModuleStyle(color:fg),backgroundColor:transparentBg?Colors.white:bg,
+        data:data.isEmpty?' ':data,size:96,version:QrVersions.auto,errorCorrectionLevel:errorLevel,foregroundColor:fg,backgroundColor:transparentBg?Colors.white:bg,
       )),
       const SizedBox(width:14),
       Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(t('preview'),style:const TextStyle(color:Colors.white,fontWeight:FontWeight.w700,fontSize:14)),const SizedBox(height:5),Text(t('ready'),style:TextStyle(color:Colors.white.withOpacity(.78),fontSize:11))])),
