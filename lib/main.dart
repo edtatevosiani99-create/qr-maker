@@ -24,6 +24,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
   QRType type = QRType.url;
   Color fg = Colors.black, bg = Colors.white;
   double size = 684;
+  double logoScale = .22;
   String error = 'M', security = 'WPA';
   bool transparentBg = false;
   Uint8List? photoBytes;
@@ -32,10 +33,10 @@ class _QRStudioAppState extends State<QRStudioApp> {
   final c = {for (final k in ['main','name','phone','email','subject','message','ssid','password','lat','lon','address']) k: TextEditingController()};
 
   final labels = const {
-    'Русский': {'title':'QR Studio','subtitle':'Создавай • Кастомизируй • Сохраняй','type':'Тип QR-кода','url':'URL','text':'Текст','phone':'Телефон','wifi':'Wi‑Fi','contact':'Контакт','email':'Email','location':'Геолокация','fg':'Цвет QR','bg':'Фон','transparent':'Прозрачный фон','size':'Размер','error':'Коррекция ошибок','save':'Сохранить PNG','share':'Поделиться','name':'Имя','data':'Данные','subject':'Тема','message':'Сообщение','ssid':'Название Wi‑Fi','password':'Пароль','security':'Защита','lat':'Широта','lon':'Долгота','address':'Адрес','photo':'Выбрать фото','logo':'Логотип в QR','logoHint':'По желанию: вставьте картинку из галереи в центр QR','photoSelected':'Логотип выбран • коррекция H','removeLogo':'Удалить логотип','photoError':'Не удалось открыть это изображение','saved':'PNG сохранён в галерею','permission':'Разрешите доступ к галерее','preview':'Ваш QR-код','ready':'Готов к сохранению','none':'Без защиты'},
-    'English': {'title':'QR Studio','subtitle':'Create • Customize • Save','type':'QR code type','url':'URL','text':'Text','phone':'Phone','wifi':'Wi‑Fi','contact':'Contact','email':'Email','location':'Location','fg':'QR color','bg':'Background','transparent':'Transparent background','size':'Size','error':'Error correction','save':'Save PNG','share':'Share','name':'Name','data':'Data','subject':'Subject','message':'Message','ssid':'Wi‑Fi name','password':'Password','security':'Security','lat':'Latitude','lon':'Longitude','address':'Address','photo':'Choose photo','logo':'Logo in QR','logoHint':'Optional: add an image from the gallery to the center','photoSelected':'Logo selected • correction H','removeLogo':'Remove logo','photoError':'Could not open this image','saved':'PNG saved to gallery','permission':'Please allow gallery access','preview':'Your QR code','ready':'Ready to save','none':'No security'},
-    'Deutsch': {'title':'QR Studio','subtitle':'Erstellen • Anpassen • Speichern','type':'QR-Code-Typ','url':'URL','text':'Text','phone':'Telefon','wifi':'WLAN','contact':'Kontakt','email':'E-Mail','location':'Standort','fg':'QR-Farbe','bg':'Hintergrund','transparent':'Transparenter Hintergrund','size':'Größe','error':'Fehlerkorrektur','save':'PNG speichern','share':'Teilen','name':'Name','data':'Daten','subject':'Betreff','message':'Nachricht','ssid':'WLAN-Name','password':'Passwort','security':'Sicherheit','lat':'Breitengrad','lon':'Längengrad','address':'Adresse','photo':'Foto auswählen','logo':'Logo im QR','logoHint':'Optional: Bild aus der Galerie in die Mitte einfügen','photoSelected':'Logo ausgewählt • Korrektur H','removeLogo':'Logo entfernen','photoError':'Bild konnte nicht geöffnet werden','saved':'PNG in Galerie gespeichert','permission':'Bitte Galeriezugriff erlauben','preview':'Ihr QR-Code','ready':'Bereit zum Speichern','none':'Keine Sicherheit'},
-    'ქართული': {'title':'QR Studio','subtitle':'შექმენი • მოარგე • შეინახე','type':'QR კოდის ტიპი','url':'URL','text':'ტექსტი','phone':'ტელეფონი','wifi':'Wi‑Fi','contact':'კონტაქტი','email':'ელფოსტა','location':'გეოლოკაცია','fg':'QR ფერი','bg':'ფონი','transparent':'გამჭვირვალე ფონი','size':'ზომა','error':'შეცდომის გასწორება','save':'PNG შენახვა','share':'გაზიარება','name':'სახელი','data':'მონაცემები','subject':'თემა','message':'შეტყობინება','ssid':'Wi‑Fi სახელი','password':'პაროლი','security':'დაცვა','lat':'გრძედი','lon':'განედი','address':'მისამართი','photo':'ფოტოს არჩევა','logo':'ლოგო QR-ში','logoHint':'სურვილისამებრ: გალერეიდან სურათი ჩასვით QR-ის ცენტრში','photoSelected':'ლოგო არჩეულია • კორექცია H','removeLogo':'ლოგოს წაშლა','photoError':'სურათი ვერ გაიხსნა','saved':'PNG გალერეაში შეინახა','permission':'გთხოვთ დაუშვათ გალერეაზე წვდომა','preview':'თქვენი QR კოდი','ready':'მზადაა შესანახად','none':'დაცვის გარეშე'}
+    'Русский': {'title':'QR Studio','subtitle':'Создавай • Кастомизируй • Сохраняй','type':'Тип QR-кода','url':'URL','text':'Текст','phone':'Телефон','wifi':'Wi‑Fi','contact':'Контакт','email':'Email','location':'Геолокация','fg':'Цвет QR','bg':'Фон','transparent':'Прозрачный фон','size':'Размер','error':'Коррекция ошибок','save':'Сохранить PNG','share':'Поделиться','name':'Имя','data':'Данные','subject':'Тема','message':'Сообщение','ssid':'Название Wi‑Fi','password':'Пароль','security':'Защита','lat':'Широта','lon':'Долгота','address':'Адрес','photo':'Выбрать фото','logo':'Логотип в QR','logoHint':'По желанию: вставьте картинку из галереи в центр QR','photoSelected':'Логотип выбран • коррекция H','removeLogo':'Удалить логотип','photoError':'Не удалось открыть это изображение','saved':'PNG сохранён в галерею','permission':'Разрешите доступ к галерее','preview':'Ваш QR-код','ready':'Готов к сохранению','logoSize':'Размер логотипа','none':'Без защиты'},
+    'English': {'title':'QR Studio','subtitle':'Create • Customize • Save','type':'QR code type','url':'URL','text':'Text','phone':'Phone','wifi':'Wi‑Fi','contact':'Contact','email':'Email','location':'Location','fg':'QR color','bg':'Background','transparent':'Transparent background','size':'Size','error':'Error correction','save':'Save PNG','share':'Share','name':'Name','data':'Data','subject':'Subject','message':'Message','ssid':'Wi‑Fi name','password':'Password','security':'Security','lat':'Latitude','lon':'Longitude','address':'Address','photo':'Choose photo','logo':'Logo in QR','logoHint':'Optional: add an image from the gallery to the center','photoSelected':'Logo selected • correction H','removeLogo':'Remove logo','photoError':'Could not open this image','saved':'PNG saved to gallery','permission':'Please allow gallery access','preview':'Your QR code','ready':'Ready to save','logoSize':'Logo size','none':'No security'},
+    'Deutsch': {'title':'QR Studio','subtitle':'Erstellen • Anpassen • Speichern','type':'QR-Code-Typ','url':'URL','text':'Text','phone':'Telefon','wifi':'WLAN','contact':'Kontakt','email':'E-Mail','location':'Standort','fg':'QR-Farbe','bg':'Hintergrund','transparent':'Transparenter Hintergrund','size':'Größe','error':'Fehlerkorrektur','save':'PNG speichern','share':'Teilen','name':'Name','data':'Daten','subject':'Betreff','message':'Nachricht','ssid':'WLAN-Name','password':'Passwort','security':'Sicherheit','lat':'Breitengrad','lon':'Längengrad','address':'Adresse','photo':'Foto auswählen','logo':'Logo im QR','logoHint':'Optional: Bild aus der Galerie in die Mitte einfügen','photoSelected':'Logo ausgewählt • Korrektur H','removeLogo':'Logo entfernen','photoError':'Bild konnte nicht geöffnet werden','saved':'PNG in Galerie gespeichert','permission':'Bitte Galeriezugriff erlauben','preview':'Ihr QR-Code','ready':'Bereit zum Speichern','logoSize':'Logogröße','none':'Keine Sicherheit'},
+    'ქართული': {'title':'QR Studio','subtitle':'შექმენი • მოარგე • შეინახე','type':'QR კოდის ტიპი','url':'URL','text':'ტექსტი','phone':'ტელეფონი','wifi':'Wi‑Fi','contact':'კონტაქტი','email':'ელფოსტა','location':'გეოლოკაცია','fg':'QR ფერი','bg':'ფონი','transparent':'გამჭვირვალე ფონი','size':'ზომა','error':'შეცდომის გასწორება','save':'PNG შენახვა','share':'გაზიარება','name':'სახელი','data':'მონაცემები','subject':'თემა','message':'შეტყობინება','ssid':'Wi‑Fi სახელი','password':'პაროლი','security':'დაცვა','lat':'გრძედი','lon':'განედი','address':'მისამართი','photo':'ფოტოს არჩევა','logo':'ლოგო QR-ში','logoHint':'სურვილისამებრ: გალერეიდან სურათი ჩასვით QR-ის ცენტრში','photoSelected':'ლოგო არჩეულია • კორექცია H','removeLogo':'ლოგოს წაშლა','photoError':'სურათი ვერ გაიხსნა','saved':'PNG გალერეაში შეინახა','permission':'გთხოვთ დაუშვათ გალერეაზე წვდომა','preview':'თქვენი QR კოდი','ready':'მზადაა შესანახად','logoSize':'ლოგოს ზომა','none':'დაცვის გარეშე'}
   };
 
   String t(String k) => labels[lang]![k] ?? k;
@@ -94,7 +95,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
   }
 
   Future<Uint8List?> pngBytes() async {
-    final p = QrPainter(data:data.isEmpty ? ' ' : data, version:QrVersions.auto, errorCorrectionLevel:errorLevel, gapless:true, color:fg, emptyColor:transparentBg ? Colors.transparent : bg, embeddedImage:photoImage, embeddedImageStyle:photoImage == null ? null : QrEmbeddedImageStyle(size:Size(size * .22, size * .22)));
+    final p = QrPainter(data:data.isEmpty ? ' ' : data, version:QrVersions.auto, errorCorrectionLevel:errorLevel, gapless:true, color:fg, emptyColor:transparentBg ? Colors.transparent : bg, embeddedImage:photoImage, embeddedImageStyle:photoImage == null ? null : QrEmbeddedImageStyle(size:Size(size * logoScale, size * logoScale)));
     final d = await p.toImageData(size, format:ui.ImageByteFormat.png);
     return d?.buffer.asUint8List();
   }
@@ -178,13 +179,26 @@ class _QRStudioAppState extends State<QRStudioApp> {
     ],
     if(type==QRType.location) ...[input('lat',t('lat'),keyboard:TextInputType.number),input('lon',t('lon'),keyboard:TextInputType.number),input('address',t('address'))],
     const SizedBox(height:4),Text(t('fg'),style:const TextStyle(fontSize:12,fontWeight:FontWeight.w700)),const SizedBox(height:6),gradientColorBar(false),
-    const SizedBox(height:12),Text(t('bg'),style:const TextStyle(fontSize:12,fontWeight:FontWeight.w700)),const SizedBox(height:6),backgroundSelector(),
+    const SizedBox(height:12),Text(t('bg'),style:const TextStyle(fontSize:12,fontWeight:FontWeight.w700)),const SizedBox(height:6),gradientColorBar(true),
     const SizedBox(height:13),Text(t('size') + ': ' + size.round().toString() + ' px',style:const TextStyle(fontSize:12,fontWeight:FontWeight.w700)),
     Slider(min:256,max:1024,value:size,activeColor:const Color(0xFF5B2DFF),onChanged:(x)=>setState(()=>size=x)),
     Text(t('error'),style:const TextStyle(fontSize:12,fontWeight:FontWeight.w700)),const SizedBox(height:6),
     DropdownButtonFormField<String>(value:error,decoration:fieldDecoration(''),items:['L','M','Q','H'].map((x)=>DropdownMenuItem(value:x,child:Text(x))).toList(),onChanged:(x)=>setState(()=>error=x!)),
     const SizedBox(height:10),
     logoSection(),
+    if (photoImage != null) ...[
+      const SizedBox(height:10),
+      Text(t('logoSize') + ': ' + (logoScale * 100).round().toString() + '%',
+          style:const TextStyle(fontSize:12,fontWeight:FontWeight.w700)),
+      Slider(
+        min:.10,
+        max:.35,
+        divisions:25,
+        value:logoScale,
+        activeColor:const Color(0xFF5B2DFF),
+        onChanged:(x)=>setState(()=>logoScale=x),
+      ),
+    ],
   ]);
 
   Widget logoSection()=>Container(
@@ -262,27 +276,44 @@ class _QRStudioAppState extends State<QRStudioApp> {
   Widget gradientColorBar(bool background)=>Column(
     crossAxisAlignment:CrossAxisAlignment.stretch,
     children:[
-      GestureDetector(
-        onTap:()=>colorPicker(background),
-        child:Container(
-          height:48,
-          decoration:BoxDecoration(
-            gradient:const LinearGradient(colors:[Color(0xFF00D9FF),Color(0xFF195CFF),Color(0xFF7B00FF),Color(0xFFE000FF),Color(0xFFFF4D00),Color(0xFFFFB000)]),
-            borderRadius:BorderRadius.circular(10),
-          ),
-          alignment:Alignment.centerRight,
-          padding:const EdgeInsets.only(right:10),
+      LayoutBuilder(builder:(context,constraints){
+        final width=constraints.maxWidth;
+        final current=background ? bg : fg;
+        return GestureDetector(
+          behavior:HitTestBehavior.opaque,
+          onTapDown:(d)=>setColorFromPosition(background,d.localPosition.dx,width),
+          onHorizontalDragStart:(d)=>setColorFromPosition(background,d.localPosition.dx,width),
+          onHorizontalDragUpdate:(d)=>setColorFromPosition(background,d.localPosition.dx,width),
           child:Container(
-            width:22,height:22,
+            height:48,
             decoration:BoxDecoration(
-              shape:BoxShape.circle,
-              color:background?bg:fg,
-              border:Border.all(color:Colors.white,width:2),
-              boxShadow:[BoxShadow(color:Colors.black.withOpacity(.25),blurRadius:4)],
+              gradient:const LinearGradient(
+                colors:[
+                  Color(0xFFFF0000),Color(0xFFFFFF00),Color(0xFF00FF00),
+                  Color(0xFF00FFFF),Color(0xFF0000FF),Color(0xFFFF00FF),Color(0xFFFF0000)
+                ],
+              ),
+              borderRadius:BorderRadius.circular(10),
+            ),
+            alignment:Alignment.center,
+            child:Align(
+              alignment:Alignment.centerLeft,
+              child:Transform.translate(
+                offset:Offset((currentHue(current)/360*width).clamp(0.0,width-1),0),
+                child:Container(
+                  width:24,height:24,
+                  decoration:BoxDecoration(
+                    shape:BoxShape.circle,
+                    color:current,
+                    border:Border.all(color:Colors.white,width:3),
+                    boxShadow:[BoxShadow(color:Colors.black.withOpacity(.35),blurRadius:5)],
+                  ),
+                ),
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      }),
       const SizedBox(height:7),
       OutlinedButton.icon(
         onPressed:()=>colorPicker(background),
@@ -295,6 +326,21 @@ class _QRStudioAppState extends State<QRStudioApp> {
       ),
     ],
   );
+
+  double currentHue(Color color) => HSVColor.fromColor(color).hue;
+
+  void setColorFromPosition(bool background,double x,double width){
+    final p=(x/width).clamp(0.0,1.0);
+    final color=HSVColor.fromAHSV(1,p*360,1,1).toColor();
+    setState((){
+      if(background){
+        bg=color;
+        transparentBg=false;
+      }else{
+        fg=color;
+      }
+    });
+  }
 
   Future<void> colorPicker(bool background) async {
     final colors=<Color>[
@@ -430,7 +476,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
           color:fg,
           emptyColor:transparentBg?Colors.transparent:bg,
           embeddedImage:photoImage,
-          embeddedImageStyle:photoImage == null ? null : const QrEmbeddedImageStyle(size:Size(22,22)),
+          embeddedImageStyle:photoImage == null ? null : QrEmbeddedImageStyle(size:Size(96 * logoScale,96 * logoScale)),
         ),
       )),
       const SizedBox(width:14),
