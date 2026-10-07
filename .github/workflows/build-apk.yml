@@ -22,6 +22,12 @@ jobs:
       - name: Create platform files
         run: flutter create --platforms=android .
 
+      - name: Install QR Studio Android activity
+        run: |
+          mkdir -p android/app/src/main/kotlin/com/example/qr_studio
+          cp MainActivity.kt android/app/src/main/kotlin/com/example/qr_studio/MainActivity.kt
+          sed -i '/<manifest /a\\    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>' android/app/src/main/AndroidManifest.xml
+
       - name: Get dependencies
         run: flutter pub get
 
