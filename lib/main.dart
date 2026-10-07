@@ -33,10 +33,10 @@ class _QRStudioAppState extends State<QRStudioApp> {
   final c = {for (final k in ['main','name','phone','email','subject','message','ssid','password','lat','lon','address']) k: TextEditingController()};
 
   final labels = const {
-    'Русский': {'title':'QR Studio','subtitle':'Создавай • Кастомизируй • Сохраняй','type':'Тип QR-кода','url':'URL','text':'Текст','phone':'Телефон','wifi':'Wi‑Fi','contact':'Контакт','email':'Email','location':'Геолокация','fg':'Цвет QR','bg':'Фон','transparent':'Прозрачный фон','size':'Размер','error':'Коррекция ошибок','save':'Сохранить PNG','share':'Поделиться','name':'Имя','data':'Данные','subject':'Тема','message':'Сообщение','ssid':'Название Wi‑Fi','password':'Пароль','security':'Защита','lat':'Широта','lon':'Долгота','address':'Адрес','photo':'Выбрать фото','logo':'Логотип в QR','logoHint':'По желанию: вставьте картинку из галереи в центр QR','photoSelected':'Логотип выбран • коррекция H','removeLogo':'Удалить логотип','photoError':'Не удалось открыть это изображение','saved':'PNG сохранён в галерею','permission':'Разрешите доступ к галерее','preview':'Ваш QR-код','ready':'Готов к сохранению','logoSize':'Размер логотипа','qrColorButton':'Выбрать цвет QR','bgColorButton':'Выбрать цвет фона','lowContrastQr':'Низкий контраст: выберите более тёмный цвет QR.','lowContrastBg':'Низкий контраст: выберите более светлый фон.','contrastWarning':'Предупреждение: низкий контраст QR и фона — сканирование может быть затруднено.','none':'Без защиты'},
-    'English': {'title':'QR Studio','subtitle':'Create • Customize • Save','type':'QR code type','url':'URL','text':'Text','phone':'Phone','wifi':'Wi‑Fi','contact':'Contact','email':'Email','location':'Location','fg':'QR color','bg':'Background','transparent':'Transparent background','size':'Size','error':'Error correction','save':'Save PNG','share':'Share','name':'Name','data':'Data','subject':'Subject','message':'Message','ssid':'Wi‑Fi name','password':'Password','security':'Security','lat':'Latitude','lon':'Longitude','address':'Address','photo':'Choose photo','logo':'Logo in QR','logoHint':'Optional: add an image from the gallery to the center','photoSelected':'Logo selected • correction H','removeLogo':'Remove logo','photoError':'Could not open this image','saved':'PNG saved to gallery','permission':'Please allow gallery access','preview':'Your QR code','ready':'Ready to save','logoSize':'Logo size','qrColorButton':'Choose QR color','bgColorButton':'Choose background color','lowContrastQr':'Low contrast: choose a darker QR color.','lowContrastBg':'Low contrast: choose a lighter background.','contrastWarning':'Warning: QR and background contrast is low — scanning may be difficult.','none':'No security'},
-    'Deutsch': {'title':'QR Studio','subtitle':'Erstellen • Anpassen • Speichern','type':'QR-Code-Typ','url':'URL','text':'Text','phone':'Telefon','wifi':'WLAN','contact':'Kontakt','email':'E-Mail','location':'Standort','fg':'QR-Farbe','bg':'Hintergrund','transparent':'Transparenter Hintergrund','size':'Größe','error':'Fehlerkorrektur','save':'PNG speichern','share':'Teilen','name':'Name','data':'Daten','subject':'Betreff','message':'Nachricht','ssid':'WLAN-Name','password':'Passwort','security':'Sicherheit','lat':'Breitengrad','lon':'Längengrad','address':'Adresse','photo':'Foto auswählen','logo':'Logo im QR','logoHint':'Optional: Bild aus der Galerie in die Mitte einfügen','photoSelected':'Logo ausgewählt • Korrektur H','removeLogo':'Logo entfernen','photoError':'Bild konnte nicht geöffnet werden','saved':'PNG in Galerie gespeichert','permission':'Bitte Galeriezugriff erlauben','preview':'Ihr QR-Code','ready':'Bereit zum Speichern','logoSize':'Logogröße','qrColorButton':'QR-Farbe wählen','bgColorButton':'Hintergrundfarbe wählen','lowContrastQr':'Zu geringer Kontrast: Wählen Sie eine dunklere QR-Farbe.','lowContrastBg':'Zu geringer Kontrast: Wählen Sie einen helleren Hintergrund.','contrastWarning':'Warnung: Der Kontrast zwischen QR und Hintergrund ist niedrig — das Scannen kann schwierig sein.','none':'Keine Sicherheit'},
-    'ქართული': {'title':'QR Studio','subtitle':'შექმენი • მოარგე • შეინახე','type':'QR კოდის ტიპი','url':'URL','text':'ტექსტი','phone':'ტელეფონი','wifi':'Wi‑Fi','contact':'კონტაქტი','email':'ელფოსტა','location':'გეოლოკაცია','fg':'QR ფერი','bg':'ფონი','transparent':'გამჭვირვალე ფონი','size':'ზომა','error':'შეცდომის გასწორება','save':'PNG შენახვა','share':'გაზიარება','name':'სახელი','data':'მონაცემები','subject':'თემა','message':'შეტყობინება','ssid':'Wi‑Fi სახელი','password':'პაროლი','security':'დაცვა','lat':'გრძედი','lon':'განედი','address':'მისამართი','photo':'ფოტოს არჩევა','logo':'ლოგო QR-ში','logoHint':'სურვილისამებრ: გალერეიდან სურათი ჩასვით QR-ის ცენტრში','photoSelected':'ლოგო არჩეულია • კორექცია H','removeLogo':'ლოგოს წაშლა','photoError':'სურათი ვერ გაიხსნა','saved':'PNG გალერეაში შეინახა','permission':'გთხოვთ დაუშვათ გალერეაზე წვდომა','preview':'თქვენი QR კოდი','ready':'მზადაა შესანახად','logoSize':'ლოგოს ზომა','qrColorButton':'QR ფერის არჩევა','bgColorButton':'ფონის ფერის არჩევა','lowContrastQr':'კონტრასტი ძალიან დაბალია: აირჩიეთ უფრო მუქი QR ფერი.','lowContrastBg':'კონტრასტი ძალიან დაბალია: აირჩიეთ უფრო ღია ფონი.','contrastWarning':'გაფრთხილება: QR-სა და ფონს შორის კონტრასტი დაბალია — სკანირება შეიძლება გართულდეს.','none':'დაცვის გარეშე'}
+    'Русский': {'title':'QR Studio','subtitle':'Создавай • Кастомизируй • Сохраняй','type':'Тип QR-кода','url':'URL','text':'Текст','phone':'Телефон','wifi':'Wi‑Fi','contact':'Контакт','email':'Email','location':'Геолокация','fg':'Цвет QR','bg':'Фон','transparent':'Прозрачный фон','size':'Размер','error':'Коррекция ошибок','save':'Сохранить PNG','share':'Поделиться','name':'Имя','data':'Данные','subject':'Тема','message':'Сообщение','ssid':'Название Wi‑Fi','password':'Пароль','security':'Защита','lat':'Широта','lon':'Долгота','address':'Адрес','photo':'Выбрать фото','logo':'Логотип в QR','logoHint':'По желанию: вставьте картинку из галереи в центр QR','photoSelected':'Логотип выбран • коррекция H','removeLogo':'Удалить логотип','photoError':'Не удалось открыть это изображение','saved':'PNG сохранён в галерею','permission':'Разрешите доступ к галерее','preview':'Ваш QR-код','ready':'Готов к сохранению','logoSize':'Размер логотипа','lowContrastQr':'Низкий контраст: выберите более тёмный цвет QR.','lowContrastBg':'Низкий контраст: выберите более светлый фон.','contrastWarning':'Предупреждение: низкий контраст QR и фона — сканирование может быть затруднено.','none':'Без защиты'},
+    'English': {'title':'QR Studio','subtitle':'Create • Customize • Save','type':'QR code type','url':'URL','text':'Text','phone':'Phone','wifi':'Wi‑Fi','contact':'Contact','email':'Email','location':'Location','fg':'QR color','bg':'Background','transparent':'Transparent background','size':'Size','error':'Error correction','save':'Save PNG','share':'Share','name':'Name','data':'Data','subject':'Subject','message':'Message','ssid':'Wi‑Fi name','password':'Password','security':'Security','lat':'Latitude','lon':'Longitude','address':'Address','photo':'Choose photo','logo':'Logo in QR','logoHint':'Optional: add an image from the gallery to the center','photoSelected':'Logo selected • correction H','removeLogo':'Remove logo','photoError':'Could not open this image','saved':'PNG saved to gallery','permission':'Please allow gallery access','preview':'Your QR code','ready':'Ready to save','logoSize':'Logo size','lowContrastQr':'Low contrast: choose a darker QR color.','lowContrastBg':'Low contrast: choose a lighter background.','contrastWarning':'Warning: QR and background contrast is low — scanning may be difficult.','none':'No security'},
+    'Deutsch': {'title':'QR Studio','subtitle':'Erstellen • Anpassen • Speichern','type':'QR-Code-Typ','url':'URL','text':'Text','phone':'Telefon','wifi':'WLAN','contact':'Kontakt','email':'E-Mail','location':'Standort','fg':'QR-Farbe','bg':'Hintergrund','transparent':'Transparenter Hintergrund','size':'Größe','error':'Fehlerkorrektur','save':'PNG speichern','share':'Teilen','name':'Name','data':'Daten','subject':'Betreff','message':'Nachricht','ssid':'WLAN-Name','password':'Passwort','security':'Sicherheit','lat':'Breitengrad','lon':'Längengrad','address':'Adresse','photo':'Foto auswählen','logo':'Logo im QR','logoHint':'Optional: Bild aus der Galerie in die Mitte einfügen','photoSelected':'Logo ausgewählt • Korrektur H','removeLogo':'Logo entfernen','photoError':'Bild konnte nicht geöffnet werden','saved':'PNG in Galerie gespeichert','permission':'Bitte Galeriezugriff erlauben','preview':'Ihr QR-Code','ready':'Bereit zum Speichern','logoSize':'Logogröße','lowContrastQr':'Zu geringer Kontrast: Wählen Sie eine dunklere QR-Farbe.','lowContrastBg':'Zu geringer Kontrast: Wählen Sie einen helleren Hintergrund.','contrastWarning':'Warnung: Der Kontrast zwischen QR und Hintergrund ist niedrig — das Scannen kann schwierig sein.','none':'Keine Sicherheit'},
+    'ქართული': {'title':'QR Studio','subtitle':'შექმენი • მოარგე • შეინახე','type':'QR კოდის ტიპი','url':'URL','text':'ტექსტი','phone':'ტელეფონი','wifi':'Wi‑Fi','contact':'კონტაქტი','email':'ელფოსტა','location':'გეოლოკაცია','fg':'QR ფერი','bg':'ფონი','transparent':'გამჭვირვალე ფონი','size':'ზომა','error':'შეცდომის გასწორება','save':'PNG შენახვა','share':'გაზიარება','name':'სახელი','data':'მონაცემები','subject':'თემა','message':'შეტყობინება','ssid':'Wi‑Fi სახელი','password':'პაროლი','security':'დაცვა','lat':'გრძედი','lon':'განედი','address':'მისამართი','photo':'ფოტოს არჩევა','logo':'ლოგო QR-ში','logoHint':'სურვილისამებრ: გალერეიდან სურათი ჩასვით QR-ის ცენტრში','photoSelected':'ლოგო არჩეულია • კორექცია H','removeLogo':'ლოგოს წაშლა','photoError':'სურათი ვერ გაიხსნა','saved':'PNG გალერეაში შეინახა','permission':'გთხოვთ დაუშვათ გალერეაზე წვდომა','preview':'თქვენი QR კოდი','ready':'მზადაა შესანახად','logoSize':'ლოგოს ზომა','lowContrastQr':'კონტრასტი ძალიან დაბალია: აირჩიეთ უფრო მუქი QR ფერი.','lowContrastBg':'კონტრასტი ძალიან დაბალია: აირჩიეთ უფრო ღია ფონი.','contrastWarning':'გაფრთხილება: QR-სა და ფონს შორის კონტრასტი დაბალია — სკანირება შეიძლება გართულდეს.','none':'დაცვის გარეშე'}
   };
 
   String t(String k) => labels[lang]![k] ?? k;
@@ -54,30 +54,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
     final hi = la > lb ? la : lb, lo = la > lb ? lb : la;
     return (hi + 0.05) / (lo + 0.05);
   }
-
-  bool _safeColorPair(Color qr, Color background) =>
-      _contrast(qr, background) >= 4.5;
-
-  void _setQrColor(Color color) {
-    if (!_safeColorPair(color, bg)) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t('lowContrastQr'))));
-      return;
-    }
-    setState(() => fg = color);
-  }
-
-  void _setBackgroundColor(Color color) {
-    if (!_safeColorPair(fg, color)) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t('lowContrastBg'))));
-      return;
-    }
-    setState(() {
-      bg = color;
-      transparentBg = false;
-    });
-  }
-
-
+ 
   int get errorLevel => const {'L':1,'M':0,'Q':3,'H':2}[error] ?? 0;
 
   @override void initState() { super.initState(); c['main']!.text = 'https://example.com'; }
@@ -217,7 +194,6 @@ class _QRStudioAppState extends State<QRStudioApp> {
     if(type==QRType.location) ...[input('lat',t('lat'),keyboard:TextInputType.number),input('lon',t('lon'),keyboard:TextInputType.number),input('address',t('address'))],
     const SizedBox(height:4),Text(t('fg'),style:const TextStyle(fontSize:13,fontWeight:FontWeight.w700)),const SizedBox(height:6),gradientColorBar(false),
     const SizedBox(height:12),Text(t('bg'),style:const TextStyle(fontSize:13,fontWeight:FontWeight.w700)),const SizedBox(height:6),gradientColorBar(true),
-    if (_contrast(fg,bg) < 4.5 && !transparentBg) contrastWarning(),
     const SizedBox(height:13),Text(t('size') + ': ' + size.round().toString() + ' px',style:const TextStyle(fontSize:12,fontWeight:FontWeight.w700)),
     Slider(min:256,max:1024,value:size,activeColor:const Color(0xFF5B2DFF),onChanged:(x)=>setState(()=>size=x)),
     Text(t('error'),style:const TextStyle(fontSize:12,fontWeight:FontWeight.w700)),const SizedBox(height:6),
@@ -311,54 +287,56 @@ class _QRStudioAppState extends State<QRStudioApp> {
     }
   }
 
-  Widget gradientColorBar(bool background)=>Column(
-    crossAxisAlignment:CrossAxisAlignment.stretch,
-    children:[
-      LayoutBuilder(builder:(context,constraints){
-        final width=constraints.maxWidth;
-        final current=background ? bg : fg;
-        return GestureDetector(
-          behavior:HitTestBehavior.opaque,
-          onTapDown:(d)=>setColorFromPosition(background,d.localPosition.dx,width),
-          onPanStart:(d)=>setColorFromPosition(background,d.localPosition.dx,width),
-          onPanUpdate:(d)=>setColorFromPosition(background,d.localPosition.dx,width),
-          child:Container(
-            height:48,
-            decoration:BoxDecoration(
-              gradient:const LinearGradient(
-                colors:[
-                  Color(0xFFFF0000),Color(0xFFFFFF00),Color(0xFF00FF00),
-                  Color(0xFF00FFFF),Color(0xFF0000FF),Color(0xFFFF00FF),Color(0xFFFF0000)
-                ],
+  Widget gradientColorBar(bool background)=>LayoutBuilder(
+    builder:(context,constraints){
+      final width=constraints.maxWidth;
+      final current=background ? bg : fg;
+      return Column(
+        crossAxisAlignment:CrossAxisAlignment.stretch,
+        children:[
+          GestureDetector(
+            behavior:HitTestBehavior.opaque,
+            onTapDown:(d)=>setColorFromPosition(background,d.localPosition.dx,width),
+            onPanStart:(d)=>setColorFromPosition(background,d.localPosition.dx,width),
+            onPanUpdate:(d)=>setColorFromPosition(background,d.localPosition.dx,width),
+            child:Container(
+              height:48,
+              decoration:BoxDecoration(
+                gradient:const LinearGradient(
+                  colors:[
+                    Color(0xFFFF0000),Color(0xFFFFFF00),Color(0xFF00FF00),
+                    Color(0xFF00FFFF),Color(0xFF0000FF),Color(0xFFFF00FF),Color(0xFFFF0000)
+                  ],
+                ),
+                borderRadius:BorderRadius.circular(10),
               ),
-              borderRadius:BorderRadius.circular(10),
-            ),
-            alignment:Alignment.center,
-            child:Align(
-              alignment:Alignment.centerLeft,
-              child:Transform.translate(
-                offset:Offset((currentHue(current)/360*width).clamp(0.0,width-1),0),
-                child:Container(
-                  width:24,height:24,
-                  decoration:BoxDecoration(
-                    shape:BoxShape.circle,
-                    color:current,
-                    border:Border.all(color:Colors.white,width:3),
-                    boxShadow:[BoxShadow(color:Colors.black.withOpacity(.35),blurRadius:5)],
+              alignment:Alignment.center,
+              child:Align(
+                alignment:Alignment.centerLeft,
+                child:Transform.translate(
+                  offset:Offset((currentHue(current)/360*width).clamp(0.0,width-1),0),
+                  child:Container(
+                    width:24,height:24,
+                    decoration:BoxDecoration(
+                      shape:BoxShape.circle,
+                      color:current,
+                      border:Border.all(color:Colors.white,width:3),
+                      boxShadow:[BoxShadow(color:Colors.black.withOpacity(.35),blurRadius:5)],
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        );
-      }),
-      const SizedBox(height:7),
-      Text(
-        'RGB: #' + current.value.toRadixString(16).padLeft(8,'0').substring(2).toUpperCase(),
-        textAlign:TextAlign.center,
-        style:TextStyle(fontSize:11,color:Theme.of(context).colorScheme.onSurfaceVariant,fontWeight:FontWeight.w600),
-      ),
-    ],
+          const SizedBox(height:7),
+          Text(
+            'RGB: #' + current.value.toRadixString(16).padLeft(8,'0').substring(2).toUpperCase(),
+            textAlign:TextAlign.center,
+            style:TextStyle(fontSize:11,color:Theme.of(context).colorScheme.onSurfaceVariant,fontWeight:FontWeight.w600),
+          ),
+        ],
+      );
+    },
   );
 
   double currentHue(Color color) => HSVColor.fromColor(color).hue;
