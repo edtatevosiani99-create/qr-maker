@@ -27,14 +27,15 @@ class _QRStudioAppState extends State<QRStudioApp> {
   String error = 'M', security = 'WPA';
   bool transparentBg = false;
   Uint8List? photoBytes;
+  ui.Image? photoImage;
   final picker = ImagePicker();
   final c = {for (final k in ['main','name','phone','email','subject','message','ssid','password','lat','lon','address']) k: TextEditingController()};
 
   final labels = const {
-    'Русский': {'title':'QR Studio','subtitle':'Создавай • Кастомизируй • Сохраняй','type':'Тип QR-кода','url':'URL','text':'Текст','phone':'Телефон','wifi':'Wi‑Fi','contact':'Контакт','email':'Email','location':'Геолокация','fg':'Цвет QR','bg':'Фон','transparent':'Прозрачный фон','size':'Размер','error':'Коррекция ошибок','save':'Сохранить PNG','share':'Поделиться','name':'Имя','data':'Данные','subject':'Тема','message':'Сообщение','ssid':'Название Wi‑Fi','password':'Пароль','security':'Защита','lat':'Широта','lon':'Долгота','address':'Адрес','photo':'Выбрать фото','saved':'PNG сохранён в галерею','permission':'Разрешите доступ к галерее','preview':'Ваш QR-код','ready':'Готов к сохранению','none':'Без защиты'},
-    'English': {'title':'QR Studio','subtitle':'Create • Customize • Save','type':'QR code type','url':'URL','text':'Text','phone':'Phone','wifi':'Wi‑Fi','contact':'Contact','email':'Email','location':'Location','fg':'QR color','bg':'Background','transparent':'Transparent background','size':'Size','error':'Error correction','save':'Save PNG','share':'Share','name':'Name','data':'Data','subject':'Subject','message':'Message','ssid':'Wi‑Fi name','password':'Password','security':'Security','lat':'Latitude','lon':'Longitude','address':'Address','photo':'Choose photo','saved':'PNG saved to gallery','permission':'Please allow gallery access','preview':'Your QR code','ready':'Ready to save','none':'No security'},
-    'Deutsch': {'title':'QR Studio','subtitle':'Erstellen • Anpassen • Speichern','type':'QR-Code-Typ','url':'URL','text':'Text','phone':'Telefon','wifi':'WLAN','contact':'Kontakt','email':'E-Mail','location':'Standort','fg':'QR-Farbe','bg':'Hintergrund','transparent':'Transparenter Hintergrund','size':'Größe','error':'Fehlerkorrektur','save':'PNG speichern','share':'Teilen','name':'Name','data':'Daten','subject':'Betreff','message':'Nachricht','ssid':'WLAN-Name','password':'Passwort','security':'Sicherheit','lat':'Breitengrad','lon':'Längengrad','address':'Adresse','photo':'Foto auswählen','saved':'PNG in Galerie gespeichert','permission':'Bitte Galeriezugriff erlauben','preview':'Ihr QR-Code','ready':'Bereit zum Speichern','none':'Keine Sicherheit'},
-    'ქართული': {'title':'QR Studio','subtitle':'შექმენი • მოარგე • შეინახე','type':'QR კოდის ტიპი','url':'URL','text':'ტექსტი','phone':'ტელეფონი','wifi':'Wi‑Fi','contact':'კონტაქტი','email':'ელფოსტა','location':'გეოლოკაცია','fg':'QR ფერი','bg':'ფონი','transparent':'გამჭვირვალე ფონი','size':'ზომა','error':'შეცდომის გასწორება','save':'PNG შენახვა','share':'გაზიარება','name':'სახელი','data':'მონაცემები','subject':'თემა','message':'შეტყობინება','ssid':'Wi‑Fi სახელი','password':'პაროლი','security':'დაცვა','lat':'გრძედი','lon':'განედი','address':'მისამართი','photo':'ფოტოს არჩევა','saved':'PNG გალერეაში შეინახა','permission':'გთხოვთ დაუშვათ გალერეაზე წვდომა','preview':'თქვენი QR კოდი','ready':'მზადაა შესანახად','none':'დაცვის გარეშე'}
+    'Русский': {'title':'QR Studio','subtitle':'Создавай • Кастомизируй • Сохраняй','type':'Тип QR-кода','url':'URL','text':'Текст','phone':'Телефон','wifi':'Wi‑Fi','contact':'Контакт','email':'Email','location':'Геолокация','fg':'Цвет QR','bg':'Фон','transparent':'Прозрачный фон','size':'Размер','error':'Коррекция ошибок','save':'Сохранить PNG','share':'Поделиться','name':'Имя','data':'Данные','subject':'Тема','message':'Сообщение','ssid':'Название Wi‑Fi','password':'Пароль','security':'Защита','lat':'Широта','lon':'Долгота','address':'Адрес','photo':'Выбрать фото','logo':'Логотип в QR','logoHint':'По желанию: вставьте картинку из галереи в центр QR','photoSelected':'Логотип выбран • коррекция H','removeLogo':'Удалить логотип','photoError':'Не удалось открыть это изображение','saved':'PNG сохранён в галерею','permission':'Разрешите доступ к галерее','preview':'Ваш QR-код','ready':'Готов к сохранению','none':'Без защиты'},
+    'English': {'title':'QR Studio','subtitle':'Create • Customize • Save','type':'QR code type','url':'URL','text':'Text','phone':'Phone','wifi':'Wi‑Fi','contact':'Contact','email':'Email','location':'Location','fg':'QR color','bg':'Background','transparent':'Transparent background','size':'Size','error':'Error correction','save':'Save PNG','share':'Share','name':'Name','data':'Data','subject':'Subject','message':'Message','ssid':'Wi‑Fi name','password':'Password','security':'Security','lat':'Latitude','lon':'Longitude','address':'Address','photo':'Choose photo','logo':'Logo in QR','logoHint':'Optional: add an image from the gallery to the center','photoSelected':'Logo selected • correction H','removeLogo':'Remove logo','photoError':'Could not open this image','saved':'PNG saved to gallery','permission':'Please allow gallery access','preview':'Your QR code','ready':'Ready to save','none':'No security'},
+    'Deutsch': {'title':'QR Studio','subtitle':'Erstellen • Anpassen • Speichern','type':'QR-Code-Typ','url':'URL','text':'Text','phone':'Telefon','wifi':'WLAN','contact':'Kontakt','email':'E-Mail','location':'Standort','fg':'QR-Farbe','bg':'Hintergrund','transparent':'Transparenter Hintergrund','size':'Größe','error':'Fehlerkorrektur','save':'PNG speichern','share':'Teilen','name':'Name','data':'Daten','subject':'Betreff','message':'Nachricht','ssid':'WLAN-Name','password':'Passwort','security':'Sicherheit','lat':'Breitengrad','lon':'Längengrad','address':'Adresse','photo':'Foto auswählen','logo':'Logo im QR','logoHint':'Optional: Bild aus der Galerie in die Mitte einfügen','photoSelected':'Logo ausgewählt • Korrektur H','removeLogo':'Logo entfernen','photoError':'Bild konnte nicht geöffnet werden','saved':'PNG in Galerie gespeichert','permission':'Bitte Galeriezugriff erlauben','preview':'Ihr QR-Code','ready':'Bereit zum Speichern','none':'Keine Sicherheit'},
+    'ქართული': {'title':'QR Studio','subtitle':'შექმენი • მოარგე • შეინახე','type':'QR კოდის ტიპი','url':'URL','text':'ტექსტი','phone':'ტელეფონი','wifi':'Wi‑Fi','contact':'კონტაქტი','email':'ელფოსტა','location':'გეოლოკაცია','fg':'QR ფერი','bg':'ფონი','transparent':'გამჭვირვალე ფონი','size':'ზომა','error':'შეცდომის გასწორება','save':'PNG შენახვა','share':'გაზიარება','name':'სახელი','data':'მონაცემები','subject':'თემა','message':'შეტყობინება','ssid':'Wi‑Fi სახელი','password':'პაროლი','security':'დაცვა','lat':'გრძედი','lon':'განედი','address':'მისამართი','photo':'ფოტოს არჩევა','logo':'ლოგო QR-ში','logoHint':'სურვილისამებრ: გალერეიდან სურათი ჩასვით QR-ის ცენტრში','photoSelected':'ლოგო არჩეულია • კორექცია H','removeLogo':'ლოგოს წაშლა','photoError':'სურათი ვერ გაიხსნა','saved':'PNG გალერეაში შეინახა','permission':'გთხოვთ დაუშვათ გალერეაზე წვდომა','preview':'თქვენი QR კოდი','ready':'მზადაა შესანახად','none':'დაცვის გარეშე'}
   };
 
   String t(String k) => labels[lang]![k] ?? k;
@@ -42,7 +43,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
   int get errorLevel => const {'L':1,'M':0,'Q':3,'H':2}[error] ?? 0;
 
   @override void initState() { super.initState(); c['main']!.text = 'https://example.com'; }
-  @override void dispose() { for (final x in c.values) x.dispose(); super.dispose(); }
+  @override void dispose() { photoImage?.dispose(); for (final x in c.values) x.dispose(); super.dispose(); }
 
   String get data {
     switch (type) {
@@ -61,11 +62,39 @@ class _QRStudioAppState extends State<QRStudioApp> {
 
   Future<void> choosePhoto() async {
     final x = await picker.pickImage(source: ImageSource.gallery);
-    if (x != null) { final b = await x.readAsBytes(); if (mounted) setState(() => photoBytes = b); }
+    if (x == null) return;
+    try {
+      final b = await x.readAsBytes();
+      final codec = await ui.instantiateImageCodec(b);
+      final frame = await codec.getNextFrame();
+      final old = photoImage;
+      if (!mounted) { frame.image.dispose(); return; }
+      setState(() {
+        photoBytes = b;
+        photoImage = frame.image;
+        error = 'H';
+      });
+      old?.dispose();
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content:Text(t('photoError'))),
+        );
+      }
+    }
+  }
+
+  void removePhoto() {
+    final old = photoImage;
+    setState(() {
+      photoBytes = null;
+      photoImage = null;
+    });
+    old?.dispose();
   }
 
   Future<Uint8List?> pngBytes() async {
-    final p = QrPainter(data:data.isEmpty ? ' ' : data, version:QrVersions.auto, errorCorrectionLevel:errorLevel, gapless:true, color:fg, emptyColor:transparentBg ? Colors.transparent : bg);
+    final p = QrPainter(data:data.isEmpty ? ' ' : data, version:QrVersions.auto, errorCorrectionLevel:errorLevel, gapless:true, color:fg, emptyColor:transparentBg ? Colors.transparent : bg, embeddedImage:photoImage, embeddedImageStyle:photoImage == null ? null : QrEmbeddedImageStyle(size:Size(size * .22, size * .22)));
     final d = await p.toImageData(size, format:ui.ImageByteFormat.png);
     return d?.buffer.asUint8List();
   }
@@ -155,8 +184,47 @@ class _QRStudioAppState extends State<QRStudioApp> {
     Text(t('error'),style:const TextStyle(fontSize:12,fontWeight:FontWeight.w700)),const SizedBox(height:6),
     DropdownButtonFormField<String>(value:error,decoration:fieldDecoration(''),items:['L','M','Q','H'].map((x)=>DropdownMenuItem(value:x,child:Text(x))).toList(),onChanged:(x)=>setState(()=>error=x!)),
     const SizedBox(height:10),
-    OutlinedButton.icon(onPressed:choosePhoto,icon:const Icon(Icons.image_outlined),label:Text(t('photo')),style:OutlinedButton.styleFrom(minimumSize:const Size.fromHeight(48),shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(25)))),
+    logoSection(),
   ]);
+
+  Widget logoSection()=>Container(
+    padding:const EdgeInsets.all(12),
+    decoration:BoxDecoration(
+      color:Theme.of(context).colorScheme.surface,
+      borderRadius:BorderRadius.circular(14),
+      border:Border.all(color:Theme.of(context).colorScheme.outlineVariant),
+    ),
+    child:Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[
+      Row(children:[
+        const Icon(Icons.add_photo_alternate_outlined,size:20),
+        const SizedBox(width:8),
+        Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+          Text(t('logo'),style:const TextStyle(fontSize:13,fontWeight:FontWeight.w700)),
+          Text(photoImage == null ? t('logoHint') : t('photoSelected'),style:TextStyle(fontSize:10,color:Theme.of(context).colorScheme.onSurfaceVariant)),
+        ])),
+        if(photoImage != null)
+          ClipRRect(borderRadius:BorderRadius.circular(8),child:Image.memory(photoBytes!,width:42,height:42,fit:BoxFit.cover)),
+      ]),
+      const SizedBox(height:9),
+      Row(children:[
+        Expanded(child:OutlinedButton.icon(
+          onPressed:choosePhoto,
+          icon:const Icon(Icons.photo_library_outlined,size:18),
+          label:Text(t('photo')),
+          style:OutlinedButton.styleFrom(minimumSize:const Size.fromHeight(42),shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(12))),
+        )),
+        if(photoImage != null) ...[
+          const SizedBox(width:8),
+          IconButton(
+            onPressed:removePhoto,
+            tooltip:t('removeLogo'),
+            icon:const Icon(Icons.delete_outline),
+            style:IconButton.styleFrom(minimumSize:const Size(42,42)),
+          ),
+        ],
+      ]),
+    ]),
+  );
 
   Widget typeChip(QRType x) {
     final selected=type==x;
@@ -360,6 +428,8 @@ class _QRStudioAppState extends State<QRStudioApp> {
           gapless:true,
           color:fg,
           emptyColor:transparentBg?Colors.transparent:bg,
+          embeddedImage:photoImage,
+          embeddedImageStyle:photoImage == null ? null : const QrEmbeddedImageStyle(size:Size(22,22)),
         ),
       )),
       const SizedBox(width:14),
