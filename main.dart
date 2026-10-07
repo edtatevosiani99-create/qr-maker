@@ -33,6 +33,45 @@ class _QRStudioAppState extends State<QRStudioApp> {
   };
   String t(String k) => labels[lang]![k] ?? k;
   String v(String k) => c[k]!.text.trim();
+  double _luminance(Color c) {
+    double f(int x) {
+      final v = x / 255.0;
+      return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) * ((v + 0.055) / 1.055) * ((v + 0.055) / 1.055);
+    }
+    return 0.2126 * f(c.red) + 0.7152 * f(c.green) + 0.0722 * f(c.blue);
+  }
+
+  double _contrast(Color a, Color b) {
+    final l1 = _luminance(a), l2 = _luminance(b);
+    final hi = l1 > l2 ? l1 : l2, lo = l1 > l2 ? l2 : l1;
+    return (hi + 0.05) / (lo + 0.05);
+  }
+
+  bool _safePair(Color qr, Color background) {
+    final contrast = _contrast(qr, background);
+    return contrast >= 4.5 && _luminance(qr) < _luminance(background);
+  }
+
+  void _setQrColor(Color color) {
+    if (!_safePair(color, bg)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Низкий контраст: выберите более тёмный цвет QR относительно фона.')),
+      );
+      return;
+    }
+    setState(() => fg = color);
+  }
+
+  void _setBackgroundColor(Color color) {
+    if (!_safePair(fg, color)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Низкий контраст: фон должен быть светлее цвета QR.')),
+      );
+      return;
+    }
+    setState(() => bg = color);
+  }
+
 
   @override void initState() { super.initState(); c['main']!.text='https://example.com'; }
   @override void dispose() { for(final x in c.values) x.dispose(); super.dispose(); }
@@ -132,8 +171,8 @@ class _QRStudioAppState extends State<QRStudioApp> {
     const SizedBox(height:18),specific(),
     if(type==QRType.wifi)DropdownButtonFormField<String>(value:security,decoration:InputDecoration(labelText:t('security'),border:const OutlineInputBorder()),items:const ['WPA','WEP','None'].map((x)=>DropdownMenuItem(value:x,child:Text(x))).toList(),onChanged:(x)=>setState(()=>security=x!)),
     if(type==QRType.location)...[input('lat',t('lat'),keyboard:TextInputType.number),input('lon',t('lon'),keyboard:TextInputType.number),input('address',t('address'))],
-    Text(t('fg')),const SizedBox(height:5),colorButton(t('chooseFg'),fg,(x)=>setState(()=>fg=x)),const SizedBox(height:12),
-    Text(t('bg')),const SizedBox(height:5),colorButton(t('chooseBg'),bg,(x)=>setState(()=>bg=x)),const SizedBox(height:12),
+    Text(t('fg')),const SizedBox(height:5),colorButton(t('chooseFg'),fg,_setQrColor),const SizedBox(height:12),
+    Text(t('bg')),const SizedBox(height:5),colorButton(t('chooseBg'),bg,_setBackgroundColor),const SizedBox(height:12),
     Text('${t('size')}: ${size.round()} px'),Slider(min:128,max:1024,value:size,onChanged:(x)=>setState(()=>size=x)),
     Text(t('error')),DropdownButton<String>(value:error,items:const ['L','M','Q','H'].map((x)=>DropdownMenuItem(value:x,child:Text(x))).toList(),onChanged:(x)=>setState(()=>error=x!)),
     if(photoBytes!=null)...[
