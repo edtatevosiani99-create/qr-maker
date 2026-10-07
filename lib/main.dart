@@ -104,7 +104,12 @@ class _QRStudioAppState extends State<QRStudioApp> {
       darkTheme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.indigo, brightness: Brightness.dark),
       home: Scaffold(
         appBar: AppBar(
-          title: Text(t('title')),
+          titleSpacing: 12,
+          title: Row(children: [
+            Image.asset('app_icon.png', width: 38, height: 38),
+            const SizedBox(width: 10),
+            Text(t('title')),
+          ]),
           actions: [
             DropdownButton<String>(
               value: lang,
@@ -144,8 +149,8 @@ class _QRStudioAppState extends State<QRStudioApp> {
   Widget form()=>Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[
     Text(t('type'),style:Theme.of(context).textTheme.titleLarge),const SizedBox(height:10),
     Wrap(spacing:8,runSpacing:8,children:[
-      (QRType.url,'🔗 URL'),(QRType.text,'📝 Text'),(QRType.phone,'📞 Phone'),(QRType.wifi,'📶 Wi‑Fi'),(QRType.contact,'👤 Contact'),(QRType.email,'✉️ Email'),(QRType.location,'📍 Location')
-    ].map((x)=>ChoiceChip(label:Text(x.$2),selected:type==x.$1,onSelected:(_)=>setState(()=>type=x.$1))).toList()),
+      (QRType.url,'🔗 URL'),(QRType.text,'📝 Text'),(QRType.phone,'📞 Phone'),(QRType.wifi,'Wi‑Fi'),(QRType.contact,'👤 Contact'),(QRType.email,'✉️ Email'),(QRType.location,'📍 Location')
+    ].map((x)=>ChoiceChip(label:Row(mainAxisSize:MainAxisSize.min,children:[if(x.$1==QRType.wifi) const Icon(Icons.wifi,size:18),if(x.$1==QRType.wifi) const SizedBox(width:6),Text(x.$2)]),selected:type==x.$1,onSelected:(_)=>setState(()=>type=x.$1))).toList()),
     const SizedBox(height:18),specific(),
     if(type==QRType.wifi)DropdownButtonFormField<String>(value:security,decoration:InputDecoration(labelText:t('security'),border:const OutlineInputBorder()),items:const ['WPA','WEP','None'].map((x)=>DropdownMenuItem(value:x,child:Text(x))).toList(),onChanged:(x)=>setState(()=>security=x!)),
     if(type==QRType.location)...[input('lat',t('lat'),keyboard:TextInputType.number),input('lon',t('lon'),keyboard:TextInputType.number),input('address',t('address'))],
