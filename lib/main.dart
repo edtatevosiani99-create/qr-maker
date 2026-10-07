@@ -353,6 +353,14 @@ class _QRStudioAppState extends State<QRStudioApp> {
         );
       }),
       const SizedBox(height:7),
+      Text(
+        'RGB: #' + current.value.toRadixString(16).padLeft(8,'0').substring(2).toUpperCase(),
+        textAlign:TextAlign.center,
+        style:TextStyle(fontSize:11,color:Theme.of(context).colorScheme.onSurfaceVariant,fontWeight:FontWeight.w600),
+      ),
+    ],
+  );
+
   double currentHue(Color color) => HSVColor.fromColor(color).hue;
 
   void setColorFromPosition(bool background,double x,double width){
