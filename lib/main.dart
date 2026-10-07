@@ -355,9 +355,16 @@ class _QRStudioAppState extends State<QRStudioApp> {
     padding:const EdgeInsets.all(14),
     decoration:BoxDecoration(gradient:const LinearGradient(begin:Alignment.topLeft,end:Alignment.bottomRight,colors:[Color(0xFF061B3B),Color(0xFF0A2D59),Color(0xFF350066)]),borderRadius:BorderRadius.circular(18)),
     child:Row(children:[
-      Container(width:112,height:112,padding:const EdgeInsets.all(8),decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(14)),child:QrImageView(
-        key:ValueKey(data+fg.toString()+bg.toString()+error+size.toString()+transparentBg.toString()),
-        data:data.isEmpty?' ':data,size:96,version:QrVersions.auto,errorCorrectionLevel:errorLevel,foregroundColor:fg,backgroundColor:transparentBg?Colors.white:bg,
+      Container(width:112,height:112,padding:const EdgeInsets.all(8),decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(14)),child:CustomPaint(
+        size:const Size(96,96),
+        painter:QrPainter(
+          data:data.isEmpty?' ':data,
+          version:QrVersions.auto,
+          errorCorrectionLevel:errorLevel,
+          gapless:true,
+          color:fg,
+          emptyColor:transparentBg?Colors.transparent:bg,
+        ),
       )),
       const SizedBox(width:14),
       Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(t('preview'),style:const TextStyle(color:Colors.white,fontWeight:FontWeight.w700,fontSize:14)),const SizedBox(height:5),Text(t('ready'),style:TextStyle(color:Colors.white.withOpacity(.78),fontSize:11))])),
