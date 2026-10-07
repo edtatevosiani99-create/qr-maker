@@ -1,0 +1,22 @@
+name: qr_studio
+description: QR Studio - cross-platform QR generator for Android and iOS.
+publish_to: "none"
+version: 1.0.0+1
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  qr_flutter: ^4.1.0
+  image_picker: ^1.1.2
+  path_provider: ^2.1.5
+  share_plus: ^10.1.4
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/app_icon.png
