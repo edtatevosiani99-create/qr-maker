@@ -36,6 +36,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
   };
   String t(String k) => labels[lang]![k] ?? k;
   String v(String k) => c[k]!.text.trim();
+  int get errorLevel => const {'L': 1, 'M': 0, 'Q': 3, 'H': 2}[error] ?? 0;
 
   @override void initState() { super.initState(); c['main']!.text='https://example.com'; }
   @override void dispose() { for(final x in c.values) x.dispose(); super.dispose(); }
@@ -60,7 +61,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
   }
 
   Future<Uint8List?> pngBytes() async {
-    final p=QrPainter(data:data.isEmpty?' ':data,version:QrVersions.auto,errorCorrectionLevel:error,gapless:true,color:fg,emptyColor:bg);
+    final p=QrPainter(data:data.isEmpty?' ':data,version:QrVersions.auto,errorCorrectionLevel:errorLevel,gapless:true,color:fg,emptyColor:bg);
     final d=await p.toImageData(size,format:ui.ImageByteFormat.png);
     return d?.buffer.asUint8List();
   }
@@ -83,19 +84,51 @@ class _QRStudioAppState extends State<QRStudioApp> {
     padding:const EdgeInsets.only(bottom:12),
     child:TextField(controller:c[key],keyboardType:keyboard,onChanged:(_)=>setState((){}),decoration:InputDecoration(labelText:label,border:const OutlineInputBorder())));
 
-  @override Widget build(BuildContext context)=>MaterialApp(
-    debugShowCheckedModeBanner:false,themeMode:themeMode,
-    theme:ThemeData(useMaterial3:true,colorSchemeSeed:Colors.indigo),
-    darkTheme:ThemeData(useMaterial3:true,colorSchemeSeed:Colors.indigo,brightness:Brightness.dark),
-    home:Scaffold(appBar:AppBar(title:Text(t('title')),actions:[
-      DropdownButton<String>(value:lang,underline:const SizedBox(),items:labels.keys.map((x)=>DropdownMenuItem(value:x,child:Text(x))).toList(),onChanged:(x)=>setState(()=>lang=x!)),
-      IconButton(onPressed:()=>setState(()=>themeMode=themeMode==ThemeMode.light?ThemeMode.dark:ThemeMode.light),icon:Icon(themeMode==ThemeMode.light?Icons.dark_mode:Icons.light_mode))
-    ]),
-    body:LayoutBuilder(builder:(ctx,box)=>SingleChildScrollView(padding:const EdgeInsets.all(16),child:Center(child:ConstrainedBox(
-      constraints:const BoxConstraints(maxWidth:1050),
-      child:box.maxWidth>760?Row(crossAxisAlignment:CrossAxisAlignment.start,children:[Expanded(child:form()),const SizedBox(width:24),Expanded(child:preview())]):Column(children:[form(),const SizedBox(height:20),preview()])
-    ))))
-  );
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      themeMode: themeMode,
+      theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.indigo),
+      darkTheme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.indigo, brightness: Brightness.dark),
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text(t('title')),
+          actions: [
+            DropdownButton<String>(
+              value: lang,
+              underline: const SizedBox(),
+              items: labels.keys.map((x) => DropdownMenuItem(value: x, child: Text(x))).toList(),
+              onChanged: (x) => setState(() => lang = x!),
+            ),
+            IconButton(
+              onPressed: () => setState(() => themeMode = themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light),
+              icon: Icon(themeMode == ThemeMode.light ? Icons.dark_mode : Icons.light_mode),
+            ),
+          ],
+        ),
+        body: LayoutBuilder(
+          builder: (ctx, box) {
+            final content = box.maxWidth > 760
+                ? Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [Expanded(child: form()), const SizedBox(width: 24), Expanded(child: preview())],
+                  )
+                : Column(children: [form(), const SizedBox(height: 20), preview()]);
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1050),
+                  child: content,
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
 
   Widget form()=>Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[
     Text(t('type'),style:Theme.of(context).textTheme.titleLarge),const SizedBox(height:10),
@@ -127,7 +160,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
 
   Widget preview()=>Card(child:Padding(padding:const EdgeInsets.all(20),child:Column(children:[
     Text('Preview',style:Theme.of(context).textTheme.titleLarge),const SizedBox(height:16),
-    Container(color:bg,padding:const EdgeInsets.all(8),child:QrImageView(data:data.isEmpty?' ':data,size:size.clamp(180,340),version:QrVersions.auto,errorCorrectionLevel:error,foregroundColor:fg,backgroundColor:bg)),
+    Container(color:bg,padding:const EdgeInsets.all(8),child:QrImageView(data:data.isEmpty?' ':data,size:size.clamp(180,340),version:QrVersions.auto,errorCorrectionLevel:errorLevel,foregroundColor:fg,backgroundColor:bg)),
     const SizedBox(height:12),SelectableText(data.isEmpty?' ':data,textAlign:TextAlign.center,maxLines:7),
     if(photoBytes!=null)Padding(padding:const EdgeInsets.only(top:12),child:Image.memory(photoBytes!,height:90))
   ]));
