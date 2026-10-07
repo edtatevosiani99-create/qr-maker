@@ -56,7 +56,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
     return (hi + 0.05) / (lo + 0.05);
   }
  
-  int get errorLevel => const {'L':1,'M':0,'Q':3,'H':2}[error] ?? 0;
+  int get errorLevel => photoImage != null ? 2 : (const {'L':1,'M':0,'Q':3,'H':2}[error] ?? 0);
 
   @override void initState() { super.initState(); c['main']!.text = 'https://example.com'; }
   @override void dispose() { photoImage?.dispose(); qrLogoImage?.dispose(); for (final x in c.values) x.dispose(); super.dispose(); }
@@ -101,6 +101,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
       final codec = await ui.instantiateImageCodec(b);
       final frame = await codec.getNextFrame();
       final old = photoImage;
+      final oldQr = qrLogoImage;
       if (!mounted) { frame.image.dispose(); return; }
       setState(() {
         photoBytes = b;
@@ -114,6 +115,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
         qrLogoImage = prepared;
       });
       old?.dispose();
+      oldQr?.dispose();
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -224,7 +226,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
     const SizedBox(height:13),Text(t('size') + ': ' + size.round().toString() + ' px',style:const TextStyle(fontSize:12,fontWeight:FontWeight.w700)),
     Slider(min:256,max:1024,value:size,activeColor:const Color(0xFF5B2DFF),onChanged:(x)=>setState(()=>size=x)),
     Text(t('error'),style:const TextStyle(fontSize:12,fontWeight:FontWeight.w700)),const SizedBox(height:6),
-    DropdownButtonFormField<String>(value:error,decoration:fieldDecoration(''),items:['L','M','Q','H'].map((x)=>DropdownMenuItem(value:x,child:Text(x))).toList(),onChanged:(x)=>setState(()=>error=x!)),
+    DropdownButtonFormField<String>(value:photoImage != null ? 'H' : error,decoration:fieldDecoration(''),items:['L','M','Q','H'].map((x)=>DropdownMenuItem(value:x,child:Text(x))).toList(),onChanged:photoImage != null ? null : (x)=>setState(()=>error=x!)),
     const SizedBox(height:10),
     logoSection(),
     if (photoImage != null) ...[
