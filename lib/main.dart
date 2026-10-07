@@ -365,8 +365,35 @@ class _QRStudioAppState extends State<QRStudioApp> {
   );
 
   Widget footerButtons()=>Row(children:[
-    Expanded(child:Container(decoration:BoxDecoration(gradient:const LinearGradient(colors:[Color(0xFF00C8FF),Color(0xFF7A00FF),Color(0xFFFF5A00)]),borderRadius:BorderRadius.circular(24)),child:FilledButton.icon(onPressed:savePng,icon:const Icon(Icons.download_outlined,size:18),label:Text(t('save')),style:FilledButton.styleFrom(backgroundColor:Colors.transparent,shadowColor:Colors.transparent,minimumSize:const Size.fromHeight(48)))),
+    Expanded(
+      child:Container(
+        decoration:BoxDecoration(
+          gradient:const LinearGradient(colors:[Color(0xFF00C8FF),Color(0xFF7A00FF),Color(0xFFFF5A00)]),
+          borderRadius:BorderRadius.circular(24),
+        ),
+        child:FilledButton.icon(
+          onPressed:savePng,
+          icon:const Icon(Icons.download_outlined,size:18),
+          label:Text(t('save')),
+          style:FilledButton.styleFrom(
+            backgroundColor:Colors.transparent,
+            shadowColor:Colors.transparent,
+            minimumSize:const Size.fromHeight(48),
+          ),
+        ),
+      ),
+    ),
     const SizedBox(width:9),
-    Expanded(child:OutlinedButton.icon(onPressed:sharePng,icon:const Icon(Icons.share_outlined,size:18),label:Text(t('share')),style:OutlinedButton.styleFrom(minimumSize:const Size.fromHeight(48),shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(24)))),
+    Expanded(
+      child:OutlinedButton.icon(
+        onPressed:sharePng,
+        icon:const Icon(Icons.share_outlined,size:18),
+        label:Text(t('share')),
+        style:OutlinedButton.styleFrom(
+          minimumSize:const Size.fromHeight(48),
+          shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(24)),
+        ),
+      ),
+    ),
   ]);
 }
