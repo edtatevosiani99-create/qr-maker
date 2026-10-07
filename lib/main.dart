@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'dart:typed_data';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:gal/gal.dart';
@@ -110,7 +109,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
             DropdownButton<String>(
               value: lang,
               underline: const SizedBox(),
-              items: labels.keys.map((x) => DropdownMenuItem(value: x, child: Text(x))).toList(),
+              items: const {'Русский':'🇷🇺','English':'🇬🇧','Deutsch':'🇩🇪','ქართული':'🇬🇪'}.entries.map((e) => DropdownMenuItem<String>(value: e.key, child: Text('\${e.value}  \${e.key}'))).toList(),
               onChanged: (x) => setState(() => lang = x!),
             ),
             IconButton(
