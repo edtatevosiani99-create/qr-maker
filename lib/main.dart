@@ -215,8 +215,8 @@ class _QRStudioAppState extends State<QRStudioApp> {
       DropdownButtonFormField<String>(value:security,decoration:fieldDecoration(t('security')),items:['WPA','WEP','None'].map((x)=>DropdownMenuItem(value:x,child:Text(x=='None'?t('none'):x))).toList(),onChanged:(x)=>setState(()=>security=x!)),
     ],
     if(type==QRType.location) ...[input('lat',t('lat'),keyboard:TextInputType.number),input('lon',t('lon'),keyboard:TextInputType.number),input('address',t('address'))],
-    const SizedBox(height:4),Text(t('fg'),style:const TextStyle(fontSize:12,fontWeight:FontWeight.w700)),const SizedBox(height:6),gradientColorBar(false),
-    const SizedBox(height:12),Text(t('bg'),style:const TextStyle(fontSize:12,fontWeight:FontWeight.w700)),const SizedBox(height:6),gradientColorBar(true),
+    const SizedBox(height:4),Text(t('fg'),style:const TextStyle(fontSize:13,fontWeight:FontWeight.w700)),const SizedBox(height:6),gradientColorBar(false),
+    const SizedBox(height:12),Text(t('bg'),style:const TextStyle(fontSize:13,fontWeight:FontWeight.w700)),const SizedBox(height:6),gradientColorBar(true),
     if (_contrast(fg,bg) < 4.5 && !transparentBg) contrastWarning(),
     const SizedBox(height:13),Text(t('size') + ': ' + size.round().toString() + ' px',style:const TextStyle(fontSize:12,fontWeight:FontWeight.w700)),
     Slider(min:256,max:1024,value:size,activeColor:const Color(0xFF5B2DFF),onChanged:(x)=>setState(()=>size=x)),
@@ -353,54 +353,6 @@ class _QRStudioAppState extends State<QRStudioApp> {
         );
       }),
       const SizedBox(height:7),
-      Row(
-        children:[
-          _quickColor(background, const Color(0xFF000000)),
-          const SizedBox(width:10),
-          _quickColor(background, const Color(0xFFFFFFFF)),
-          const SizedBox(width:10),
-          Expanded(
-            child:OutlinedButton.icon(
-              onPressed:()=>colorPicker(background),
-              icon:const Icon(Icons.palette_outlined,size:18),
-              label:Text(background ? t('bgColorButton') : t('qrColorButton')),
-              style:OutlinedButton.styleFrom(
-                minimumSize:const Size.fromHeight(42),
-                shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(12)),
-              ),
-            ),
-          ),
-        ],
-      ),
-    ],
-  );
-
-  Widget _quickColor(bool background, Color color){
-    final selected = (background ? bg : fg).value == color.value && !(background && transparentBg);
-    return InkWell(
-      onTap:()=>setQuickColor(background,color),
-      borderRadius:BorderRadius.circular(24),
-      child:Container(
-        width:42,
-        height:42,
-        decoration:BoxDecoration(
-          color:color,
-          shape:BoxShape.circle,
-          border:Border.all(
-            color:color.computeLuminance()>.75 ? Colors.black45 : Colors.white70,
-            width:selected ? 3 : 1,
-          ),
-          boxShadow:selected
-            ? [BoxShadow(color:color.withOpacity(.5),blurRadius:5,spreadRadius:1)]
-            : null,
-        ),
-        child:selected
-          ? Icon(Icons.check,color:color.computeLuminance()>.55 ? Colors.black : Colors.white,size:20)
-          : null,
-      ),
-    );
-  }
-
   double currentHue(Color color) => HSVColor.fromColor(color).hue;
 
   void setColorFromPosition(bool background,double x,double width){
@@ -415,120 +367,6 @@ class _QRStudioAppState extends State<QRStudioApp> {
       }
     });
   }
-
-  Future<void> colorPicker(bool background) async {
-    final colors=<Color>[
-      const Color(0xFF000000),const Color(0xFFFFFFFF),const Color(0xFF263238),
-      const Color(0xFFFF0000),const Color(0xFFFF5722),const Color(0xFFFF9800),const Color(0xFFFFC107),
-      const Color(0xFFFFFF00),const Color(0xFF8BC34A),const Color(0xFF00A86B),const Color(0xFF00C853),
-      const Color(0xFF00BCD4),const Color(0xFF00D9FF),const Color(0xFF2196F3),const Color(0xFF3155FF),
-      const Color(0xFF3F51B5),const Color(0xFF673AB7),const Color(0xFF8B00FF),const Color(0xFFE000FF),
-      const Color(0xFFFF1493),const Color(0xFFFF4081),const Color(0xFF795548),const Color(0xFF9E9E9E),
-      const Color(0xFFBDBDBD),const Color(0xFFF5F5F5),
-    ];
-
-    final picked=await showDialog<Color>(
-      context:context,
-      builder:(dialogContext)=>AlertDialog(
-        title:Text(background ? 'Выберите цвет фона' : 'Выберите цвет QR'),
-        content:SizedBox(
-          width:320,
-          child:GridView.builder(
-            shrinkWrap:true,
-            itemCount:colors.length,
-            gridDelegate:const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount:5,
-              crossAxisSpacing:12,
-              mainAxisSpacing:12,
-              childAspectRatio:1,
-            ),
-            itemBuilder:(_,i){
-              final x=colors[i];
-              final selected=background
-                  ? (!transparentBg && bg.value==x.value)
-                  : fg.value==x.value;
-              return Material(
-                color:Colors.transparent,
-                child:InkWell(
-                  borderRadius:BorderRadius.circular(30),
-                  onTap:()=>Navigator.of(dialogContext).pop(x),
-                  child:Container(
-                    decoration:BoxDecoration(
-                      color:x,
-                      shape:BoxShape.circle,
-                      border:Border.all(
-                        color:x.computeLuminance()>.75 ? Colors.black45 : Colors.white70,
-                        width:selected ? 3 : 1,
-                      ),
-                      boxShadow:selected
-                          ? [BoxShadow(color:x.withOpacity(.6),blurRadius:6,spreadRadius:1)]
-                          : null,
-                    ),
-                    child:selected
-                        ? Icon(
-                            Icons.check,
-                            color:x.computeLuminance()>.55 ? Colors.black : Colors.white,
-                            size:22,
-                          )
-                        : null,
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-        actions:[
-          if(background)
-            TextButton(
-              onPressed:()=>Navigator.of(dialogContext).pop(const Color(0x00000000)),
-              child:Text(t('transparent')),
-            ),
-          TextButton(
-            onPressed:()=>Navigator.of(dialogContext).pop(),
-            child:Text(MaterialLocalizations.of(dialogContext).cancelButtonLabel),
-          ),
-        ],
-      ),
-    );
-
-    if(!mounted || picked==null) return;
-    if(background){
-      if(picked.value==0x00000000){
-        setState(()=>transparentBg=true);
-      }else{
-        _setBackgroundColor(picked);
-      }
-    }else{
-      _setQrColor(picked);
-    }
-  }
-
-  Widget backgroundSelector()=>GestureDetector(
-    onTap:()=>colorPicker(true),
-    child:Container(
-      height:48,
-      padding:const EdgeInsets.symmetric(horizontal:14),
-      decoration:BoxDecoration(
-        color:Theme.of(context).colorScheme.surface,
-        borderRadius:BorderRadius.circular(10),
-        border:Border.all(color:Theme.of(context).colorScheme.outlineVariant),
-      ),
-      child:Row(children:[
-        Container(
-          width:24,height:24,
-          decoration:BoxDecoration(
-            color:transparentBg ? Colors.transparent : bg,
-            shape:BoxShape.circle,
-            border:Border.all(color:Theme.of(context).colorScheme.outlineVariant),
-          ),
-          child:transparentBg ? const Icon(Icons.texture,size:15) : null,
-        ),
-        const SizedBox(width:9),
-        Expanded(child:Text(transparentBg?t('transparent'):'Цвет фона',style:const TextStyle(fontSize:12))),
-        const Icon(Icons.keyboard_arrow_down,size:20),
-      ]),
-    ),
-  );
 
   Widget preview()=>Column(children:[previewCard(),const SizedBox(height:18),footerButtons()]);
 
