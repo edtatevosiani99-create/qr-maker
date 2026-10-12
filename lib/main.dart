@@ -190,7 +190,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner:false, themeMode:themeMode,
-      theme:ThemeData(useMaterial3:true, brightness:Brightness.light, scaffoldBackgroundColor:const Color(0xFFF1F8FF), colorScheme:ColorScheme.fromSeed(seedColor:const Color(0xFF2B7FFF))),
+      theme:ThemeData(useMaterial3:true, brightness:Brightness.light, scaffoldBackgroundColor:const Color(0xFFE8F5FF), colorScheme:ColorScheme.fromSeed(seedColor:const Color(0xFF2B7FFF))),
       darkTheme:ThemeData(useMaterial3:true, brightness:Brightness.dark, scaffoldBackgroundColor:const Color(0xFF03152C), colorScheme:ColorScheme.fromSeed(seedColor:const Color(0xFF1E9BFF), brightness:Brightness.dark)),
       home:Scaffold(
         body:SafeArea(child:LayoutBuilder(builder:(ctx,box) {
@@ -207,15 +207,24 @@ class _QRStudioAppState extends State<QRStudioApp> {
     );
   }
 
-  Widget header() => Row(children:[
-    logo(54), const SizedBox(width:11),
-    Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-      ShaderMask(shaderCallback:(r)=>const LinearGradient(colors:[Color(0xFF00C8FF),Color(0xFFB000FF),Color(0xFFFF6B00)]).createShader(r),child:Text(t('title'),style:const TextStyle(fontSize:25,fontWeight:FontWeight.w800,color:Colors.white))),
-      Text(t('subtitle'),style:TextStyle(fontSize:11,color:Theme.of(context).colorScheme.onSurfaceVariant)),
-    ])),
-    languageButton(), const SizedBox(width:4),
-    IconButton(onPressed:()=>setState(()=>themeMode=themeMode==ThemeMode.light?ThemeMode.dark:ThemeMode.light),icon:Icon(themeMode==ThemeMode.light?Icons.dark_mode:Icons.light_mode)),
-  ]);
+  Widget header() => Container(
+    padding:const EdgeInsets.symmetric(horizontal:12,vertical:10),
+    decoration:BoxDecoration(
+      color:Theme.of(context).brightness==Brightness.light ? const Color(0xFFD2EAFF) : const Color(0xFF12345A),
+      borderRadius:BorderRadius.circular(20),
+      border:Border.all(color:const Color(0xFF8CCBFF).withOpacity(.75),width:1.2),
+      boxShadow:[BoxShadow(color:const Color(0xFF3B9DFF).withOpacity(.10),blurRadius:14,offset:const Offset(0,4))],
+    ),
+    child:Row(children:[
+      logo(54), const SizedBox(width:11),
+      Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+        ShaderMask(shaderCallback:(r)=>const LinearGradient(colors:[Color(0xFF0077CC),Color(0xFF6545C4),Color(0xFFDB4F9B)]).createShader(r),child:Text(t('title'),style:const TextStyle(fontSize:25,fontWeight:FontWeight.w800,color:Colors.white))),
+        Text(t('subtitle'),style:TextStyle(fontSize:11,color:Theme.of(context).colorScheme.onSurfaceVariant)),
+      ])),
+      languageButton(), const SizedBox(width:4),
+      IconButton(onPressed:()=>setState(()=>themeMode=themeMode==ThemeMode.light?ThemeMode.dark:ThemeMode.light),icon:Icon(themeMode==ThemeMode.light?Icons.dark_mode:Icons.light_mode)),
+    ]),
+  );
 
   Widget logo(double s) => Container(
     width:s,height:s,padding:const EdgeInsets.all(2),
