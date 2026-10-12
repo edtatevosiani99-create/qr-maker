@@ -39,7 +39,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   bool isScannerOpen = false;
   String? scannedValue;
   bool torchEnabled = false;
-  final MobileScannerController scannerController = MobileScannerController(zoom: 0.45);
+  final MobileScannerController scannerController = MobileScannerController();
   late final AnimationController _scanLineController;
   Uint8List? photoBytes;
   ui.Image? photoImage;
