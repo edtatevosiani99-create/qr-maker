@@ -659,11 +659,22 @@ class _QRStudioAppState extends State<QRStudioApp> {
       if (bytes == null) throw StateError('Could not render QR image');
       final image = img.decodeImage(bytes);
       if (image == null) throw StateError('Could not decode PNG image');
+      // ZXing expects one 32-bit ARGB pixel per image pixel, not packed RGBA bytes.
+      // Composite transparent pixels on white so the scan matches how a QR is normally viewed.
       final rgba = image.convert(numChannels:4).getBytes(order:img.ChannelOrder.rgba);
+      final pixels = Int32List(image.width * image.height);
+      for (var i = 0; i < pixels.length; i++) {
+        final offset = i * 4;
+        final alpha = rgba[offset + 3];
+        final r = ((rgba[offset] * alpha) + (255 * (255 - alpha))) ~/ 255;
+        final g = ((rgba[offset + 1] * alpha) + (255 * (255 - alpha))) ~/ 255;
+        final b = ((rgba[offset + 2] * alpha) + (255 * (255 - alpha))) ~/ 255;
+        pixels[i] = 0xFF000000 | (r << 16) | (g << 8) | b;
+      }
       final source = RGBLuminanceSource(
         image.width,
         image.height,
-        rgba.buffer.asInt32List(),
+        pixels,
       );
       final bitmap = BinaryBitmap(HybridBinarizer(source));
       final result = QRCodeReader().decode(bitmap);
