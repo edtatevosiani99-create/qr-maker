@@ -24,7 +24,7 @@ class QRStudioApp extends StatefulWidget {
   @override State<QRStudioApp> createState() => _QRStudioAppState();
 }
 
-class _QRStudioAppState extends State<QRStudioApp> {
+class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStateMixin {
   ThemeMode themeMode = ThemeMode.light;
   String lang = 'English';
   QRType type = QRType.url;
@@ -39,7 +39,8 @@ class _QRStudioAppState extends State<QRStudioApp> {
   bool isScannerOpen = false;
   String? scannedValue;
   bool torchEnabled = false;
-  final MobileScannerController scannerController = MobileScannerController();
+  final MobileScannerController scannerController = MobileScannerController(zoom: 0.45);
+  late final AnimationController _scanLineController;
   Uint8List? photoBytes;
   ui.Image? photoImage;
   ui.Image? qrLogoImage;
@@ -73,8 +74,12 @@ class _QRStudioAppState extends State<QRStudioApp> {
  
   int get errorLevel => photoImage != null ? 2 : (const {'L':1,'M':0,'Q':3,'H':2}[error] ?? 0);
 
-  @override void initState() { super.initState(); c['main']!.text = 'https://example.com'; }
-  @override void dispose() { _logoRefreshTimer?.cancel(); scannerController.dispose(); photoImage?.dispose(); qrLogoImage?.dispose(); for (final x in c.values) x.dispose(); super.dispose(); }
+  @override void initState() {
+    super.initState();
+    c['main']!.text = 'https://example.com';
+    _scanLineController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500))..repeat(reverse: true);
+  }
+  @override void dispose() { _logoRefreshTimer?.cancel(); _scanLineController.dispose(); scannerController.dispose(); photoImage?.dispose(); qrLogoImage?.dispose(); for (final x in c.values) x.dispose(); super.dispose(); }
 
   Future<ui.Image> _makeQrLogo(ui.Image source, Color borderColor) async {
     const canvasSize = 1000.0;
@@ -381,22 +386,20 @@ class _QRStudioAppState extends State<QRStudioApp> {
                 if (scannedValue == null) ...[
                   Container(color: Colors.black.withOpacity(.16)),
                   Center(child: Container(
-                    width: 290, height: 290,
+                    width: 230, height: 230,
                     decoration: BoxDecoration(color: Colors.white.withOpacity(.035), borderRadius: BorderRadius.circular(18)),
                   )),
-                  Center(child: SizedBox(width: 290, height: 290, child: CustomPaint(painter: ScannerCornersPainter()))),
+                  Center(child: SizedBox(width: 230, height: 230, child: CustomPaint(painter: ScannerCornersPainter()))),
                   Center(child: SizedBox(
-                    width: 290,
-                    height: 290,
-                    child: TweenAnimationBuilder<double>(
-                      tween: Tween<double>(begin: 0, end: 1),
-                      duration: const Duration(milliseconds: 1900),
-                      curve: Curves.linear,
-                      builder: (context, value, child) => Align(
-                        alignment: Alignment(0, -1 + (2 * value)),
+                    width: 230,
+                    height: 230,
+                    child: AnimatedBuilder(
+                      animation: _scanLineController,
+                      builder: (context, child) => Align(
+                        alignment: Alignment(0, -1 + (2 * _scanLineController.value)),
                         child: Container(
                           height: 3,
-                          width: 290,
+                          width: 230,
                           decoration: BoxDecoration(
                             color: const Color(0xFF1CA9FF),
                             borderRadius: BorderRadius.circular(3),
@@ -404,11 +407,6 @@ class _QRStudioAppState extends State<QRStudioApp> {
                           ),
                         ),
                       ),
-                      onEnd: () {
-                        if (mounted && scannedValue == null) {
-                          setState(() {});
-                        }
-                      },
                     ),
                   )),
                 ] else
