@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:gal/gal.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:qr/qr.dart' as qr;
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter/services.dart';
 
@@ -144,15 +145,24 @@ class _QRStudioAppState extends State<QRStudioApp> {
   }
 
   Future<Uint8List?> pngBytes() async {
-    ui.Image? freshLogo;
-    if (photoImage != null) {
-      freshLogo = await _makeQrLogo(photoImage!, transparentBg ? Colors.transparent : bg);
-    }
-    final logo = freshLogo ?? qrLogoImage;
-    final p = QrPainter(data:data.isEmpty ? ' ' : data, version:QrVersions.auto, errorCorrectionLevel:errorLevel, gapless:selectedGapless, color:fg, emptyColor:transparentBg ? Colors.transparent : bg, eyeStyle:QrEyeStyle(eyeShape:selectedEyeShape, color:fg), dataModuleStyle:QrDataModuleStyle(dataModuleShape:selectedModuleShape, color:fg), embeddedImage:logo, embeddedImageStyle:logo == null ? null : QrEmbeddedImageStyle(size:Size(size * logoScale, size * logoScale)));
-    final d = await p.toImageData(size, format:ui.ImageByteFormat.png);
-    freshLogo?.dispose();
-    return d?.buffer.asUint8List();
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    final painter = StyledQrPainter(
+      data: data.isEmpty ? ' ' : data,
+      foreground: fg,
+      background: transparentBg ? Colors.transparent : bg,
+      design: selectedDesign,
+      logo: photoImage,
+      logoScale: logoScale,
+      errorLevel: errorLevel,
+    );
+    painter.paint(canvas, Size(size, size));
+    final picture = recorder.endRecording();
+    final image = await picture.toImage(size.round(), size.round());
+    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+    image.dispose();
+    picture.dispose();
+    return bytes?.buffer.asUint8List();
   }
 
   Future<void> savePng() async {
@@ -605,19 +615,16 @@ class _QRStudioAppState extends State<QRStudioApp> {
       if (_contrast(fg,bg) < 4.5 && !transparentBg) contrastWarning(),
       Row(children:[
       Container(width:112,height:112,padding:const EdgeInsets.all(8),decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(14)),child:CustomPaint(
-        key:ValueKey('\${selectedDesign}-\${fg.value}-\${bg.value}-\${transparentBg}-\${error}-\${photoImage != null}-\${data}'),
+        key:ValueKey('${selectedDesign}-${fg.value}-${bg.value}-${transparentBg}-${error}-${photoImage != null}-${data}'),
         size:const Size(96,96),
-        painter:QrPainter(
-          data:data.isEmpty?' ':data,
-          version:QrVersions.auto,
-          errorCorrectionLevel:errorLevel,
-          gapless:selectedGapless,
-          color:fg,
-          emptyColor:transparentBg?Colors.transparent:bg,
-          eyeStyle:QrEyeStyle(eyeShape:selectedEyeShape, color:fg),
-          dataModuleStyle:QrDataModuleStyle(dataModuleShape:selectedModuleShape, color:fg),
-          embeddedImage:qrLogoImage,
-          embeddedImageStyle:qrLogoImage == null ? null : QrEmbeddedImageStyle(size:Size(96 * logoScale,96 * logoScale)),
+        painter:StyledQrPainter(
+          data:data.isEmpty ? ' ' : data,
+          foreground:fg,
+          background:transparentBg ? Colors.transparent : bg,
+          design:selectedDesign,
+          logo:photoImage,
+          logoScale:logoScale,
+          errorLevel:errorLevel,
         ),
       )),
       const SizedBox(width:14),
@@ -658,4 +665,124 @@ class _QRStudioAppState extends State<QRStudioApp> {
       ),
     ),
   ]);
+}
+
+
+class StyledQrPainter extends CustomPainter {
+  StyledQrPainter({
+    required this.data,
+    required this.foreground,
+    required this.background,
+    required this.design,
+    required this.logo,
+    required this.logoScale,
+    required this.errorLevel,
+  });
+
+  final String data;
+  final Color foreground;
+  final Color background;
+  final String design;
+  final ui.Image? logo;
+  final double logoScale;
+  final int errorLevel;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final level = switch (errorLevel) {
+      1 => qr.QrErrorCorrectLevel.L,
+      2 => qr.QrErrorCorrectLevel.H,
+      3 => qr.QrErrorCorrectLevel.Q,
+      _ => qr.QrErrorCorrectLevel.M,
+    };
+    final code = qr.QrCode.fromData(data: data, errorCorrectLevel: level);
+    final matrix = qr.QrImage(code);
+    final count = matrix.moduleCount;
+    final quiet = count * .045;
+    final unit = size.width / (count + quiet * 2);
+    final origin = unit * quiet;
+    final bgPaint = Paint()..color = background;
+    canvas.drawRect(Offset.zero & size, bgPaint);
+
+    final modules = Paint()..color = foreground..style = PaintingStyle.fill;
+    final eyeRegions = <Rect>[
+      Rect.fromLTWH(0, 0, 7, 7),
+      Rect.fromLTWH(count - 7, 0, 7, 7),
+      Rect.fromLTWH(0, count - 7, 7, 7),
+    ];
+    bool inEye(int x, int y) => eyeRegions.any((r) => r.contains(Offset(x + .5, y + .5)));
+    for (var y = 0; y < count; y++) {
+      for (var x = 0; x < count; x++) {
+        if (!matrix.isDark(y, x) || inEye(x, y)) continue;
+        final rect = Rect.fromLTWH(origin + x * unit, origin + y * unit, unit * .94, unit * .94);
+        switch (design) {
+          case 'neon':
+            canvas.drawRRect(RRect.fromRectAndRadius(rect, Radius.circular(unit * .46)), modules);
+            break;
+          case 'sunset':
+            final path = Path()
+              ..moveTo(rect.center.dx, rect.top)
+              ..lineTo(rect.right, rect.center.dy)
+              ..lineTo(rect.center.dx, rect.bottom)
+              ..lineTo(rect.left, rect.center.dy)
+              ..close();
+            canvas.drawPath(path, modules);
+            break;
+          case 'mint':
+            canvas.drawRRect(RRect.fromRectAndRadius(rect, Radius.circular(unit * .18)), modules);
+            break;
+          case 'violet':
+            canvas.drawCircle(rect.center, unit * .39, modules);
+            break;
+          default:
+            canvas.drawRect(rect, modules);
+        }
+      }
+    }
+
+    for (final eye in eyeRegions) {
+      final rect = Rect.fromLTWH(origin + eye.left * unit, origin + eye.top * unit, eye.width * unit, eye.height * unit);
+      final outer = RRect.fromRectAndRadius(rect, Radius.circular(unit * (design == 'neon' || design == 'mint' ? 1.5 : design == 'sunset' ? .6 : .15)));
+      final clear = Paint()..color = background;
+      canvas.drawRRect(outer, modules);
+      final inset = rect.deflate(unit * 1.15);
+      canvas.drawRRect(RRect.fromRectAndRadius(inset, Radius.circular(unit * .25)), clear);
+      final inner = inset.deflate(unit * 1.1);
+      final innerRect = RRect.fromRectAndRadius(inner, Radius.circular(unit * (design == 'neon' ? .5 : .05)));
+      canvas.drawRRect(innerRect, modules);
+    }
+
+    // Distinctive corner brackets on the sunset and violet templates.
+    if (design == 'sunset' || design == 'violet') {
+      final p = Paint()..color = foreground..style = PaintingStyle.stroke..strokeWidth = unit * .85..strokeCap = StrokeCap.square;
+      final span = unit * 4.2;
+      final pad = origin - unit * .5;
+      for (final x in [pad, size.width - pad]) {
+        for (final y in [pad, size.height - pad]) {
+          final sx = x < size.width / 2 ? 1.0 : -1.0;
+          final sy = y < size.height / 2 ? 1.0 : -1.0;
+          final path = Path()
+            ..moveTo(x, y + sy * span)
+            ..lineTo(x, y)
+            ..lineTo(x + sx * span, y);
+          canvas.drawPath(path, p);
+        }
+      }
+    }
+
+    if (logo != null) {
+      final side = size.width * logoScale;
+      final rect = Rect.fromCenter(center: size.center(Offset.zero), width: side, height: side);
+      final pad = Paint()..color = background;
+      canvas.drawRRect(RRect.fromRectAndRadius(rect.inflate(unit * .65), Radius.circular(unit)), pad);
+      canvas.drawImageRect(logo!, Rect.fromLTWH(0, 0, logo!.width.toDouble(), logo!.height.toDouble()), rect, Paint()..filterQuality = FilterQuality.high);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant StyledQrPainter oldDelegate) =>
+      data != oldDelegate.data || foreground != oldDelegate.foreground ||
+      background != oldDelegate.background || design != oldDelegate.design ||
+      logo != oldDelegate.logo || logoScale != oldDelegate.logoScale ||
+      errorLevel != oldDelegate.errorLevel;
 }
