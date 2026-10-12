@@ -11,6 +11,7 @@ import 'package:qr/qr.dart' as qr;
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
+import 'package:zxing2/qrcode.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 void main() => runApp(const QRStudioApp());
@@ -647,44 +648,49 @@ class _QRStudioAppState extends State<QRStudioApp> {
   );
 
   Future<void> checkQr() async {
-    final payload = data.trim();
-    if (payload.isEmpty) {
+    final expected = data.trim();
+    if (expected.isEmpty) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('QR data is empty.')));
       return;
     }
     try {
-      // Render the exact QR design, colors and logo into a PNG, then decode
-      // that generated image locally to confirm the visible QR is readable.
+      // Decode the actual generated PNG with a QR scanner engine.
       final bytes = await pngBytes();
       if (bytes == null) throw StateError('Could not render QR image');
-      final decodedImage = img.decodeImage(bytes);
-      if (decodedImage == null) throw StateError('Could not decode generated image');
-      final luminance = <int>[];
-      for (var y = 0; y < decodedImage.height; y++) {
-        for (var x = 0; x < decodedImage.width; x++) {
-          final p = decodedImage.getPixel(x, y);
-          luminance.add((0.299 * p.r + 0.587 * p.g + 0.114 * p.b).round());
-        }
-      }
-      final mean = luminance.isEmpty ? 255 : luminance.reduce((a,b)=>a+b) ~/ luminance.length;
-      final minL = luminance.isEmpty ? 255 : luminance.reduce((a,b)=>a<b?a:b);
-      final maxL = luminance.isEmpty ? 255 : luminance.reduce((a,b)=>a>b?a:b);
-      final contrast = maxL - minL;
-      final usable = contrast >= 80 && (transparentBg || _contrast(fg,bg) >= 2.5);
+      final image = img.decodeImage(bytes);
+      if (image == null) throw StateError('Could not decode PNG image');
+      final rgba = image.convert(numChannels:4).getBytes(order:img.ChannelOrder.rgba);
+      final source = RGBLuminanceSource(
+        image.width,
+        image.height,
+        rgba.buffer.asInt32List(),
+      );
+      final bitmap = BinaryBitmap(HybridBinarizer(source));
+      final result = QRCodeReader().decode(bitmap);
+      final success = result.text == expected;
       if (!mounted) return;
       showDialog<void>(
         context:context,
         builder:(ctx)=>AlertDialog(
-          icon:Icon(usable ? Icons.check_circle : Icons.warning_amber_rounded,color:usable ? Colors.green : Colors.orange,size:34),
-          title:Text(usable ? 'QR image created' : 'QR may be hard to scan'),
-          content:Text(usable
-            ? 'The generated QR image contains visible light and dark areas. This is a visual check only; this app has not decoded the QR with a scanner engine, so please test it with your phone camera.'
-            : 'The generated image has low contrast. Try a darker QR color and a lighter background, then check again.'),
+          icon:Icon(success ? Icons.check_circle : Icons.error, color:success ? Colors.green : Colors.red, size:36),
+          title:Text(success ? 'QR code is readable' : 'QR code data mismatch'),
+          content:Text(success
+            ? 'The app scanned the generated QR image and confirmed that its contents match your data.'
+            : 'The QR image was read, but the decoded content does not match the original data. Try another design or remove the logo.'),
           actions:[TextButton(onPressed:()=>Navigator.of(ctx).pop(),child:const Text('OK'))],
         ),
       );
     } catch (_) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('Could not check the generated QR image.')));
+      if (!mounted) return;
+      showDialog<void>(
+        context:context,
+        builder:(ctx)=>AlertDialog(
+          icon:const Icon(Icons.warning_amber_rounded,color:Colors.orange,size:36),
+          title:const Text('QR code could not be scanned'),
+          content:const Text('The app tried to scan the actual generated QR image but could not decode it. Try a simpler design, stronger contrast, or a smaller logo.'),
+          actions:[TextButton(onPressed:()=>Navigator.of(ctx).pop(),child:const Text('OK'))],
+        ),
+      );
     }
   }
 
