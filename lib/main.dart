@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
 import 'package:zxing2/qrcode.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 
 void main() => runApp(const QRStudioApp());
 
@@ -35,6 +36,8 @@ class _QRStudioAppState extends State<QRStudioApp> {
   bool transparentBg = false;
   bool isCheckingQr = false;
   String? qrCheckState;
+  bool isScannerOpen = false;
+  String? scannedValue;
   Uint8List? photoBytes;
   ui.Image? photoImage;
   ui.Image? qrLogoImage;
@@ -204,7 +207,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
             padding:EdgeInsets.fromLTRB(wide ? 28 : 16,10,wide ? 28 : 16,28),
             child:Center(child:ConstrainedBox(
               constraints:const BoxConstraints(maxWidth:980),
-              child:wide ? Row(crossAxisAlignment:CrossAxisAlignment.start,children:[Expanded(child:form()),const SizedBox(width:24),Expanded(child:preview())]) : Column(children:[header(),const SizedBox(height:16),formBody(),const SizedBox(height:18),previewCard(),const SizedBox(height:10),checkQrButton(),const SizedBox(height:18),footerButtons()]),
+              child:wide ? (isScannerOpen ? Column(children:[header(),const SizedBox(height:12),modeSelector(),const SizedBox(height:16),scannerView()]) : Row(crossAxisAlignment:CrossAxisAlignment.start,children:[Expanded(child:form()),const SizedBox(width:24),Expanded(child:preview())])) : Column(children:[header(),const SizedBox(height:12),modeSelector(),const SizedBox(height:16),if(isScannerOpen) scannerView() else ...[formBody(),const SizedBox(height:18),previewCard(),const SizedBox(height:10),checkQrButton(),const SizedBox(height:18),footerButtons()]]),
             )),
           );
         })),
@@ -245,7 +248,69 @@ class _QRStudioAppState extends State<QRStudioApp> {
     );
   }
 
-  Widget form() => Column(children:[header(),const SizedBox(height:16),formBody(),const SizedBox(height:18),footerButtons()]);
+  Widget form() => Column(children:[header(),const SizedBox(height:12),modeSelector(),const SizedBox(height:16),formBody(),const SizedBox(height:18),footerButtons()]);
+
+  String scannerText(String key) {
+    const strings = {
+      'Русский': {'studio':'QR Studio','scan':'QR Scan','title':'Сканер QR-кодов','hint':'Наведите камеру на QR-код','result':'Результат сканирования','again':'Сканировать ещё','open':'Открыть ссылку','empty':'QR-код не содержит текста'},
+      'English': {'studio':'QR Studio','scan':'QR Scan','title':'QR Code Scanner','hint':'Point the camera at a QR code','result':'Scan result','again':'Scan again','open':'Open link','empty':'This QR code contains no text'},
+      'Deutsch': {'studio':'QR Studio','scan':'QR Scan','title':'QR-Code-Scanner','hint':'Richte die Kamera auf einen QR-Code','result':'Scan-Ergebnis','again':'Erneut scannen','open':'Link öffnen','empty':'Dieser QR-Code enthält keinen Text'},
+      'ქართული': {'studio':'QR Studio','scan':'QR Scan','title':'QR კოდის სკანერი','hint':'მიმართეთ კამერა QR კოდისკენ','result':'სკანირების შედეგი','again':'ხელახლა სკანირება','open':'ბმულის გახსნა','empty':'QR კოდი ტექსტს არ შეიცავს'},
+    };
+    return strings[lang]?[key] ?? strings['English']![key]!;
+  }
+
+  Widget modeSelector() => Row(children:[
+    Expanded(child:FilledButton.icon(
+      onPressed:()=>setState(()=>isScannerOpen=false),
+      icon:const Icon(Icons.qr_code_2),
+      label:Text(scannerText('studio'),maxLines:1,overflow:TextOverflow.ellipsis),
+      style:FilledButton.styleFrom(minimumSize:const Size.fromHeight(48),backgroundColor:!isScannerOpen?const Color(0xFF1877D2):Theme.of(context).colorScheme.surfaceVariant,foregroundColor:!isScannerOpen?Colors.white:Theme.of(context).colorScheme.onSurfaceVariant),
+    )),
+    const SizedBox(width:10),
+    Expanded(child:FilledButton.icon(
+      onPressed:()=>setState(()=>isScannerOpen=true),
+      icon:const Icon(Icons.qr_code_scanner),
+      label:Text(scannerText('scan'),maxLines:1,overflow:TextOverflow.ellipsis),
+      style:FilledButton.styleFrom(minimumSize:const Size.fromHeight(48),backgroundColor:isScannerOpen?const Color(0xFF1877D2):Theme.of(context).colorScheme.surfaceVariant,foregroundColor:isScannerOpen?Colors.white:Theme.of(context).colorScheme.onSurfaceVariant),
+    )),
+  ]);
+
+  Widget scannerView() => Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[
+    Text(scannerText('title'),style:const TextStyle(fontSize:19,fontWeight:FontWeight.w800)),
+    const SizedBox(height:6),
+    Text(scannerText('hint'),style:TextStyle(color:Theme.of(context).colorScheme.onSurfaceVariant)),
+    const SizedBox(height:12),
+    ClipRRect(borderRadius:BorderRadius.circular(22),child:Container(
+      height:340,color:Colors.black,
+      child:scannedValue==null ? MobileScanner(
+        onDetect:(capture){
+          if(scannedValue!=null) return;
+          for(final barcode in capture.barcodes){
+            final value=barcode.rawValue;
+            if(value!=null && value.trim().isNotEmpty){
+              setState(()=>scannedValue=value.trim());
+              break;
+            }
+          }
+        },
+      ) : Center(child:Column(mainAxisSize:MainAxisSize.min,children:[
+        const Icon(Icons.check_circle,color:Colors.greenAccent,size:54),
+        const SizedBox(height:10),
+        Padding(padding:const EdgeInsets.symmetric(horizontal:18),child:Text(scannedValue!.isEmpty?scannerText('empty'):scannedValue!,textAlign:TextAlign.center,style:const TextStyle(color:Colors.white,fontSize:16,fontWeight:FontWeight.w600))),
+      ])),
+    )),
+    if(scannedValue!=null) ...[
+      const SizedBox(height:12),
+      Text(scannerText('result'),style:const TextStyle(fontWeight:FontWeight.w700)),
+      const SizedBox(height:5),
+      SelectableText(scannedValue!,style:const TextStyle(fontSize:14)),
+      const SizedBox(height:12),
+      if(Uri.tryParse(scannedValue!)?.hasScheme==true && ['http','https'].contains(Uri.tryParse(scannedValue!)!.scheme.toLowerCase()))
+        FilledButton.icon(onPressed:() async {final uri=Uri.tryParse(scannedValue!);if(uri!=null) await launchUrl(uri,mode:LaunchMode.externalApplication);},icon:const Icon(Icons.open_in_new),label:Text(scannerText('open'))),
+      OutlinedButton.icon(onPressed:()=>setState(()=>scannedValue=null),icon:const Icon(Icons.refresh),label:Text(scannerText('again'))),
+    ],
+  ]);
 
   Widget formBody() => Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[
     Text(t('type'),style:const TextStyle(fontSize:16,fontWeight:FontWeight.w700)),const SizedBox(height:9),
