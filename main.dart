@@ -7,6 +7,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:image/image.dart' as img;
+import 'package:zxing2/zxing2.dart';
 
 void main() => runApp(const QRStudioApp());
 
@@ -19,6 +21,8 @@ class _QRStudioAppState extends State<QRStudioApp> {
   Color fg = Colors.black, bg = Colors.white;
   double size = 280;
   String error = 'M';
+  String? qrCheckResult;
+  bool checkingQr = false;
   String security = 'WPA';
   Uint8List? photoBytes;
   int logoSize = 1; // 0 small, 1 medium, 2 large
@@ -26,10 +30,10 @@ class _QRStudioAppState extends State<QRStudioApp> {
   final c = {for (final k in ['main','name','phone','email','subject','message','ssid','password','lat','lon','address']) k: TextEditingController()};
 
   final labels = const {
-    'Русский': {'title':'QR Studio','type':'Тип QR-кода','data':'Данные','fg':'Цвет QR','bg':'Фон','chooseFg':'Выбрать цвет','chooseBg':'Выбрать цвет фона','size':'Размер','error':'Коррекция ошибок','save':'Сохранить PNG','share':'Поделиться','name':'Имя','phone':'Телефон','email':'Email','subject':'Тема','message':'Сообщение','ssid':'Название Wi‑Fi','password':'Пароль','security':'Защита','lat':'Широта','lon':'Долгота','address':'Адрес','photo':'Выбрать фото','logoSize':'Размер логотипа','small':'Маленький','medium':'Средний','large':'Большой'},
-    'English': {'title':'QR Studio','type':'QR type','data':'Data','fg':'QR color','bg':'Background','chooseFg':'Choose color','chooseBg':'Choose background color','size':'Size','error':'Error correction','save':'Save PNG','share':'Share','name':'Name','phone':'Phone','email':'Email','subject':'Subject','message':'Message','ssid':'Wi‑Fi name','password':'Password','security':'Security','lat':'Latitude','lon':'Longitude','address':'Address','photo':'Choose photo','logoSize':'Logo size','small':'Small','medium':'Medium','large':'Large'},
-    'Deutsch': {'title':'QR Studio','type':'QR-Typ','data':'Daten','fg':'QR-Farbe','bg':'Hintergrund','chooseFg':'Farbe auswählen','chooseBg':'Hintergrundfarbe auswählen','size':'Größe','error':'Fehlerkorrektur','save':'PNG speichern','share':'Teilen','name':'Name','phone':'Telefon','email':'E-Mail','subject':'Betreff','message':'Nachricht','ssid':'WLAN-Name','password':'Passwort','security':'Sicherheit','lat':'Breitengrad','lon':'Längengrad','address':'Adresse','photo':'Foto auswählen','logoSize':'Logo-Größe','small':'Klein','medium':'Mittel','large':'Groß'},
-    'ქართული': {'title':'QR Studio','type':'QR ტიპი','data':'მონაცემები','fg':'QR ფერი','bg':'ფონი','chooseFg':'ფერის არჩევა','chooseBg':'ფონის ფერის არჩევა','size':'ზომა','error':'შეცდომის გასწორება','save':'PNG შენახვა','share':'გაზიარება','name':'სახელი','phone':'ტელეფონი','email':'ელფოსტა','subject':'თემა','message':'შეტყობინება','ssid':'Wi‑Fi სახელი','password':'პაროლი','security':'დაცვა','lat':'გრძედი','lon':'განედი','address':'მისამართი','photo':'ფოტოს არჩევა','logoSize':'ლოგოს ზომა','small':'პატარა','medium':'საშუალო','large':'დიდი'}
+    'Русский': {'title':'QR Studio','type':'Тип QR-кода','data':'Данные','fg':'Цвет QR','bg':'Фон','chooseFg':'Выбрать цвет','chooseBg':'Выбрать цвет фона','size':'Размер','error':'Коррекция ошибок','save':'Сохранить PNG','share':'Поделиться','name':'Имя','phone':'Телефон','email':'Email','subject':'Тема','message':'Сообщение','ssid':'Название Wi‑Fi','password':'Пароль','security':'Защита','lat':'Широта','lon':'Долгота','address':'Адрес','photo':'Выбрать фото','logoSize':'Размер логотипа','small':'Маленький','medium':'Средний','large':'Большой','check':'Проверить QR','checking':'Проверяем QR…','checkOk':'QR-код читается: данные успешно распознаны.','checkFail':'QR-код не удалось распознать. Попробуйте повысить контраст или уменьшить логотип.','checkError':'Не удалось проверить QR-код.'},
+    'English': {'title':'QR Studio','type':'QR type','data':'Data','fg':'QR color','bg':'Background','chooseFg':'Choose color','chooseBg':'Choose background color','size':'Size','error':'Error correction','save':'Save PNG','share':'Share','name':'Name','phone':'Phone','email':'Email','subject':'Subject','message':'Message','ssid':'Wi‑Fi name','password':'Password','security':'Security','lat':'Latitude','lon':'Longitude','address':'Address','photo':'Choose photo','logoSize':'Logo size','small':'Small','medium':'Medium','large':'Large','check':'Check QR','checking':'Checking QR…','checkOk':'QR code is readable: data decoded successfully.','checkFail':'QR code could not be decoded. Try increasing contrast or reducing the logo.','checkError':'Could not check the QR code.'},
+    'Deutsch': {'title':'QR Studio','type':'QR-Typ','data':'Daten','fg':'QR-Farbe','bg':'Hintergrund','chooseFg':'Farbe auswählen','chooseBg':'Hintergrundfarbe auswählen','size':'Größe','error':'Fehlerkorrektur','save':'PNG speichern','share':'Teilen','name':'Name','phone':'Telefon','email':'E-Mail','subject':'Betreff','message':'Nachricht','ssid':'WLAN-Name','password':'Passwort','security':'Sicherheit','lat':'Breitengrad','lon':'Längengrad','address':'Adresse','photo':'Foto auswählen','logoSize':'Logo-Größe','small':'Klein','medium':'Mittel','large':'Groß','check':'QR prüfen','checking':'QR wird geprüft…','checkOk':'QR-Code ist lesbar: Daten wurden erfolgreich erkannt.','checkFail':'QR-Code konnte nicht gelesen werden. Kontrast erhöhen oder Logo verkleinern.','checkError':'QR-Code konnte nicht geprüft werden.'},
+    'ქართული': {'title':'QR Studio','type':'QR ტიპი','data':'მონაცემები','fg':'QR ფერი','bg':'ფონი','chooseFg':'ფერის არჩევა','chooseBg':'ფონის ფერის არჩევა','size':'ზომა','error':'შეცდომის გასწორება','save':'PNG შენახვა','share':'გაზიარება','name':'სახელი','phone':'ტელეფონი','email':'ელფოსტა','subject':'თემა','message':'შეტყობინება','ssid':'Wi‑Fi სახელი','password':'პაროლი','security':'დაცვა','lat':'გრძედი','lon':'განედი','address':'მისამართი','photo':'ფოტოს არჩევა','logoSize':'ლოგოს ზომა','small':'პატარა','medium':'საშუალო','large':'დიდი','check':'QR-ის შემოწმება','checking':'QR მოწმდება…','checkOk':'QR კოდი იკითხება: მონაცემები წარმატებით ამოიცნო.','checkFail':'QR კოდის წაკითხვა ვერ მოხერხდა. გაზარდეთ კონტრასტი ან შეამცირეთ ლოგო.','checkError':'QR კოდის შემოწმება ვერ მოხერხდა.'}
   };
   String t(String k) => labels[lang]![k] ?? k;
   String v(String k) => c[k]!.text.trim();
@@ -129,6 +133,37 @@ class _QRStudioAppState extends State<QRStudioApp> {
     return d?.buffer.asUint8List();
   }
 
+  Future<void> checkQr() async {
+    if (data.trim().isEmpty) {
+      setState(() => qrCheckResult = t('checkFail'));
+      return;
+    }
+    setState(() { checkingQr = true; qrCheckResult = null; });
+    try {
+      final bytes = await pngBytes();
+      if (bytes == null) throw StateError('PNG generation failed');
+      final decodedImage = img.decodePng(bytes);
+      if (decodedImage == null) throw StateError('PNG decode failed');
+      final luminances = Int32List(decodedImage.width * decodedImage.height);
+      var i = 0;
+      for (var y = 0; y < decodedImage.height; y++) {
+        for (var x = 0; x < decodedImage.width; x++) {
+          final p = decodedImage.getPixel(x, y);
+          luminances[i++] = (p.r.toInt() << 16) | (p.g.toInt() << 8) | p.b.toInt();
+        }
+      }
+      final source = RGBLuminanceSource(decodedImage.width, decodedImage.height, luminances);
+      final bitmap = BinaryBitmap(HybridBinarizer(source));
+      final result = MultiFormatReader().decode(bitmap);
+      if (mounted) setState(() => qrCheckResult =
+        result.text == data ? t('checkOk') : t('checkFail'));
+    } catch (_) {
+      if (mounted) setState(() => qrCheckResult = t('checkFail'));
+    } finally {
+      if (mounted) setState(() => checkingQr = false);
+    }
+  }
+
   Future<void> savePng() async {
     final b=await pngBytes(); if(b==null)return;
     final dir=await getApplicationDocumentsDirectory();
@@ -218,6 +253,23 @@ class _QRStudioAppState extends State<QRStudioApp> {
       ),
     ),
     const SizedBox(height:12),SelectableText(data.isEmpty?' ':data,textAlign:TextAlign.center,maxLines:7),
+    const SizedBox(height:12),
+    SizedBox(width:double.infinity,child:OutlinedButton.icon(
+      onPressed:checkingQr ? null : checkQr,
+      icon:checkingQr ? const SizedBox(width:18,height:18,child:CircularProgressIndicator(strokeWidth:2)) : const Icon(Icons.qr_code_scanner),
+      label:Text(checkingQr ? t('checking') : t('check')),
+    )),
+    if(qrCheckResult!=null)...[
+      const SizedBox(height:8),
+      Container(width:double.infinity,padding:const EdgeInsets.all(12),
+        decoration:BoxDecoration(
+          color:qrCheckResult==t('checkOk') ? Colors.green.withValues(alpha:0.12) : Colors.orange.withValues(alpha:0.12),
+          borderRadius:BorderRadius.circular(10),
+          border:Border.all(color:qrCheckResult==t('checkOk') ? Colors.green : Colors.orange),
+        ),
+        child:Text(qrCheckResult!,textAlign:TextAlign.center),
+      ),
+    ],
   ]));
 
   Widget colorButton(String label,Color color,ValueChanged<Color> cb)=>OutlinedButton.icon(
