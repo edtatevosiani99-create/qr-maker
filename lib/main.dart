@@ -781,7 +781,7 @@ class StyledQrPainter extends CustomPainter {
     final code = qr.QrCode.fromData(data: data, errorCorrectLevel: level);
     final matrix = qr.QrImage(code);
     final count = matrix.moduleCount;
-    final quiet = count * .045;
+    final quiet = 4.0; // Standard QR quiet zone: four modules on every side.
     final unit = size.width / (count + quiet * 2);
     final origin = unit * quiet;
     final bgPaint = Paint()..color = background;
