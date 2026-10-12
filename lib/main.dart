@@ -447,6 +447,49 @@ class _QRStudioAppState extends State<QRStudioApp> {
               colorQuickButton(Colors.white, background),
             ],
           ),
+          if (background) ...[
+            const SizedBox(height:10),
+            GestureDetector(
+              onTap:(){
+                setState((){ transparentBg=true; });
+                scheduleQrLogoRefresh();
+              },
+              child:Container(
+                padding:const EdgeInsets.symmetric(horizontal:14,vertical:9),
+                decoration:BoxDecoration(
+                  color:Theme.of(context).colorScheme.surface,
+                  borderRadius:BorderRadius.circular(10),
+                  border:Border.all(
+                    color:transparentBg ? const Color(0xFF7A00FF) : Theme.of(context).colorScheme.outline,
+                    width:transparentBg ? 2.5 : 1,
+                  ),
+                ),
+                child:Row(
+                  mainAxisSize:MainAxisSize.min,
+                  children:[
+                    Container(
+                      width:22,height:22,
+                      decoration:BoxDecoration(
+                        borderRadius:BorderRadius.circular(4),
+                        border:Border.all(color:Theme.of(context).colorScheme.outline),
+                        gradient:const LinearGradient(
+                          begin:Alignment.topLeft,end:Alignment.bottomRight,
+                          colors:[Colors.white,Colors.white,Color(0xFFBDBDBD),Color(0xFFBDBDBD)],
+                          stops:[0,.5,.5,1],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width:8),
+                    Text(t('transparent'),style:const TextStyle(fontSize:12,fontWeight:FontWeight.w700)),
+                    if(transparentBg) ...[
+                      const SizedBox(width:6),
+                      const Icon(Icons.check_circle,size:16,color:Color(0xFF7A00FF)),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ],
         ],
       );
     },
