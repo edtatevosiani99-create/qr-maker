@@ -38,6 +38,8 @@ class _QRStudioAppState extends State<QRStudioApp> {
   String? qrCheckState;
   bool isScannerOpen = false;
   String? scannedValue;
+  bool torchEnabled = false;
+  final MobileScannerController scannerController = MobileScannerController();
   Uint8List? photoBytes;
   ui.Image? photoImage;
   ui.Image? qrLogoImage;
@@ -72,7 +74,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
   int get errorLevel => photoImage != null ? 2 : (const {'L':1,'M':0,'Q':3,'H':2}[error] ?? 0);
 
   @override void initState() { super.initState(); c['main']!.text = 'https://example.com'; }
-  @override void dispose() { _logoRefreshTimer?.cancel(); photoImage?.dispose(); qrLogoImage?.dispose(); for (final x in c.values) x.dispose(); super.dispose(); }
+  @override void dispose() { _logoRefreshTimer?.cancel(); scannerController.dispose(); photoImage?.dispose(); qrLogoImage?.dispose(); for (final x in c.values) x.dispose(); super.dispose(); }
 
   Future<ui.Image> _makeQrLogo(ui.Image source, Color borderColor) async {
     const canvasSize = 1000.0;
@@ -252,10 +254,10 @@ class _QRStudioAppState extends State<QRStudioApp> {
 
   String scannerText(String key) {
     const strings = {
-      'Русский': {'studio':'QR Studio','scan':'QR Scan','title':'Сканер QR-кодов','hint':'Наведите камеру на QR-код','result':'Результат сканирования','again':'Сканировать ещё','open':'Открыть ссылку','empty':'QR-код не содержит текста'},
-      'English': {'studio':'QR Studio','scan':'QR Scan','title':'QR Code Scanner','hint':'Point the camera at a QR code','result':'Scan result','again':'Scan again','open':'Open link','empty':'This QR code contains no text'},
-      'Deutsch': {'studio':'QR Studio','scan':'QR Scan','title':'QR-Code-Scanner','hint':'Richte die Kamera auf einen QR-Code','result':'Scan-Ergebnis','again':'Erneut scannen','open':'Link öffnen','empty':'Dieser QR-Code enthält keinen Text'},
-      'ქართული': {'studio':'QR Studio','scan':'QR Scan','title':'QR კოდის სკანერი','hint':'მიმართეთ კამერა QR კოდისკენ','result':'სკანირების შედეგი','again':'ხელახლა სკანირება','open':'ბმულის გახსნა','empty':'QR კოდი ტექსტს არ შეიცავს'},
+      'Русский': {'studio':'QR Studio','scan':'QR Scan','title':'Сканер QR-кодов','hint':'Наведите камеру на QR-код','result':'Результат сканирования','again':'Сканировать ещё','open':'Открыть ссылку','empty':'QR-код не содержит текста','gallery':'Галерея','scanButton':'Сканировать','frameHint':'Разместите код внутри рамки','galleryError':'Не удалось прочитать QR-код на этом фото','torchOn':'Выключить фонарик','torchOff':'Включить фонарик'},
+      'English': {'studio':'QR Studio','scan':'QR Scan','title':'QR Code Scanner','hint':'Point the camera at a QR code','result':'Scan result','again':'Scan again','open':'Open link','empty':'This QR code contains no text','gallery':'Gallery','scanButton':'Scan','frameHint':'Place the code inside the frame','galleryError':'Could not read a QR code from this photo','torchOn':'Turn flashlight off','torchOff':'Turn flashlight on'},
+      'Deutsch': {'studio':'QR Studio','scan':'QR Scan','title':'QR-Code-Scanner','hint':'Richte die Kamera auf einen QR-Code','result':'Scan-Ergebnis','again':'Erneut scannen','open':'Link öffnen','empty':'Dieser QR-Code enthält keinen Text','gallery':'Galerie','scanButton':'Scannen','frameHint':'Platziere den Code innerhalb des Rahmens','galleryError':'QR-Code auf diesem Foto konnte nicht gelesen werden','torchOn':'Taschenlampe ausschalten','torchOff':'Taschenlampe einschalten'},
+      'ქართული': {'studio':'QR Studio','scan':'QR Scan','title':'QR კოდის სკანერი','hint':'მიმართეთ კამერა QR კოდისკენ','result':'სკანირების შედეგი','again':'ხელახლა სკანირება','open':'ბმულის გახსნა','empty':'QR კოდი ტექსტს არ შეიცავს','gallery':'გალერეა','scanButton':'სკანირება','frameHint':'მოათავსეთ კოდი ჩარჩოს შიგნით','galleryError':'ფოტოზე QR კოდის წაკითხვა ვერ მოხერხდა','torchOn':'ფანრის გამორთვა','torchOff':'ფანრის ჩართვა'},
     };
     return strings[lang]?[key] ?? strings['English']![key]!;
   }
@@ -276,40 +278,174 @@ class _QRStudioAppState extends State<QRStudioApp> {
     )),
   ]);
 
-  Widget scannerView() => Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[
-    Text(scannerText('title'),style:const TextStyle(fontSize:19,fontWeight:FontWeight.w800)),
-    const SizedBox(height:6),
-    Text(scannerText('hint'),style:TextStyle(color:Theme.of(context).colorScheme.onSurfaceVariant)),
-    const SizedBox(height:12),
-    ClipRRect(borderRadius:BorderRadius.circular(22),child:Container(
-      height:340,color:Colors.black,
-      child:scannedValue==null ? MobileScanner(
-        onDetect:(capture){
-          if(scannedValue!=null) return;
-          for(final barcode in capture.barcodes){
-            final value=barcode.rawValue;
-            if(value!=null && value.trim().isNotEmpty){
-              setState(()=>scannedValue=value.trim());
-              break;
-            }
-          }
-        },
-      ) : Center(child:Column(mainAxisSize:MainAxisSize.min,children:[
-        const Icon(Icons.check_circle,color:Colors.greenAccent,size:54),
-        const SizedBox(height:10),
-        Padding(padding:const EdgeInsets.symmetric(horizontal:18),child:Text(scannedValue!.isEmpty?scannerText('empty'):scannedValue!,textAlign:TextAlign.center,style:const TextStyle(color:Colors.white,fontSize:16,fontWeight:FontWeight.w600))),
-      ])),
-    )),
-    if(scannedValue!=null) ...[
-      const SizedBox(height:12),
-      Text(scannerText('result'),style:const TextStyle(fontWeight:FontWeight.w700)),
-      const SizedBox(height:5),
-      SelectableText(scannedValue!,style:const TextStyle(fontSize:14)),
-      const SizedBox(height:12),
-      if(Uri.tryParse(scannedValue!)?.hasScheme==true && ['http','https'].contains(Uri.tryParse(scannedValue!)!.scheme.toLowerCase()))
-        FilledButton.icon(onPressed:() async {final uri=Uri.tryParse(scannedValue!);if(uri!=null) await launchUrl(uri,mode:LaunchMode.externalApplication);},icon:const Icon(Icons.open_in_new),label:Text(scannerText('open'))),
-      OutlinedButton.icon(onPressed:()=>setState(()=>scannedValue=null),icon:const Icon(Icons.refresh),label:Text(scannerText('again'))),
-    ],
+  Future<void> chooseScanImage() async {
+    try {
+      final picked = await picker.pickImage(source: ImageSource.gallery);
+      if (picked == null) return;
+      final bytes = await picked.readAsBytes();
+      final decodedImage = img.decodeImage(bytes);
+      if (decodedImage == null) throw StateError('Image decode failed');
+      final rgba = decodedImage.convert(numChannels: 4).getBytes(order: img.ChannelOrder.rgba);
+      final pixels = Int32List(decodedImage.width * decodedImage.height);
+      for (var i = 0; i < pixels.length; i++) {
+        final offset = i * 4;
+        final alpha = rgba[offset + 3];
+        final r = ((rgba[offset] * alpha) + (255 * (255 - alpha))) ~/ 255;
+        final g = ((rgba[offset + 1] * alpha) + (255 * (255 - alpha))) ~/ 255;
+        final b = ((rgba[offset + 2] * alpha) + (255 * (255 - alpha))) ~/ 255;
+        pixels[i] = 0xFF000000 | (r << 16) | (g << 8) | b;
+      }
+      final source = RGBLuminanceSource(decodedImage.width, decodedImage.height, pixels);
+      final result = QRCodeReader().decode(BinaryBitmap(HybridBinarizer(source)));
+      if (mounted) setState(() => scannedValue = result.text.trim());
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(scannerText('galleryError'))));
+    }
+  }
+
+  Future<void> toggleScannerTorch() async {
+    try {
+      await scannerController.toggleTorch();
+      if (mounted) setState(() => torchEnabled = !torchEnabled);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(scannerText('torchOff'))));
+    }
+  }
+
+  Widget scannerView() => Container(
+    constraints: const BoxConstraints(minHeight: 650),
+    decoration: BoxDecoration(
+      color: const Color(0xFF10151D),
+      borderRadius: BorderRadius.circular(24),
+      border: Border.all(color: const Color(0xFF168FFF).withOpacity(.35)),
+      boxShadow: [BoxShadow(color: const Color(0xFF078BFF).withOpacity(.10), blurRadius: 24)],
+    ),
+    clipBehavior: Clip.antiAlias,
+    child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(colors: [Color(0xFF0B1421), Color(0xFF111A27)]),
+          border: Border(bottom: BorderSide(color: Color(0xFF24354A))),
+        ),
+        child: Row(children: [
+          IconButton(
+            tooltip: scannerText('studio'),
+            onPressed: () => setState(() { isScannerOpen = false; torchEnabled = false; }),
+            icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF08A9FF), size: 29),
+          ),
+          const SizedBox(width: 3),
+          const Icon(Icons.qr_code_scanner_rounded, color: Color(0xFF08A9FF), size: 34),
+          const SizedBox(width: 10),
+          Expanded(child: RichText(text: const TextSpan(
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+            children: [TextSpan(text: 'QR ', style: TextStyle(color: Colors.white)), TextSpan(text: 'Scan', style: TextStyle(color: Color(0xFF08A9FF)))],
+          ))),
+          Container(
+            decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: const Color(0xFF286EFF), width: 2)),
+            child: IconButton(
+              tooltip: scannerText(torchEnabled ? 'torchOn' : 'torchOff'),
+              onPressed: toggleScannerTorch,
+              icon: Icon(torchEnabled ? Icons.flashlight_on_rounded : Icons.flashlight_off_rounded, color: torchEnabled ? const Color(0xFFFFD45C) : Colors.white, size: 27),
+            ),
+          ),
+        ]),
+      ),
+      Padding(
+        padding: const EdgeInsets.fromLTRB(18, 26, 18, 20),
+        child: Column(children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: SizedBox(
+              height: 330,
+              width: double.infinity,
+              child: Stack(fit: StackFit.expand, children: [
+                if (scannedValue == null)
+                  MobileScanner(
+                    controller: scannerController,
+                    onDetect: (capture) {
+                      if (scannedValue != null) return;
+                      for (final barcode in capture.barcodes) {
+                        final value = barcode.rawValue;
+                        if (value != null && value.trim().isNotEmpty) {
+                          setState(() => scannedValue = value.trim());
+                          break;
+                        }
+                      }
+                    },
+                  )
+                else
+                  Container(color: const Color(0xFF20252D), child: const Center(child: Icon(Icons.check_circle_rounded, color: Colors.greenAccent, size: 58))),
+                if (scannedValue == null) ...[
+                  Container(color: Colors.black.withOpacity(.16)),
+                  Center(child: Container(
+                    width: 250, height: 250,
+                    decoration: BoxDecoration(color: Colors.white.withOpacity(.035), borderRadius: BorderRadius.circular(18)),
+                  )),
+                  Center(child: SizedBox(width: 250, height: 250, child: CustomPaint(painter: ScannerCornersPainter()))),
+                  Center(child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 0),
+                    height: 2,
+                    width: 250,
+                    decoration: BoxDecoration(color: const Color(0xFF1CA9FF), boxShadow: [BoxShadow(color: const Color(0xFF168FFF).withOpacity(.9), blurRadius: 9, spreadRadius: 1)]),
+                  )),
+                ] else
+                  Padding(padding: const EdgeInsets.all(18), child: Center(child: Text(scannedValue!, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 15)))),
+              ]),
+            ),
+          ),
+          const SizedBox(height: 14),
+          Text(scannedValue == null ? scannerText('frameHint') : scannerText('result'), textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500)),
+          if (scannedValue != null) ...[
+            const SizedBox(height: 10),
+            SelectableText(scannedValue!, textAlign: TextAlign.center, style: const TextStyle(color: Color(0xFF8FD8FF))),
+            const SizedBox(height: 10),
+            if (Uri.tryParse(scannedValue!)?.hasScheme == true && ['http','https'].contains(Uri.tryParse(scannedValue!)!.scheme.toLowerCase()))
+              FilledButton.icon(onPressed: () async { final uri = Uri.tryParse(scannedValue!); if (uri != null) await launchUrl(uri, mode: LaunchMode.externalApplication); }, icon: const Icon(Icons.open_in_new), label: Text(scannerText('open'))),
+            OutlinedButton.icon(onPressed: () => setState(() => scannedValue = null), icon: const Icon(Icons.refresh), label: Text(scannerText('again'))),
+          ],
+          const SizedBox(height: 42),
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Expanded(child: _scannerAction(
+              icon: Icons.center_focus_strong_rounded,
+              label: scannerText('scanButton'),
+              colors: const [Color(0xFF007CFF), Color(0xFF0750B7)],
+              onTap: () => setState(() => scannedValue = null),
+            )),
+            const SizedBox(width: 16),
+            Expanded(child: _scannerAction(
+              icon: Icons.photo_library_outlined,
+              label: scannerText('gallery'),
+              colors: const [Color(0xFF8E45FF), Color(0xFF5424B9)],
+              onTap: chooseScanImage,
+            )),
+          ]),
+        ]),
+      ),
+    ]),
+  );
+
+  Widget _scannerAction({required IconData icon, required String label, required List<Color> colors, required VoidCallback onTap}) => Column(children: [
+    SizedBox(
+      width: 100, height: 100,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: colors),
+          border: Border.all(color: colors.first, width: 2.5),
+          boxShadow: [BoxShadow(color: colors.first.withOpacity(.25), blurRadius: 15, spreadRadius: 1)],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          shape: const CircleBorder(),
+          child: InkWell(onTap: onTap, customBorder: const CircleBorder(), child: Icon(icon, color: Colors.white, size: 38)),
+        ),
+      ),
+    ),
+    const SizedBox(height: 10),
+    Text(label, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600)),
   ]);
 
   Widget formBody() => Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[
@@ -978,4 +1114,21 @@ class StyledQrPainter extends CustomPainter {
       background != oldDelegate.background || design != oldDelegate.design ||
       logo != oldDelegate.logo || logoScale != oldDelegate.logoScale ||
       errorLevel != oldDelegate.errorLevel;
+}
+
+class ScannerCornersPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = const Color(0xFF08A9FF)..style = PaintingStyle.stroke..strokeWidth = 5..strokeCap = StrokeCap.round;
+    const length = 34.0;
+    const radius = 17.0;
+    final path = Path()
+      ..moveTo(0, length)..lineTo(0, radius)..quadraticBezierTo(0, 0, radius, 0)..lineTo(length, 0)
+      ..moveTo(size.width-length, 0)..lineTo(size.width-radius, 0)..quadraticBezierTo(size.width, 0, size.width, radius)..lineTo(size.width, length)
+      ..moveTo(size.width, size.height-length)..lineTo(size.width, size.height-radius)..quadraticBezierTo(size.width, size.height, size.width-radius, size.height)..lineTo(size.width-length, size.height)
+      ..moveTo(length, size.height)..lineTo(radius, size.height)..quadraticBezierTo(0, size.height, 0, size.height-radius)..lineTo(0, size.height-length);
+    canvas.drawPath(path, paint);
+  }
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
