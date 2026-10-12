@@ -180,7 +180,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner:false, themeMode:themeMode,
-      theme:ThemeData(useMaterial3:true, brightness:Brightness.light, scaffoldBackgroundColor:const Color(0xFFF7F8FC), colorScheme:ColorScheme.fromSeed(seedColor:const Color(0xFF2B7FFF))),
+      theme:ThemeData(useMaterial3:true, brightness:Brightness.light, scaffoldBackgroundColor:const Color(0xFFF1F8FF), colorScheme:ColorScheme.fromSeed(seedColor:const Color(0xFF2B7FFF))),
       darkTheme:ThemeData(useMaterial3:true, brightness:Brightness.dark, scaffoldBackgroundColor:const Color(0xFF03152C), colorScheme:ColorScheme.fromSeed(seedColor:const Color(0xFF1E9BFF), brightness:Brightness.dark)),
       home:Scaffold(
         body:SafeArea(child:LayoutBuilder(builder:(ctx,box) {
