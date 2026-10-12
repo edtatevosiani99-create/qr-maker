@@ -359,7 +359,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
           ClipRRect(
             borderRadius: BorderRadius.circular(18),
             child: SizedBox(
-              height: 330,
+              height: 410,
               width: double.infinity,
               child: Stack(fit: StackFit.expand, children: [
                 if (scannedValue == null)
@@ -381,14 +381,14 @@ class _QRStudioAppState extends State<QRStudioApp> {
                 if (scannedValue == null) ...[
                   Container(color: Colors.black.withOpacity(.16)),
                   Center(child: Container(
-                    width: 250, height: 250,
+                    width: 290, height: 290,
                     decoration: BoxDecoration(color: Colors.white.withOpacity(.035), borderRadius: BorderRadius.circular(18)),
                   )),
-                  Center(child: SizedBox(width: 250, height: 250, child: CustomPaint(painter: ScannerCornersPainter()))),
+                  Center(child: SizedBox(width: 290, height: 290, child: CustomPaint(painter: ScannerCornersPainter()))),
                   Center(child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 0),
                     height: 2,
-                    width: 250,
+                    width: 290,
                     decoration: BoxDecoration(color: const Color(0xFF1CA9FF), boxShadow: [BoxShadow(color: const Color(0xFF168FFF).withOpacity(.9), blurRadius: 9, spreadRadius: 1)]),
                   )),
                 ] else
@@ -406,30 +406,23 @@ class _QRStudioAppState extends State<QRStudioApp> {
               FilledButton.icon(onPressed: () async { final uri = Uri.tryParse(scannedValue!); if (uri != null) await launchUrl(uri, mode: LaunchMode.externalApplication); }, icon: const Icon(Icons.open_in_new), label: Text(scannerText('open'))),
             OutlinedButton.icon(onPressed: () => setState(() => scannedValue = null), icon: const Icon(Icons.refresh), label: Text(scannerText('again'))),
           ],
-          const SizedBox(height: 42),
-          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Expanded(child: _scannerAction(
-              icon: Icons.center_focus_strong_rounded,
-              label: scannerText('scanButton'),
-              colors: const [Color(0xFF007CFF), Color(0xFF0750B7)],
-              onTap: () => setState(() => scannedValue = null),
-            )),
-            const SizedBox(width: 16),
-            Expanded(child: _scannerAction(
-              icon: Icons.photo_library_outlined,
-              label: scannerText('gallery'),
-              colors: const [Color(0xFF8E45FF), Color(0xFF5424B9)],
-              onTap: chooseScanImage,
-            )),
-          ]),
+          const SizedBox(height: 68),
+          Center(child: _scannerAction(
+            icon: Icons.photo_library_outlined,
+            label: scannerText('gallery'),
+            colors: const [Color(0xFF8E45FF), Color(0xFF5424B9)],
+            onTap: chooseScanImage,
+            diameter: 66,
+            iconSize: 29,
+          )),
         ]),
       ),
     ]),
   );
 
-  Widget _scannerAction({required IconData icon, required String label, required List<Color> colors, required VoidCallback onTap}) => Column(children: [
+  Widget _scannerAction({required IconData icon, required String label, required List<Color> colors, required VoidCallback onTap, double diameter = 100, double iconSize = 38}) => Column(children: [
     SizedBox(
-      width: 100, height: 100,
+      width: diameter, height: diameter,
       child: DecoratedBox(
         decoration: BoxDecoration(
           shape: BoxShape.circle,
@@ -440,7 +433,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
         child: Material(
           color: Colors.transparent,
           shape: const CircleBorder(),
-          child: InkWell(onTap: onTap, customBorder: const CircleBorder(), child: Icon(icon, color: Colors.white, size: 38)),
+          child: InkWell(onTap: onTap, customBorder: const CircleBorder(), child: Icon(icon, color: Colors.white, size: iconSize)),
         ),
       ),
     ),
