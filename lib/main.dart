@@ -202,7 +202,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
             padding:EdgeInsets.fromLTRB(wide ? 28 : 16,10,wide ? 28 : 16,28),
             child:Center(child:ConstrainedBox(
               constraints:const BoxConstraints(maxWidth:980),
-              child:wide ? Row(crossAxisAlignment:CrossAxisAlignment.start,children:[Expanded(child:form()),const SizedBox(width:24),Expanded(child:preview())]) : Column(children:[header(),const SizedBox(height:16),formBody(),const SizedBox(height:18),previewCard(),const SizedBox(height:18),footerButtons()]),
+              child:wide ? Row(crossAxisAlignment:CrossAxisAlignment.start,children:[Expanded(child:form()),const SizedBox(width:24),Expanded(child:preview())]) : Column(children:[header(),const SizedBox(height:16),formBody(),const SizedBox(height:18),previewCard(),const SizedBox(height:10),checkQrButton(),const SizedBox(height:18),footerButtons()]),
             )),
           );
         })),
