@@ -628,9 +628,9 @@ class _QRStudioAppState extends State<QRStudioApp> {
     child:Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[
       if (_contrast(fg,bg) < 4.5 && !transparentBg) contrastWarning(),
       Row(children:[
-      Container(width:112,height:112,padding:const EdgeInsets.all(8),decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(14)),child:CustomPaint(
+      Container(width:160,height:160,padding:const EdgeInsets.all(8),decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(16)),child:CustomPaint(
         key:ValueKey('${selectedDesign}-${fg.value}-${bg.value}-${transparentBg}-${error}-${photoImage != null}-${data}'),
-        size:const Size(96,96),
+        size:const Size(144,144),
         painter:StyledQrPainter(
           data:data.isEmpty ? ' ' : data,
           foreground:fg,
