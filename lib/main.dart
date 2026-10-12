@@ -33,6 +33,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
   String error = 'M', security = 'WPA';
   String selectedDesign = 'classic';
   bool transparentBg = false;
+  bool isCheckingQr = false;
   Uint8List? photoBytes;
   ui.Image? photoImage;
   ui.Image? qrLogoImage;
@@ -648,19 +649,19 @@ class _QRStudioAppState extends State<QRStudioApp> {
   );
 
   Future<void> checkQr() async {
+    if (isCheckingQr) return;
     final expected = data.trim();
     if (expected.isEmpty) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text(t('qrEmpty'))));
       return;
     }
+    setState(() => isCheckingQr = true);
     try {
-      // Decode the actual generated PNG with a QR scanner engine.
+      // Render the exact QR shown in the preview and scan its pixels.
       final bytes = await pngBytes();
       if (bytes == null) throw StateError('Could not render QR image');
       final image = img.decodeImage(bytes);
       if (image == null) throw StateError('Could not decode PNG image');
-      // ZXing expects one 32-bit ARGB pixel per image pixel, not packed RGBA bytes.
-      // Composite transparent pixels on white so the scan matches how a QR is normally viewed.
       final rgba = image.convert(numChannels:4).getBytes(order:img.ChannelOrder.rgba);
       final pixels = Int32List(image.width * image.height);
       for (var i = 0; i < pixels.length; i++) {
@@ -671,46 +672,41 @@ class _QRStudioAppState extends State<QRStudioApp> {
         final b = ((rgba[offset + 2] * alpha) + (255 * (255 - alpha))) ~/ 255;
         pixels[i] = 0xFF000000 | (r << 16) | (g << 8) | b;
       }
-      final source = RGBLuminanceSource(
-        image.width,
-        image.height,
-        pixels,
-      );
-      final bitmap = BinaryBitmap(HybridBinarizer(source));
-      final result = QRCodeReader().decode(bitmap);
+      final source = RGBLuminanceSource(image.width, image.height, pixels);
+      final result = QRCodeReader().decode(BinaryBitmap(HybridBinarizer(source)));
       final success = result.text == expected;
       if (!mounted) return;
-      showDialog<void>(
+      await showDialog<void>(
         context:context,
         builder:(ctx)=>AlertDialog(
           icon:Icon(success ? Icons.check_circle : Icons.error, color:success ? Colors.green : Colors.red, size:36),
           title:Text(success ? t('qrReadable') : t('qrMismatch')),
-          content:Text(success
-            ? t('qrConfirmed')
-            : t('qrMismatchHint')),
+          content:Text(success ? t('qrConfirmed') : t('qrMismatchHint')),
           actions:[TextButton(onPressed:()=>Navigator.of(ctx).pop(),child:Text(t('ok')))],
         ),
       );
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
-      showDialog<void>(
+      await showDialog<void>(
         context:context,
         builder:(ctx)=>AlertDialog(
           icon:const Icon(Icons.warning_amber_rounded,color:Colors.orange,size:36),
           title:Text(t('qrFailed')),
           content:Text(t('qrFailedHint')),
-          actions:[TextButton(onPressed:()=>Navigator.of(ctx).pop(),child:const Text('OK'))],
+          actions:[TextButton(onPressed:()=>Navigator.of(ctx).pop(),child:Text(t('ok')))],
         ),
       );
+    } finally {
+      if (mounted) setState(() => isCheckingQr = false);
     }
   }
 
   Widget checkQrButton()=>SizedBox(
     width:double.infinity,
     child:FilledButton.icon(
-      onPressed:checkQr,
-      icon:const Icon(Icons.qr_code_scanner,size:20),
-      label:Text(t('checkQr')),
+      onPressed:isCheckingQr ? null : checkQr,
+      icon:isCheckingQr ? const SizedBox(width:20,height:20,child:CircularProgressIndicator(strokeWidth:2,color:Colors.white)) : const Icon(Icons.qr_code_scanner,size:20),
+      label:Text(isCheckingQr ? (lang == 'Русский' ? 'Проверка…' : lang == 'Deutsch' ? 'Prüfung…' : lang == 'ქართული' ? 'მოწმდება…' : 'Checking…') : t('checkQr')),
       style:FilledButton.styleFrom(
         backgroundColor:const Color(0xFF1877D2),
         foregroundColor:Colors.white,
