@@ -269,7 +269,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
     )),
     const SizedBox(width:10),
     Expanded(child:FilledButton.icon(
-      onPressed:()=>setState(()=>isScannerOpen=true),
+      onPressed:()=>setState(() { isScannerOpen=true; scannedValue=null; }),
       icon:const Icon(Icons.qr_code_scanner),
       label:Text(scannerText('scan'),maxLines:1,overflow:TextOverflow.ellipsis),
       style:FilledButton.styleFrom(minimumSize:const Size.fromHeight(48),backgroundColor:isScannerOpen?const Color(0xFF1877D2):Theme.of(context).colorScheme.surfaceVariant,foregroundColor:isScannerOpen?Colors.white:Theme.of(context).colorScheme.onSurfaceVariant),
