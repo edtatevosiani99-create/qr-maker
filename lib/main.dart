@@ -217,8 +217,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
     decoration:BoxDecoration(
       color:Theme.of(context).brightness==Brightness.light ? const Color(0xFFD2EAFF) : const Color(0xFF12345A),
       borderRadius:BorderRadius.circular(20),
-      border:Border.all(color:const Color(0xFF8CCBFF).withOpacity(.75),width:1.2),
-      boxShadow:[BoxShadow(color:const Color(0xFF3B9DFF).withOpacity(.10),blurRadius:14,offset:const Offset(0,4))],
+      border:Border.all(color:const Color(0xFF8CCBFF).withOpacity(.75),width:1.2),      boxShadow:[BoxShadow(color:const Color(0xFF3B9DFF).withOpacity(.10),blurRadius:14,offset:const Offset(0,4))],
     ),
     child:Row(children:[
       logo(54), const SizedBox(width:11),
@@ -437,8 +436,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
   Widget gradientColorBar(bool background)=>LayoutBuilder(
     builder:(context,constraints){
       final width=constraints.maxWidth;
-      final current=background ? bg : fg;
-      return Column(
+      final current=background ? bg : fg;      return Column(
         crossAxisAlignment:CrossAxisAlignment.stretch,
         children:[
           GestureDetector(
@@ -657,8 +655,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
       return;
     }
     setState(() {
-      isCheckingQr = true;
-      qrCheckState = 'checking';
+      isCheckingQr = true;      qrCheckState = 'checking';
     });
     try {
       // Scan the actual PNG rendered from the current QR design.
@@ -873,12 +870,12 @@ class StyledQrPainter extends CustomPainter {
     for (final eye in eyeRegions) {
       final rect = Rect.fromLTWH(origin + eye.left * unit, origin + eye.top * unit, eye.width * unit, eye.height * unit);
       final outer = RRect.fromRectAndRadius(rect, Radius.circular(unit * (design == 'neon' || design == 'mint' || design == 'green' || design == 'red' ? 1.5 : design == 'sunset' || design == 'gold' ? .6 : .15)));
-      final clear = Paint()..color = background;
+      final scanBacking = background.alpha == 0 ? Colors.white : background;
+      final clear = Paint()..color = scanBacking;
       canvas.drawRRect(outer, modules);
       final inset = rect.deflate(unit * 1.15);
       canvas.drawRRect(RRect.fromRectAndRadius(inset, Radius.circular(unit * .25)), clear);
-      final inner = inset.deflate(unit * 1.1);
-      final innerRect = RRect.fromRectAndRadius(inner, Radius.circular(unit * (design == 'neon' ? .5 : .05)));
+      final inner = inset.deflate(unit * 1.1);      final innerRect = RRect.fromRectAndRadius(inner, Radius.circular(unit * (design == 'neon' ? .5 : .05)));
       canvas.drawRRect(innerRect, modules);
     }
 
@@ -903,7 +900,8 @@ class StyledQrPainter extends CustomPainter {
     if (logo != null) {
       final side = size.width * logoScale;
       final rect = Rect.fromCenter(center: size.center(Offset.zero), width: side, height: side);
-      final pad = Paint()..color = background;
+      final scanBacking = background.alpha == 0 ? Colors.white : background;
+      final pad = Paint()..color = scanBacking;
       canvas.drawRRect(RRect.fromRectAndRadius(rect.inflate(unit * .65), Radius.circular(unit)), pad);
       canvas.drawImageRect(logo!, Rect.fromLTWH(0, 0, logo!.width.toDouble(), logo!.height.toDouble()), rect, Paint()..filterQuality = FilterQuality.high);
     }
