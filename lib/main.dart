@@ -21,7 +21,7 @@ class QRStudioApp extends StatefulWidget {
 
 class _QRStudioAppState extends State<QRStudioApp> {
   ThemeMode themeMode = ThemeMode.light;
-  String lang = 'Русский';
+  String lang = 'English';
   QRType type = QRType.url;
   Color fg = Colors.black, bg = Colors.white;
   double size = 684;
