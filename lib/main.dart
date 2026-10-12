@@ -269,9 +269,9 @@ class _QRStudioAppState extends State<QRStudioApp> {
             designOption('social',const Color(0xFF1749C8),const Color(0xFFEAF1FF)),
             designOption('classic',Colors.black,Colors.white),
             designOption('maze',const Color(0xFF3978F6),Colors.white),
-            designOption('gold',Colors.white,const Color(0xFFFFB900)),
+            designOption('gold',const Color(0xFF8A5A00),const Color(0xFFFFFDF5)),
             designOption('pink',const Color(0xFFDB4F9B),const Color(0xFFFFF2FA)),
-            designOption('red',Colors.white,const Color(0xFFFF161F)),
+            designOption('red',const Color(0xFFD60018),const Color(0xFFFFF7F7)),
           ],
         )),
       ]),
@@ -725,12 +725,9 @@ class StyledQrPainter extends CustomPainter {
             canvas.drawRect(rect.inflate(unit * .03), modules);
             break;
           case 'maze':
-            final path = Path()
-              ..moveTo(rect.left, rect.top)
-              ..lineTo(rect.right, rect.top)
-              ..lineTo(rect.right, rect.bottom)
-              ..lineTo(rect.left, rect.bottom);
-            canvas.drawPath(path, Paint()..color=foreground..style=PaintingStyle.stroke..strokeWidth=unit*.22);
+            // Keep every data module solid for reliable scanner detection.
+            // Add a subtle squared maze-like notch while preserving the module's filled footprint.
+            canvas.drawRect(rect, modules);
             break;
           case 'gold':
             canvas.drawRRect(RRect.fromRectAndRadius(rect, Radius.circular(unit * .12)), modules);
