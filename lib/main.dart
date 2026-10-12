@@ -237,18 +237,33 @@ class _QRStudioAppState extends State<QRStudioApp> {
     const SizedBox(height:4),Text(t('fg'),style:const TextStyle(fontSize:13,fontWeight:FontWeight.w700)),const SizedBox(height:6),gradientColorBar(false),
     const SizedBox(height:12),Text(t('bg'),style:const TextStyle(fontSize:13,fontWeight:FontWeight.w700)),const SizedBox(height:6),gradientColorBar(true),
     const SizedBox(height:14),
-    Align(alignment:Alignment.centerLeft,child:Text(t('designs'),style:const TextStyle(fontSize:14,fontWeight:FontWeight.w700))),
-    const SizedBox(height:8),
-    SizedBox(height:82,child:ListView(
-      scrollDirection:Axis.horizontal,
-      children:[
-        designOption('classic',Colors.black,Colors.white),
-        designOption('neon',const Color(0xFF00E5FF),const Color(0xFF101027)),
-        designOption('sunset',const Color(0xFFFF3D00),const Color(0xFFFFF3D6)),
-        designOption('mint',const Color(0xFF007F68),const Color(0xFFE3FFF5)),
-        designOption('violet',const Color(0xFF762BDB),const Color(0xFFFFE6FA)),
-      ],
-    )),
+    Container(
+      width:double.infinity,
+      padding:const EdgeInsets.fromLTRB(10,10,10,12),
+      decoration:BoxDecoration(
+        color:Theme.of(context).colorScheme.surface,
+        borderRadius:BorderRadius.circular(14),
+        border:Border.all(color:const Color(0xFF5B2DFF).withOpacity(.55),width:1.4),
+      ),
+      child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+        Row(children:[
+          const Icon(Icons.palette_outlined,size:19,color:Color(0xFF5B2DFF)),
+          const SizedBox(width:7),
+          Expanded(child:Text(t('designs'),style:const TextStyle(fontSize:14,fontWeight:FontWeight.w800))),
+        ]),
+        const SizedBox(height:9),
+        SizedBox(height:88,child:ListView(
+          scrollDirection:Axis.horizontal,
+          children:[
+            designOption('classic',Colors.black,Colors.white),
+            designOption('neon',const Color(0xFF00E5FF),const Color(0xFF101027)),
+            designOption('sunset',const Color(0xFFFF3D00),const Color(0xFFFFF3D6)),
+            designOption('mint',const Color(0xFF007F68),const Color(0xFFE3FFF5)),
+            designOption('violet',const Color(0xFF762BDB),const Color(0xFFFFE6FA)),
+          ],
+        )),
+      ]),
+    ),
     const SizedBox(height:13),Text(t('size') + ': ' + size.round().toString() + ' px',style:const TextStyle(fontSize:12,fontWeight:FontWeight.w700)),
     Slider(min:256,max:1024,value:size,activeColor:const Color(0xFF5B2DFF),onChanged:(x)=>setState(()=>size=x)),
     Text(t('error'),style:const TextStyle(fontSize:12,fontWeight:FontWeight.w700)),const SizedBox(height:6),
