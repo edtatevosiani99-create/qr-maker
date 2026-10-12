@@ -149,7 +149,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
       freshLogo = await _makeQrLogo(photoImage!, transparentBg ? Colors.transparent : bg);
     }
     final logo = freshLogo ?? qrLogoImage;
-    final p = QrPainter(data:data.isEmpty ? ' ' : data, version:QrVersions.auto, errorCorrectionLevel:errorLevel, gapless:true, color:fg, emptyColor:transparentBg ? Colors.transparent : bg, embeddedImage:logo, embeddedImageStyle:logo == null ? null : QrEmbeddedImageStyle(size:Size(size * logoScale, size * logoScale)));
+    final p = QrPainter(data:data.isEmpty ? ' ' : data, version:QrVersions.auto, errorCorrectionLevel:errorLevel, gapless:true, color:fg, emptyColor:transparentBg ? Colors.transparent : bg, eyeStyle:QrEyeStyle(eyeShape:selectedEyeShape, color:fg), dataModuleStyle:QrDataModuleStyle(dataModuleShape:selectedModuleShape, color:fg), embeddedImage:logo, embeddedImageStyle:logo == null ? null : QrEmbeddedImageStyle(size:Size(size * logoScale, size * logoScale)));
     final d = await p.toImageData(size, format:ui.ImageByteFormat.png);
     freshLogo?.dispose();
     return d?.buffer.asUint8List();
@@ -228,6 +228,15 @@ class _QRStudioAppState extends State<QRStudioApp> {
     Text(t('type'),style:const TextStyle(fontSize:16,fontWeight:FontWeight.w700)),const SizedBox(height:9),
     Wrap(spacing:7,runSpacing:7,children:[QRType.url,QRType.text,QRType.phone,QRType.wifi,QRType.contact,QRType.email,QRType.location].map(typeChip).toList()),
     const SizedBox(height:14),
+    const SizedBox(height:12),specific(),
+    if(type==QRType.wifi) ...[
+      const SizedBox(height:2),
+      DropdownButtonFormField<String>(value:security,decoration:fieldDecoration(t('security')),items:['WPA','WEP','None'].map((x)=>DropdownMenuItem(value:x,child:Text(x=='None'?t('none'):x))).toList(),onChanged:(x)=>setState(()=>security=x!)),
+    ],
+    if(type==QRType.location) ...[input('lat',t('lat'),keyboard:TextInputType.number),input('lon',t('lon'),keyboard:TextInputType.number),input('address',t('address'))],
+    const SizedBox(height:4),Text(t('fg'),style:const TextStyle(fontSize:13,fontWeight:FontWeight.w700)),const SizedBox(height:6),gradientColorBar(false),
+    const SizedBox(height:12),Text(t('bg'),style:const TextStyle(fontSize:13,fontWeight:FontWeight.w700)),const SizedBox(height:6),gradientColorBar(true),
+    const SizedBox(height:14),
     Align(alignment:Alignment.centerLeft,child:Text(t('designs'),style:const TextStyle(fontSize:14,fontWeight:FontWeight.w700))),
     const SizedBox(height:8),
     SizedBox(height:82,child:ListView(
@@ -240,14 +249,6 @@ class _QRStudioAppState extends State<QRStudioApp> {
         designOption('violet',const Color(0xFF762BDB),const Color(0xFFFFE6FA)),
       ],
     )),
-    const SizedBox(height:12),specific(),
-    if(type==QRType.wifi) ...[
-      const SizedBox(height:2),
-      DropdownButtonFormField<String>(value:security,decoration:fieldDecoration(t('security')),items:['WPA','WEP','None'].map((x)=>DropdownMenuItem(value:x,child:Text(x=='None'?t('none'):x))).toList(),onChanged:(x)=>setState(()=>security=x!)),
-    ],
-    if(type==QRType.location) ...[input('lat',t('lat'),keyboard:TextInputType.number),input('lon',t('lon'),keyboard:TextInputType.number),input('address',t('address'))],
-    const SizedBox(height:4),Text(t('fg'),style:const TextStyle(fontSize:13,fontWeight:FontWeight.w700)),const SizedBox(height:6),gradientColorBar(false),
-    const SizedBox(height:12),Text(t('bg'),style:const TextStyle(fontSize:13,fontWeight:FontWeight.w700)),const SizedBox(height:6),gradientColorBar(true),
     const SizedBox(height:13),Text(t('size') + ': ' + size.round().toString() + ' px',style:const TextStyle(fontSize:12,fontWeight:FontWeight.w700)),
     Slider(min:256,max:1024,value:size,activeColor:const Color(0xFF5B2DFF),onChanged:(x)=>setState(()=>size=x)),
     Text(t('error'),style:const TextStyle(fontSize:12,fontWeight:FontWeight.w700)),const SizedBox(height:6),
@@ -307,6 +308,20 @@ class _QRStudioAppState extends State<QRStudioApp> {
       ]),
     ]),
   );
+
+  QrEyeShape get selectedEyeShape => switch (selectedDesign) {
+    'neon' => QrEyeShape.circle,
+    'mint' => QrEyeShape.circle,
+    'violet' => QrEyeShape.circle,
+    _ => QrEyeShape.square,
+  };
+
+  QrDataModuleShape get selectedModuleShape => switch (selectedDesign) {
+    'neon' => QrDataModuleShape.circle,
+    'sunset' => QrDataModuleShape.circle,
+    'violet' => QrDataModuleShape.circle,
+    _ => QrDataModuleShape.square,
+  };
 
   Widget designOption(String id, Color qrColor, Color backgroundColor) {
     final chosen = selectedDesign == id;
@@ -539,6 +554,8 @@ class _QRStudioAppState extends State<QRStudioApp> {
           gapless:true,
           color:fg,
           emptyColor:transparentBg?Colors.transparent:bg,
+          eyeStyle:QrEyeStyle(eyeShape:selectedEyeShape, color:fg),
+          dataModuleStyle:QrDataModuleStyle(dataModuleShape:selectedModuleShape, color:fg),
           embeddedImage:qrLogoImage,
           embeddedImageStyle:qrLogoImage == null ? null : QrEmbeddedImageStyle(size:Size(96 * logoScale,96 * logoScale)),
         ),
