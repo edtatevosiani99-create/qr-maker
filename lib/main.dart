@@ -149,7 +149,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
       freshLogo = await _makeQrLogo(photoImage!, transparentBg ? Colors.transparent : bg);
     }
     final logo = freshLogo ?? qrLogoImage;
-    final p = QrPainter(data:data.isEmpty ? ' ' : data, version:QrVersions.auto, errorCorrectionLevel:errorLevel, gapless:true, color:fg, emptyColor:transparentBg ? Colors.transparent : bg, eyeStyle:QrEyeStyle(eyeShape:selectedEyeShape, color:fg), dataModuleStyle:QrDataModuleStyle(dataModuleShape:selectedModuleShape, color:fg), embeddedImage:logo, embeddedImageStyle:logo == null ? null : QrEmbeddedImageStyle(size:Size(size * logoScale, size * logoScale)));
+    final p = QrPainter(data:data.isEmpty ? ' ' : data, version:QrVersions.auto, errorCorrectionLevel:errorLevel, gapless:selectedGapless, color:fg, emptyColor:transparentBg ? Colors.transparent : bg, eyeStyle:QrEyeStyle(eyeShape:selectedEyeShape, color:fg), dataModuleStyle:QrDataModuleStyle(dataModuleShape:selectedModuleShape, color:fg), embeddedImage:logo, embeddedImageStyle:logo == null ? null : QrEmbeddedImageStyle(size:Size(size * logoScale, size * logoScale)));
     final d = await p.toImageData(size, format:ui.ImageByteFormat.png);
     freshLogo?.dispose();
     return d?.buffer.asUint8List();
@@ -324,10 +324,10 @@ class _QRStudioAppState extends State<QRStudioApp> {
     ]),
   );
 
+  // Presets change QR geometry, not just colors.
   QrEyeShape get selectedEyeShape => switch (selectedDesign) {
     'neon' => QrEyeShape.circle,
     'mint' => QrEyeShape.circle,
-    'violet' => QrEyeShape.circle,
     _ => QrEyeShape.square,
   };
 
@@ -337,6 +337,8 @@ class _QRStudioAppState extends State<QRStudioApp> {
     'violet' => QrDataModuleShape.circle,
     _ => QrDataModuleShape.square,
   };
+
+  bool get selectedGapless => selectedDesign != 'violet';
 
   Widget designOption(String id, Color qrColor, Color backgroundColor) {
     final chosen = selectedDesign == id;
@@ -603,13 +605,13 @@ class _QRStudioAppState extends State<QRStudioApp> {
       if (_contrast(fg,bg) < 4.5 && !transparentBg) contrastWarning(),
       Row(children:[
       Container(width:112,height:112,padding:const EdgeInsets.all(8),decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(14)),child:CustomPaint(
-        key:ValueKey('\${fg.value}-\${bg.value}-\${transparentBg}-\${error}-\${photoImage != null}-\${data}'),
+        key:ValueKey('\${selectedDesign}-\${fg.value}-\${bg.value}-\${transparentBg}-\${error}-\${photoImage != null}-\${data}'),
         size:const Size(96,96),
         painter:QrPainter(
           data:data.isEmpty?' ':data,
           version:QrVersions.auto,
           errorCorrectionLevel:errorLevel,
-          gapless:true,
+          gapless:selectedGapless,
           color:fg,
           emptyColor:transparentBg?Colors.transparent:bg,
           eyeStyle:QrEyeStyle(eyeShape:selectedEyeShape, color:fg),
