@@ -34,6 +34,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
   String selectedDesign = 'classic';
   bool transparentBg = false;
   bool isCheckingQr = false;
+  String? qrCheckState;
   Uint8List? photoBytes;
   ui.Image? photoImage;
   ui.Image? qrLogoImage;
@@ -652,18 +653,21 @@ class _QRStudioAppState extends State<QRStudioApp> {
     if (isCheckingQr) return;
     final expected = data.trim();
     if (expected.isEmpty) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text(t('qrEmpty'))));
+      setState(() => qrCheckState = 'empty');
       return;
     }
-    setState(() => isCheckingQr = true);
+    setState(() {
+      isCheckingQr = true;
+      qrCheckState = 'checking';
+    });
     try {
-      // Render the exact QR shown in the preview and scan its pixels.
+      // Scan the actual PNG rendered from the current QR design.
       final bytes = await pngBytes();
-      if (bytes == null) throw StateError('Could not render QR image');
-      final image = img.decodeImage(bytes);
-      if (image == null) throw StateError('Could not decode PNG image');
-      final rgba = image.convert(numChannels:4).getBytes(order:img.ChannelOrder.rgba);
-      final pixels = Int32List(image.width * image.height);
+      if (bytes == null) throw StateError('QR image rendering returned no bytes');
+      final decodedImage = img.decodeImage(bytes);
+      if (decodedImage == null) throw StateError('Generated PNG could not be decoded');
+      final rgba = decodedImage.convert(numChannels: 4).getBytes(order: img.ChannelOrder.rgba);
+      final pixels = Int32List(decodedImage.width * decodedImage.height);
       for (var i = 0; i < pixels.length; i++) {
         final offset = i * 4;
         final alpha = rgba[offset + 3];
@@ -672,48 +676,71 @@ class _QRStudioAppState extends State<QRStudioApp> {
         final b = ((rgba[offset + 2] * alpha) + (255 * (255 - alpha))) ~/ 255;
         pixels[i] = 0xFF000000 | (r << 16) | (g << 8) | b;
       }
-      final source = RGBLuminanceSource(image.width, image.height, pixels);
+      final source = RGBLuminanceSource(decodedImage.width, decodedImage.height, pixels);
       final result = QRCodeReader().decode(BinaryBitmap(HybridBinarizer(source)));
-      final success = result.text == expected;
       if (!mounted) return;
-      await showDialog<void>(
-        context:context,
-        builder:(ctx)=>AlertDialog(
-          icon:Icon(success ? Icons.check_circle : Icons.error, color:success ? Colors.green : Colors.red, size:36),
-          title:Text(success ? t('qrReadable') : t('qrMismatch')),
-          content:Text(success ? t('qrConfirmed') : t('qrMismatchHint')),
-          actions:[TextButton(onPressed:()=>Navigator.of(ctx).pop(),child:Text(t('ok')))],
-        ),
-      );
+      setState(() => qrCheckState = result.text == expected ? 'success' : 'mismatch');
     } catch (e) {
       if (!mounted) return;
-      await showDialog<void>(
-        context:context,
-        builder:(ctx)=>AlertDialog(
-          icon:const Icon(Icons.warning_amber_rounded,color:Colors.orange,size:36),
-          title:Text(t('qrFailed')),
-          content:Text(t('qrFailedHint')),
-          actions:[TextButton(onPressed:()=>Navigator.of(ctx).pop(),child:Text(t('ok')))],
-        ),
-      );
+      setState(() => qrCheckState = 'failed');
     } finally {
       if (mounted) setState(() => isCheckingQr = false);
     }
   }
 
-  Widget checkQrButton()=>SizedBox(
-    width:double.infinity,
-    child:FilledButton.icon(
-      onPressed:isCheckingQr ? null : checkQr,
-      icon:isCheckingQr ? const SizedBox(width:20,height:20,child:CircularProgressIndicator(strokeWidth:2,color:Colors.white)) : const Icon(Icons.qr_code_scanner,size:20),
-      label:Text(isCheckingQr ? (lang == 'Русский' ? 'Проверка…' : lang == 'Deutsch' ? 'Prüfung…' : lang == 'ქართული' ? 'მოწმდება…' : 'Checking…') : t('checkQr')),
-      style:FilledButton.styleFrom(
-        backgroundColor:const Color(0xFF1877D2),
-        foregroundColor:Colors.white,
-        minimumSize:const Size.fromHeight(46),
-        shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(22)),
+  Widget checkQrButton()=>Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      SizedBox(
+        width:double.infinity,
+        child:FilledButton.icon(
+          onPressed:isCheckingQr ? null : checkQr,
+          icon:isCheckingQr ? const SizedBox(width:20,height:20,child:CircularProgressIndicator(strokeWidth:2,color:Colors.white)) : const Icon(Icons.qr_code_scanner,size:20),
+          label:Text(isCheckingQr ? (lang == 'Русский' ? 'Проверка…' : lang == 'Deutsch' ? 'Prüfung…' : lang == 'ქართული' ? 'მოწმდება…' : 'Checking…') : t('checkQr')),
+          style:FilledButton.styleFrom(
+            backgroundColor:const Color(0xFF1877D2),
+            foregroundColor:Colors.white,
+            minimumSize:const Size.fromHeight(46),
+            shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(22)),
+          ),
+        ),
       ),
-    ),
+      if (qrCheckState != null) ...[
+        const SizedBox(height: 10),
+        Container(
+          padding: const EdgeInsets.all(13),
+          decoration: BoxDecoration(
+            color: qrCheckState == 'success' ? Colors.green.withOpacity(.12) :
+                   (qrCheckState == 'checking' ? Colors.blue.withOpacity(.12) : Colors.red.withOpacity(.10)),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: qrCheckState == 'success' ? Colors.green :
+                     (qrCheckState == 'checking' ? Colors.blue : Colors.red),
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                qrCheckState == 'success' ? Icons.check_circle :
+                (qrCheckState == 'checking' ? Icons.hourglass_top : Icons.error_outline),
+                color: qrCheckState == 'success' ? Colors.green :
+                       (qrCheckState == 'checking' ? Colors.blue : Colors.red),
+              ),
+              const SizedBox(width: 9),
+              Expanded(child: Text(
+                qrCheckState == 'success' ? t('qrConfirmed') :
+                qrCheckState == 'mismatch' ? t('qrMismatchHint') :
+                qrCheckState == 'empty' ? t('qrEmpty') :
+                qrCheckState == 'checking' ? (lang == 'Русский' ? 'Проверяем изображение QR-кода…' : lang == 'Deutsch' ? 'QR-Bild wird geprüft…' : lang == 'ქართული' ? 'QR გამოსახულება მოწმდება…' : 'Checking the QR image…') :
+                t('qrFailedHint'),
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+              )),
+            ],
+          ),
+        ),
+      ],
+    ],
   );
 
   Widget footerButtons()=>Row(children:[
