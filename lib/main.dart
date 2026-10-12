@@ -40,7 +40,7 @@ class _QRStudioAppState extends State<QRStudioApp> {
 
   final labels = const {
     'Русский': {'title':'QR Studio','subtitle':'Создавай • Кастомизируй • Сохраняй','type':'Тип QR-кода','url':'URL','text':'Текст','phone':'Телефон','wifi':'Wi‑Fi','contact':'Контакт','email':'Email','location':'Геолокация','fg':'Цвет QR','bg':'Фон','transparent':'Прозрачный фон','size':'Размер','error':'Коррекция ошибок','save':'Сохранить PNG','share':'Поделиться','name':'Имя','data':'Данные','subject':'Тема','message':'Сообщение','ssid':'Название Wi‑Fi','password':'Пароль','security':'Защита','lat':'Широта','lon':'Долгота','address':'Адрес','photo':'Выбрать фото','logo':'Логотип в QR','logoHint':'По желанию: вставьте картинку из галереи в центр QR','photoSelected':'Логотип выбран • коррекция H','removeLogo':'Удалить логотип','photoError':'Не удалось открыть это изображение','saved':'PNG сохранён в галерею','permission':'Разрешите доступ к галерее','preview':'Ваш QR-код','ready':'Готов к сохранению','logoSize':'Размер логотипа','lowContrastQr':'Низкий контраст: выберите более тёмный цвет QR.','lowContrastBg':'Низкий контраст: выберите более светлый фон.','contrastWarning':'Предупреждение: низкий контраст QR и фона — сканирование может быть затруднено.','none':'Без защиты','designs':'Дизайн QR-кода','classic':'Классика','neon':'Неон','sunset':'Закат','mint':'Мята','violet':'Фиолетовый'},
-    'English': {'title':'QR Studio','subtitle':'Create • Customize • Save','type':'QR code type','url':'URL','text':'Text','phone':'Phone','wifi':'Wi‑Fi','contact':'Contact','email':'Email','location':'Location','fg':'QR color','bg':'Background','transparent':'Transparent background','size':'Size','error':'Error correction','save':'Save PNG','share':'Share','name':'Name','data':'Data','subject':'Subject','message':'Message','ssid':'Wi‑Fi name','password':'Password','security':'Security','lat':'Latitude','lon':'Longitude','address':'Address','photo':'Choose photo','logo':'Logo in QR','logoHint':'Optional: add an image from the gallery to the center','photoSelected':'Logo selected • correction H','removeLogo':'Remove logo','photoError':'Could not open this image','saved':'PNG saved to gallery','permission':'Please allow gallery access','preview':'Your QR code','ready':'Ready to save','logoSize':'Logo size','lowContrastQr':'Low contrast: choose a darker QR color.','lowContrastBg':'Low contrast: choose a lighter background.','contrastWarning':'Warning: QR and background contrast is low — scanning may be difficult.','none':'No security','designs':'QR design','classic':'Classic','neon':'Neon','sunset':'Sunset','mint':'Mint','violet':'Violet'},
+    'English': {'title':'QR Studio','subtitle':'Create • Customize • Save','type':'QR code type','url':'URL','text':'Text','phone':'Phone','wifi':'Wi‑Fi','contact':'Contact','email':'Email','location':'Location','fg':'QR color','bg':'Background','transparent':'Transparent background','size':'Size','error':'Error correction','save':'Save PNG','share':'Share','name':'Name','data':'Data','subject':'Subject','message':'Message','ssid':'Wi‑Fi name','password':'Password','security':'Security','lat':'Latitude','lon':'Longitude','address':'Address','photo':'Choose photo','logo':'Logo in QR','logoHint':'Optional: add an image from the gallery to the center','photoSelected':'Logo selected • correction H','removeLogo':'Remove logo','photoError':'Could not open this image','saved':'PNG saved to gallery','permission':'Please allow gallery access','preview':'Your QR code','ready':'Ready to save','logoSize':'Logo size','lowContrastQr':'Low contrast: choose a darker QR color.','lowContrastBg':'Low contrast: choose a lighter background.','contrastWarning':'Warning: QR and background contrast is low — scanning may be difficult.','none':'No security','designs':'QR design','classic':'Classic','green':'Green style','social':'Blue corners','maze':'Geometric','gold':'Gold frame','pink':'Pink frame','red':'Red style','neon':'Neon','sunset':'Sunset','mint':'Mint','violet':'Violet'},
     'Deutsch': {'title':'QR Studio','subtitle':'Erstellen • Anpassen • Speichern','type':'QR-Code-Typ','url':'URL','text':'Text','phone':'Telefon','wifi':'WLAN','contact':'Kontakt','email':'E-Mail','location':'Standort','fg':'QR-Farbe','bg':'Hintergrund','transparent':'Transparenter Hintergrund','size':'Größe','error':'Fehlerkorrektur','save':'PNG speichern','share':'Teilen','name':'Name','data':'Daten','subject':'Betreff','message':'Nachricht','ssid':'WLAN-Name','password':'Passwort','security':'Sicherheit','lat':'Breitengrad','lon':'Längengrad','address':'Adresse','photo':'Foto auswählen','logo':'Logo im QR','logoHint':'Optional: Bild aus der Galerie in die Mitte einfügen','photoSelected':'Logo ausgewählt • Korrektur H','removeLogo':'Logo entfernen','photoError':'Bild konnte nicht geöffnet werden','saved':'PNG in Galerie gespeichert','permission':'Bitte Galeriezugriff erlauben','preview':'Ihr QR-Code','ready':'Bereit zum Speichern','logoSize':'Logogröße','lowContrastQr':'Zu geringer Kontrast: Wählen Sie eine dunklere QR-Farbe.','lowContrastBg':'Zu geringer Kontrast: Wählen Sie einen helleren Hintergrund.','contrastWarning':'Warnung: Der Kontrast zwischen QR und Hintergrund ist niedrig — das Scannen kann schwierig sein.','none':'Keine Sicherheit','designs':'QR-Design','classic':'Klassisch','neon':'Neon','sunset':'Sonnenuntergang','mint':'Minze','violet':'Violett'},
     'ქართული': {'title':'QR Studio','subtitle':'შექმენი • მოარგე • შეინახე','type':'QR კოდის ტიპი','url':'URL','text':'ტექსტი','phone':'ტელეფონი','wifi':'Wi‑Fi','contact':'კონტაქტი','email':'ელფოსტა','location':'გეოლოკაცია','fg':'QR ფერი','bg':'ფონი','transparent':'გამჭვირვალე ფონი','size':'ზომა','error':'შეცდომის გასწორება','save':'PNG შენახვა','share':'გაზიარება','name':'სახელი','data':'მონაცემები','subject':'თემა','message':'შეტყობინება','ssid':'Wi‑Fi სახელი','password':'პაროლი','security':'დაცვა','lat':'გრძედი','lon':'განედი','address':'მისამართი','photo':'ფოტოს არჩევა','logo':'ლოგო QR-ში','logoHint':'სურვილისამებრ: გალერეიდან სურათი ჩასვით QR-ის ცენტრში','photoSelected':'ლოგო არჩეულია • კორექცია H','removeLogo':'ლოგოს წაშლა','photoError':'სურათი ვერ გაიხსნა','saved':'PNG გალერეაში შეინახა','permission':'გთხოვთ დაუშვათ გალერეაზე წვდომა','preview':'თქვენი QR კოდი','ready':'მზადაა შესანახად','logoSize':'ლოგოს ზომა','lowContrastQr':'კონტრასტი ძალიან დაბალია: აირჩიეთ უფრო მუქი QR ფერი.','lowContrastBg':'კონტრასტი ძალიან დაბალია: აირჩიეთ უფრო ღია ფონი.','contrastWarning':'გაფრთხილება: QR-სა და ფონს შორის კონტრასტი დაბალია — სკანირება შეიძლება გართულდეს.','none':'დაცვის გარეშე','designs':'QR დიზაინი','classic':'კლასიკური','neon':'ნეონი','sunset':'მზის ჩასვლა','mint':'პიტნა','violet':'იისფერი'}
   };
@@ -262,14 +262,16 @@ class _QRStudioAppState extends State<QRStudioApp> {
           Expanded(child:Text(t('designs'),style:const TextStyle(fontSize:14,fontWeight:FontWeight.w800))),
         ]),
         const SizedBox(height:9),
-        SizedBox(height:88,child:ListView(
+        SizedBox(height:112,child:ListView(
           scrollDirection:Axis.horizontal,
           children:[
+            designOption('green',const Color(0xFF078F42),Colors.white),
+            designOption('social',const Color(0xFF1749C8),const Color(0xFFEAF1FF)),
             designOption('classic',Colors.black,Colors.white),
-            designOption('neon',const Color(0xFF00E5FF),const Color(0xFF101027)),
-            designOption('sunset',const Color(0xFFFF3D00),const Color(0xFFFFF3D6)),
-            designOption('mint',const Color(0xFF007F68),const Color(0xFFE3FFF5)),
-            designOption('violet',const Color(0xFF762BDB),const Color(0xFFFFE6FA)),
+            designOption('maze',const Color(0xFF3978F6),Colors.white),
+            designOption('gold',Colors.white,const Color(0xFFFFB900)),
+            designOption('pink',const Color(0xFFDB4F9B),const Color(0xFFFFF2FA)),
+            designOption('red',Colors.white,const Color(0xFFFF161F)),
           ],
         )),
       ]),
@@ -716,6 +718,29 @@ class StyledQrPainter extends CustomPainter {
         if (!matrix.isDark(y, x) || inEye(x, y)) continue;
         final rect = Rect.fromLTWH(origin + x * unit, origin + y * unit, unit * .94, unit * .94);
         switch (design) {
+          case 'green':
+            canvas.drawRRect(RRect.fromRectAndRadius(rect, Radius.circular(unit * .30)), modules);
+            break;
+          case 'social':
+            canvas.drawRect(rect.inflate(unit * .03), modules);
+            break;
+          case 'maze':
+            final path = Path()
+              ..moveTo(rect.left, rect.top)
+              ..lineTo(rect.right, rect.top)
+              ..lineTo(rect.right, rect.bottom)
+              ..lineTo(rect.left, rect.bottom);
+            canvas.drawPath(path, Paint()..color=foreground..style=PaintingStyle.stroke..strokeWidth=unit*.22);
+            break;
+          case 'gold':
+            canvas.drawRRect(RRect.fromRectAndRadius(rect, Radius.circular(unit * .12)), modules);
+            break;
+          case 'pink':
+            canvas.drawRRect(RRect.fromRectAndRadius(rect, Radius.circular(unit * .22)), modules);
+            break;
+          case 'red':
+            canvas.drawRRect(RRect.fromRectAndRadius(rect, Radius.circular(unit * .38)), modules);
+            break;
           case 'neon':
             canvas.drawRRect(RRect.fromRectAndRadius(rect, Radius.circular(unit * .46)), modules);
             break;
@@ -742,7 +767,7 @@ class StyledQrPainter extends CustomPainter {
 
     for (final eye in eyeRegions) {
       final rect = Rect.fromLTWH(origin + eye.left * unit, origin + eye.top * unit, eye.width * unit, eye.height * unit);
-      final outer = RRect.fromRectAndRadius(rect, Radius.circular(unit * (design == 'neon' || design == 'mint' ? 1.5 : design == 'sunset' ? .6 : .15)));
+      final outer = RRect.fromRectAndRadius(rect, Radius.circular(unit * (design == 'neon' || design == 'mint' || design == 'green' || design == 'red' ? 1.5 : design == 'sunset' || design == 'gold' ? .6 : .15)));
       final clear = Paint()..color = background;
       canvas.drawRRect(outer, modules);
       final inset = rect.deflate(unit * 1.15);
@@ -753,7 +778,7 @@ class StyledQrPainter extends CustomPainter {
     }
 
     // Distinctive corner brackets on the sunset and violet templates.
-    if (design == 'sunset' || design == 'violet') {
+    if (design == 'sunset' || design == 'violet' || design == 'social' || design == 'gold' || design == 'pink') {
       final p = Paint()..color = foreground..style = PaintingStyle.stroke..strokeWidth = unit * .85..strokeCap = StrokeCap.square;
       final span = unit * 4.2;
       final pad = origin - unit * .5;
