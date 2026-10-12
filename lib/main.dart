@@ -385,11 +385,31 @@ class _QRStudioAppState extends State<QRStudioApp> {
                     decoration: BoxDecoration(color: Colors.white.withOpacity(.035), borderRadius: BorderRadius.circular(18)),
                   )),
                   Center(child: SizedBox(width: 290, height: 290, child: CustomPaint(painter: ScannerCornersPainter()))),
-                  Center(child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 0),
-                    height: 2,
+                  Center(child: SizedBox(
                     width: 290,
-                    decoration: BoxDecoration(color: const Color(0xFF1CA9FF), boxShadow: [BoxShadow(color: const Color(0xFF168FFF).withOpacity(.9), blurRadius: 9, spreadRadius: 1)]),
+                    height: 290,
+                    child: TweenAnimationBuilder<double>(
+                      tween: Tween<double>(begin: 0, end: 1),
+                      duration: const Duration(milliseconds: 1900),
+                      curve: Curves.linear,
+                      builder: (context, value, child) => Align(
+                        alignment: Alignment(0, -1 + (2 * value)),
+                        child: Container(
+                          height: 3,
+                          width: 290,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1CA9FF),
+                            borderRadius: BorderRadius.circular(3),
+                            boxShadow: [BoxShadow(color: const Color(0xFF168FFF).withOpacity(.95), blurRadius: 10, spreadRadius: 2)],
+                          ),
+                        ),
+                      ),
+                      onEnd: () {
+                        if (mounted && scannedValue == null) {
+                          setState(() {});
+                        }
+                      },
+                    ),
                   )),
                 ] else
                   Padding(padding: const EdgeInsets.all(18), child: Center(child: Text(scannedValue!, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 15)))),
