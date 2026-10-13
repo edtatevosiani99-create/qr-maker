@@ -3,6 +3,8 @@ import re
 
 gradle = Path("android/app/build.gradle.kts")
 text = gradle.read_text()
+if "import java.util.Properties" not in text:
+    text = "import java.util.Properties\\n" + text
 app_id = "com.edtatevosiani99.qrstudioapp"
 text, n1 = re.subn(r'namespace = "[^"]+"', f'namespace = "{app_id}"', text, count=1)
 text, n2 = re.subn(r'applicationId = "[^"]+"', f'applicationId = "{app_id}"', text, count=1)
@@ -11,7 +13,7 @@ if not n1 or not n2:
 if 'create("release")' not in text:
     block = '''    signingConfigs {
         create("release") {
-            val props = java.util.Properties()
+            val props = Properties()
             val propsFile = rootProject.file("key.properties")
             props.load(propsFile.inputStream())
             keyAlias = props.getProperty("keyAlias")
