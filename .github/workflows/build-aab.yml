@@ -25,14 +25,83 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Create Android platform files
-        run: flutter create --platforms=android .
+      - name: Create Android project with permanent application ID
+        run: flutter create --org com.edtatevosiani99 --project-name qrstudioapp --platforms=android .
 
       - name: Install QR Studio Android activity and permission
         run: |
-          mkdir -p android/app/src/main/kotlin/com/example/qr_studio
-          cp MainActivity.kt android/app/src/main/kotlin/com/example/qr_studio/MainActivity.kt
+          mkdir -p android/app/src/main/kotlin/com/edtatevosiani99/qrstudi oapp
+          mkdir -p android/app/src/main/kotlin/com/edtatevosiani99/qrstudioapp
+          sed 's/^package com\.example\.qr_studio/package com.edtatevosiani99.qrstudioapp/' MainActivity.kt > android/app/src/main/kotlin/com/edtatevosiani99/qrstudioapp/MainActivity.kt
           sed -i '/<manifest /a\\    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>' android/app/src/main/AndroidManifest.xml
+
+      - name: Prepare persistent release signing key
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          mkdir -p android/app
+          if [ -n "${ANDROID_KEYSTORE_BASE64:-}" ] && [ -n "${ANDROID_KEYSTORE_PASSWORD:-}" ] && [ -n "${ANDROID_KEY_ALIAS:-}" ] && [ -n "${ANDROID_KEY_PASSWORD:-}" ]; then
+            echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+            KEY_PASS="$ANDROID_KEYSTORE_PASSWORD"
+            KEY_ALIAS_VALUE="$ANDROID_KEY_ALIAS"
+            STORE_PASS="$ANDROID_KEYSTORE_PASSWORD"
+            echo "generated_key=false" >> "$GITHUB_ENV"
+          else
+            STORE_PASS="$(openssl rand -hex 24)"
+            KEY_PASS="$(openssl rand -hex 24)"
+            KEY_ALIAS_VALUE="qrstudio-upload"
+            keytool -genkeypair -v -keystore android/app/upload-keystore.jks -storepass "$STORE_PASS" -keypass "$KEY_PASS" -alias "$KEY_ALIAS_VALUE" -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=QR Studio, OU=Mobile, O=QR Studio, L=Berlin, ST=Berlin, C=DE"
+            mkdir -p signing-backup
+            cp android/app/upload-keystore.jks signing-backup/upload-keystore.jks
+            printf 'ANDROID_KEYSTORE_PASSWORD=%s\nANDROID_KEY_ALIAS=%s\nANDROID_KEY_PASSWORD=%s\n' "$STORE_PASS" "$KEY_ALIAS_VALUE" "$KEY_PASS" > signing-backup/credentials.txt
+            chmod 600 signing-backup/credentials.txt
+            (cd signing-backup && zip -q ../qr-studio-signing-backup.zip upload-keystore.jks credentials.txt)
+            echo "generated_key=true" >> "$GITHUB_ENV"
+            echo "::notice::A new upload key was generated. Download and securely store the signing backup artifact."
+          fi
+          cat > android/key.properties <<EOF
+          storePassword=$STORE_PASS
+          keyPassword=$KEY_PASS
+          keyAlias=$KEY_ALIAS_VALUE
+          storeFile=upload-keystore.jks
+          EOF
+          chmod 600 android/key.properties
+
+      - name: Configure Gradle release signing and application ID
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path("android/app/build.gradle.kts")
+          s = p.read_text()
+          s = re.sub(r'namespace = "[^"]+"', 'namespace = "com.edtatevosiani99.qrstudioapp"', s, count=1)
+          s = re.sub(r'applicationId = "[^"]+"', 'applicationId = "com.edtatevosiani99.qrstudioapp"', s, count=1)
+          if 'signingConfigs.create("release")' not in s:
+              s = s.replace('    buildTypes {', '''    signingConfigs {
+          create("release") {
+              val props = java.util.Properties()
+              val propsFile = rootProject.file("key.properties")
+              props.load(propsFile.inputStream())
+              keyAlias = props.getProperty("keyAlias")
+              keyPassword = props.getProperty("keyPassword")
+              storeFile = file(props.getProperty("storeFile"))
+              storePassword = props.getProperty("storePassword")
+          }
+      }
+      
+      buildTypes {''', 1)
+          s = re.sub(r'signingConfig = signingConfigs\.getByName\("debug"\)', 'signingConfig = signingConfigs.getByName("release")', s)
+          if 'signingConfigs.getByName("release")' not in s:
+              s = s.replace('buildTypes {', 'buildTypes {\n        getByName("release") { signingConfig = signingConfigs.getByName("release") }', 1)
+          p.write_text(s)
+          PY
+          cp android/key.properties android/app/key.properties
+          # The keystore is in android/app, so Gradle's file() path resolves there.
+          sed -i 's|storeFile=upload-keystore.jks|storeFile=upload-keystore.jks|' android/app/key.properties
 
       - name: Get dependencies
         run: flutter pub get
@@ -40,7 +109,7 @@ jobs:
       - name: Generate app icons
         run: dart run flutter_launcher_icons
 
-      - name: Build Android App Bundle
+      - name: Build signed Android App Bundle
         run: flutter build appbundle --release
 
       - name: Upload AAB
@@ -49,3 +118,13 @@ jobs:
           name: qr-studio-aab
           path: build/app/outputs/bundle/release/app-release.aab
           if-no-files-found: error
+          retention-days: 90
+
+      - name: Upload signing backup (first setup only)
+        if: env.generated_key == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: qr-studio-signing-backup
+          path: qr-studio-signing-backup.zip
+          if-no-files-found: error
+          retention-days: 90
