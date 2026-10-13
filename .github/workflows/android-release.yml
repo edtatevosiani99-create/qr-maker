@@ -45,7 +45,7 @@ jobs:
           if "android.permission.POST_NOTIFICATIONS" not in s:
               pos = s.find(">", s.find("<manifest"))
               s = s[:pos + 1] + "\n" + permission + s[pos + 1:]
-          # Google Mobile Ads test app ID for development only; replace with the real AdMob app ID before release.
+          # QR Studio's configured AdMob application ID.
           app_meta = '        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3904535066175358~4536494382" />'
           if "com.google.android.gms.ads.APPLICATION_ID" not in s:
               s = s.replace("</application>", app_meta + "\n    </application>")
