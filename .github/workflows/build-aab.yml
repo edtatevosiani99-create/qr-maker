@@ -120,10 +120,9 @@ jobs:
           retention-days: 90
 
       - name: Upload signing backup (first setup only)
-        if: always() && hashFiles('qr-studio-signing-backup.zip') != ''
         uses: actions/upload-artifact@v4
         with:
           name: qr-studio-signing-backup
           path: qr-studio-signing-backup.zip
-          if-no-files-found: error
+          if-no-files-found: ignore
           retention-days: 90
