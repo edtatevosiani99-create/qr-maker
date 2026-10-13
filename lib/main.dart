@@ -14,8 +14,13 @@ import 'package:image/image.dart' as img;
 import 'package:zxing2/qrcode.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-void main() => runApp(const QRStudioApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await MobileAds.instance.initialize();
+  runApp(const QRStudioApp());
+}
 
 enum QRType { url, text, phone, wifi, contact, email, location }
 
@@ -25,6 +30,76 @@ class QRStudioApp extends StatefulWidget {
 }
 
 class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStateMixin {
+  static const String _bannerTestUnitId = 'ca-app-pub-3940256099942544/6300978111';
+  static const String _interstitialTestUnitId = 'ca-app-pub-3940256099942544/1033173712';
+  BannerAd? _bannerAd;
+  bool _bannerLoaded = false;
+  InterstitialAd? _interstitialAd;
+  int _savedQrCount = 0;
+  bool _interstitialShowing = false;
+
+  void _loadBannerAd() {
+    final ad = BannerAd(
+      adUnitId: _bannerTestUnitId,
+      request: const AdRequest(),
+      size: AdSize.banner,
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          if (!mounted) { ad.dispose(); return; }
+          setState(() => _bannerLoaded = true);
+        },
+        onAdFailedToLoad: (ad, error) {
+          ad.dispose();
+          if (mounted) setState(() => _bannerLoaded = false);
+        },
+      ),
+    );
+    _bannerAd = ad;
+    ad.load();
+  }
+
+  void _loadInterstitialAd() {
+    InterstitialAd.load(
+      adUnitId: _interstitialTestUnitId,
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          _interstitialAd?.dispose();
+          _interstitialAd = ad;
+          ad.fullScreenContentCallback = FullScreenContentCallback(
+            onAdDismissedFullScreenContent: (ad) {
+              ad.dispose();
+              _interstitialAd = null;
+              _interstitialShowing = false;
+              _loadInterstitialAd();
+            },
+            onAdFailedToShowFullScreenContent: (ad, error) {
+              ad.dispose();
+              _interstitialAd = null;
+              _interstitialShowing = false;
+              _loadInterstitialAd();
+            },
+          );
+        },
+        onAdFailedToLoad: (error) { _interstitialAd = null; },
+      ),
+    );
+  }
+
+  void _onQrSaved() {
+    _savedQrCount++;
+    if (_savedQrCount >= 8) {
+      _savedQrCount = 0;
+      final ad = _interstitialAd;
+      if (ad != null && !_interstitialShowing) {
+        _interstitialShowing = true;
+        ad.show();
+      } else if (ad == null) {
+        _loadInterstitialAd();
+      }
+    }
+  }
+
   ThemeMode themeMode = ThemeMode.light;
   String lang = 'English';
   QRType type = QRType.url;
@@ -76,10 +151,12 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
 
   @override void initState() {
     super.initState();
+    _loadBannerAd();
+    _loadInterstitialAd();
     c['main']!.text = 'https://example.com';
     _scanLineController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500))..repeat(reverse: true);
   }
-  @override void dispose() { _logoRefreshTimer?.cancel(); _scanLineController.dispose(); scannerController.dispose(); photoImage?.dispose(); qrLogoImage?.dispose(); for (final x in c.values) x.dispose(); super.dispose(); }
+  @override void dispose() { _bannerAd?.dispose(); _interstitialAd?.dispose(); _logoRefreshTimer?.cancel(); _scanLineController.dispose(); scannerController.dispose(); photoImage?.dispose(); qrLogoImage?.dispose(); for (final x in c.values) x.dispose(); super.dispose(); }
 
   Future<ui.Image> _makeQrLogo(ui.Image source, Color borderColor) async {
     const canvasSize = 1000.0;
@@ -188,6 +265,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
         if (!ok) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text(t('permission')))); return; }
       }
       await Gal.putImageBytes(b, album:'QR Studio');
+      _onQrSaved();
       try { await const MethodChannel('qr_studio_notifications').invokeMethod('showSavedNotification'); } catch (_) {}
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text(t('saved'))));
     } catch (_) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text(t('permission')))); }
@@ -208,6 +286,16 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
       theme:ThemeData(useMaterial3:true, brightness:Brightness.light, scaffoldBackgroundColor:const Color(0xFFE8F5FF), colorScheme:ColorScheme.fromSeed(seedColor:const Color(0xFF2B7FFF))),
       darkTheme:ThemeData(useMaterial3:true, brightness:Brightness.dark, scaffoldBackgroundColor:const Color(0xFF03152C), colorScheme:ColorScheme.fromSeed(seedColor:const Color(0xFF1E9BFF), brightness:Brightness.dark)),
       home:Scaffold(
+        bottomNavigationBar: _bannerLoaded && _bannerAd != null
+            ? SafeArea(
+                top: false,
+                child: SizedBox(
+                  height: _bannerAd!.size.height.toDouble(),
+                  width: _bannerAd!.size.width.toDouble(),
+                  child: Center(child: AdWidget(ad: _bannerAd!)),
+                ),
+              )
+            : null,
         body:SafeArea(child:LayoutBuilder(builder:(ctx,box) {
           final wide = box.maxWidth > 820;
           return SingleChildScrollView(
