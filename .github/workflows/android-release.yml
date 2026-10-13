@@ -37,7 +37,16 @@ jobs:
           set -euo pipefail
           mkdir -p android/app/src/main/kotlin/com/edtatevosiani99/qrstudioapp
           sed 's/^package com\.example\.qr_studio$/package com.edtatevosiani99.qrstudioapp/' MainActivity.kt > android/app/src/main/kotlin/com/edtatevosiani99/qrstudioapp/MainActivity.kt
-          python3 -c 'from pathlib import Path; p=Path("android/app/src/main/AndroidManifest.xml"); s=p.read_text(); perm="    <uses-permission android:name=\\"android.permission.POST_NOTIFICATIONS\\" />"; s=s if "android.permission.POST_NOTIFICATIONS" in s else s.replace(">", ">\\n"+perm, 1); p.write_text(s)'
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("android/app/src/main/AndroidManifest.xml")
+          s = p.read_text()
+          permission = '    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />'
+          if "android.permission.POST_NOTIFICATIONS" not in s:
+              pos = s.find(">", s.find("<manifest"))
+              s = s[:pos + 1] + "\\n" + permission + s[pos + 1:]
+          p.write_text(s)
+          PY
 
       - name: Create release signing key and configure Gradle
         shell: bash
