@@ -72,13 +72,15 @@ jobs:
           import re
           p = Path("android/app/build.gradle.kts")
           s = p.read_text()
+          if "import java.util.Properties" not in s:
+              s = "import java.util.Properties\n" + s
           s = re.sub(r'namespace = "[^"]+"', 'namespace = "com.edtatevosiani99.qrstudioapp"', s, count=1)
           s = re.sub(r'applicationId = "[^"]+"', 'applicationId = "com.edtatevosiani99.qrstudioapp"', s, count=1)
           if 'create("release")' not in s:
               marker = "    buildTypes {"
               signing = """    signingConfigs {
                   create("release") {
-                      val props = java.util.Properties()
+                      val props = Properties()
                       val propsFile = rootProject.file("key.properties")
                       props.load(propsFile.inputStream())
                       keyAlias = props.getProperty("keyAlias")
