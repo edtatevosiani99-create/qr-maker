@@ -1,0 +1,51 @@
+name: Build Android AAB
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/build-aab.yml'
+      - 'lib/**'
+      - 'pubspec.yaml'
+      - 'app_icon.png'
+      - 'MainActivity.kt'
+      - 'AndroidManifest.xml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.7'
+          channel: stable
+          cache: true
+
+      - name: Create Android platform files
+        run: flutter create --platforms=android .
+
+      - name: Install QR Studio Android activity and permission
+        run: |
+          mkdir -p android/app/src/main/kotlin/com/example/qr_studio
+          cp MainActivity.kt android/app/src/main/kotlin/com/example/qr_studio/MainActivity.kt
+          sed -i '/<manifest /a\\    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>' android/app/src/main/AndroidManifest.xml
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Generate app icons
+        run: dart run flutter_launcher_icons
+
+      - name: Build Android App Bundle
+        run: flutter build appbundle --release
+
+      - name: Upload AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: qr-studio-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
