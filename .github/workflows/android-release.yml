@@ -53,7 +53,7 @@ jobs:
         run: |
           set -euo pipefail
           STORE_PASS="$(openssl rand -hex 24)"
-          KEY_PASS="$(openssl rand -hex 24)"
+          KEY_PASS="$STORE_PASS"
           KEY_ALIAS_VALUE="qrstudio-upload"
           keytool -genkeypair -v -keystore android/app/upload-keystore.jks -storepass "$STORE_PASS" -keypass "$KEY_PASS" -alias "$KEY_ALIAS_VALUE" -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=QR Studio, OU=Mobile, O=QR Studio, L=Berlin, ST=Berlin, C=DE"
           cat > android/key.properties <<EOF
