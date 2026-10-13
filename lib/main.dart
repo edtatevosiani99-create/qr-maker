@@ -310,9 +310,10 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   }
 
   Future<void> zoomScannerIn() async {
-    // Request maximum camera zoom (normalized scale 1.0) after the scanner starts.
+    // Start with moderate zoom (50% of the camera's normalized zoom range).
+    // This keeps the scan frame compact without the excessive maximum zoom.
     try {
-      await scannerController.setZoomScale(1.0);
+      await scannerController.setZoomScale(0.5);
     } catch (_) {
       // Keep scanning normally on cameras that do not support zoom.
     }
