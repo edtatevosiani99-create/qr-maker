@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/build-aab.yml'
+      - '.github/workflows/dart.yml'
       - 'lib/**'
       - 'pubspec.yaml'
       - 'app_icon.png'
