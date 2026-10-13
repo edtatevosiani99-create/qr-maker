@@ -30,7 +30,6 @@ jobs:
 
       - name: Install QR Studio Android activity and permission
         run: |
-          mkdir -p android/app/src/main/kotlin/com/edtatevosiani99/qrstudi oapp
           mkdir -p android/app/src/main/kotlin/com/edtatevosiani99/qrstudioapp
           sed 's/^package com\.example\.qr_studio/package com.edtatevosiani99.qrstudioapp/' MainActivity.kt > android/app/src/main/kotlin/com/edtatevosiani99/qrstudioapp/MainActivity.kt
           sed -i '/<manifest /a\\    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>' android/app/src/main/AndroidManifest.xml
@@ -121,7 +120,7 @@ jobs:
           retention-days: 90
 
       - name: Upload signing backup (first setup only)
-        if: env.generated_key == 'true'
+        if: always() && hashFiles('qr-studio-signing-backup.zip') != ''
         uses: actions/upload-artifact@v4
         with:
           name: qr-studio-signing-backup
