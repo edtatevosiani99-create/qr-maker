@@ -276,7 +276,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     )),
     const SizedBox(width:10),
     Expanded(child:FilledButton.icon(
-      onPressed:()=>setState(() { isScannerOpen=true; scannedValue=null; }),
+      onPressed:(){ setState(() { isScannerOpen=true; scannedValue=null; }); Future.delayed(const Duration(milliseconds:900), zoomScannerIn); },
       icon:const Icon(Icons.qr_code_scanner),
       label:Text(scannerText('scan'),maxLines:1,overflow:TextOverflow.ellipsis),
       style:FilledButton.styleFrom(minimumSize:const Size.fromHeight(48),backgroundColor:isScannerOpen?const Color(0xFF1877D2):Theme.of(context).colorScheme.surfaceVariant,foregroundColor:isScannerOpen?Colors.white:Theme.of(context).colorScheme.onSurfaceVariant),
@@ -306,6 +306,15 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(scannerText('galleryError'))));
+    }
+  }
+
+  Future<void> zoomScannerIn() async {
+    // Request maximum camera zoom (normalized scale 1.0) after the scanner starts.
+    try {
+      await scannerController.setZoomScale(1.0);
+    } catch (_) {
+      // Keep scanning normally on cameras that do not support zoom.
     }
   }
 
