@@ -34,7 +34,18 @@ jobs:
         run: |
           mkdir -p android/app/src/main/kotlin/com/edtatevosiani99/qrstudioapp
           sed 's/^package com\.example\.qr_studio/package com.edtatevosiani99.qrstudioapp/' MainActivity.kt > android/app/src/main/kotlin/com/edtatevosiani99/qrstudioapp/MainActivity.kt
-          sed -i '/<manifest /a\\    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>' android/app/src/main/AndroidManifest.xml
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("android/app/src/main/AndroidManifest.xml")
+          s = p.read_text()
+          if "android.permission.POST_NOTIFICATIONS" not in s:
+              pos = s.find(">", s.find("<manifest"))
+              s = s[:pos + 1] + '\\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />' + s[pos + 1:]
+          app_meta = '        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3904535066175358~4536494382" />'
+          if "com.google.android.gms.ads.APPLICATION_ID" not in s:
+              s = s.replace("</application>", app_meta + "\\n    </application>")
+          p.write_text(s)
+          PY
 
       - name: Prepare release signing key
         env:
