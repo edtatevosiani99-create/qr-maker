@@ -44,7 +44,7 @@ jobs:
           permission = '    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />'
           if "android.permission.POST_NOTIFICATIONS" not in s:
               pos = s.find(">", s.find("<manifest"))
-              s = s[:pos + 1] + "\\n" + permission + s[pos + 1:]
+              s = s[:pos + 1] + "\n" + permission + s[pos + 1:]
           p.write_text(s)
           PY
 
