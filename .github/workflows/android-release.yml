@@ -1,0 +1,130 @@
+name: QR Studio Android Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/android-release.yml'
+      - 'lib/**'
+      - 'pubspec.yaml'
+      - 'app_icon.png'
+      - 'MainActivity.kt'
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.7'
+          channel: stable
+          cache: true
+
+      - name: Generate Android project with Play Store application ID
+        run: flutter create --org com.edtatevosiani99 --project-name qrstudioapp --platforms=android .
+
+      - name: Install QR Studio activity and notification permission
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p android/app/src/main/kotlin/com/edtatevosiani99/qrstudioapp
+          sed 's/^package com\.example\.qr_studio$/package com.edtatevosiani99.qrstudioapp/' MainActivity.kt > android/app/src/main/kotlin/com/edtatevosiani99/qrstudioapp/MainActivity.kt
+          python3 -c 'from pathlib import Path; p=Path("android/app/src/main/AndroidManifest.xml"); s=p.read_text(); perm="    <uses-permission android:name=\\"android.permission.POST_NOTIFICATIONS\\" />"; s=s if "android.permission.POST_NOTIFICATIONS" in s else s.replace(">", ">\\n"+perm, 1); p.write_text(s)'
+
+      - name: Create release signing key and configure Gradle
+        shell: bash
+        run: |
+          set -euo pipefail
+          STORE_PASS="$(openssl rand -hex 24)"
+          KEY_PASS="$(openssl rand -hex 24)"
+          KEY_ALIAS_VALUE="qrstudio-upload"
+          keytool -genkeypair -v -keystore android/app/upload-keystore.jks -storepass "$STORE_PASS" -keypass "$KEY_PASS" -alias "$KEY_ALIAS_VALUE" -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=QR Studio, OU=Mobile, O=QR Studio, L=Berlin, ST=Berlin, C=DE"
+          cat > android/key.properties <<EOF
+          storePassword=$STORE_PASS
+          keyPassword=$KEY_PASS
+          keyAlias=$KEY_ALIAS_VALUE
+          storeFile=upload-keystore.jks
+          EOF
+          mkdir -p signing-backup
+          cp android/app/upload-keystore.jks signing-backup/upload-keystore.jks
+          printf 'ANDROID_KEYSTORE_PASSWORD=%s\nANDROID_KEY_ALIAS=%s\nANDROID_KEY_PASSWORD=%s\n' "$STORE_PASS" "$KEY_ALIAS_VALUE" "$KEY_PASS" > signing-backup/credentials.txt
+          chmod 600 signing-backup/credentials.txt
+          (cd signing-backup && zip -q ../qr-studio-signing-backup.zip upload-keystore.jks credentials.txt)
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path("android/app/build.gradle.kts")
+          s = p.read_text()
+          s = re.sub(r'namespace = "[^"]+"', 'namespace = "com.edtatevosiani99.qrstudioapp"', s, count=1)
+          s = re.sub(r'applicationId = "[^"]+"', 'applicationId = "com.edtatevosiani99.qrstudioapp"', s, count=1)
+          if 'create("release")' not in s:
+              marker = "    buildTypes {"
+              signing = """    signingConfigs {
+                  create("release") {
+                      val props = java.util.Properties()
+                      val propsFile = rootProject.file("key.properties")
+                      props.load(propsFile.inputStream())
+                      keyAlias = props.getProperty("keyAlias")
+                      keyPassword = props.getProperty("keyPassword")
+                      storeFile = file(props.getProperty("storeFile"))
+                      storePassword = props.getProperty("storePassword")
+                  }
+              }
+
+          """
+              s = s.replace(marker, signing + marker, 1)
+          s = re.sub(r'signingConfig = signingConfigs\.getByName\("debug"\)', 'signingConfig = signingConfigs.getByName("release")', s)
+          p.write_text(s)
+          PY
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate launcher icon
+        run: dart run flutter_launcher_icons
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Build signed Play Store AAB
+        run: flutter build appbundle --release
+
+      - name: Verify bundle application ID
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s build/app/outputs/bundle/release/app-release.aab
+          jarsigner -verify -verbose -certs build/app/outputs/bundle/release/app-release.aab
+          echo "AAB exists and has a verifiable signature."
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: qr-studio-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Upload Google Play AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: qr-studio-play-store-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Upload signing key backup - save securely for future updates
+        uses: actions/upload-artifact@v4
+        with:
+          name: qr-studio-signing-backup
+          path: qr-studio-signing-backup.zip
+          if-no-files-found: error
+          retention-days: 90
