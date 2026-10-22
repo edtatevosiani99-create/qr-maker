@@ -4,7 +4,7 @@ import re
 gradle = Path("android/app/build.gradle.kts")
 text = gradle.read_text()
 if "import java.util.Properties" not in text:
-    text = "import java.util.Properties\\n" + text
+    text = "import java.util.Properties\n" + text
 app_id = "com.edtatevosiani99.qrstudioapp"
 text, n1 = re.subn(r'namespace = "[^"]+"', f'namespace = "{app_id}"', text, count=1)
 text, n2 = re.subn(r'applicationId = "[^"]+"', f'applicationId = "{app_id}"', text, count=1)
