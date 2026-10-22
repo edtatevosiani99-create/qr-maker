@@ -40,13 +40,13 @@ jobs:
           s = p.read_text()
           if "com.google.android.gms.permission.AD_ID" not in s:
               pos = s.find(">", s.find("<manifest"))
-              s = s[:pos + 1] + '\\n    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />' + s[pos + 1:]
+              s = s[:pos + 1] + '\n    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />' + s[pos + 1:]
           if "android.permission.POST_NOTIFICATIONS" not in s:
               pos = s.find(">", s.find("<manifest"))
-              s = s[:pos + 1] + '\\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />' + s[pos + 1:]
+              s = s[:pos + 1] + '\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />' + s[pos + 1:]
           app_meta = '        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3904535066175358~4536494382" />'
           if "com.google.android.gms.ads.APPLICATION_ID" not in s:
-              s = s.replace("</application>", app_meta + "\\n    </application>")
+              s = s.replace("</application>", app_meta + "\n    </application>")
           p.write_text(s)
           PY
 
@@ -66,7 +66,7 @@ jobs:
             KEY_ALIAS_VALUE="$ANDROID_KEY_ALIAS"
           else
             STORE_PASS="$(openssl rand -hex 24)"
-            KEY_PASS="$(openssl rand -hex 24)"
+            KEY_PASS="$STORE_PASS"
             KEY_ALIAS_VALUE="qrstudio-upload"
             keytool -genkeypair -v -keystore android/app/upload-keystore.jks -storepass "$STORE_PASS" -keypass "$KEY_PASS" -alias "$KEY_ALIAS_VALUE" -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=QR Studio, OU=Mobile, O=QR Studio, L=Berlin, ST=Berlin, C=DE"
             mkdir -p signing-backup
