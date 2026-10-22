@@ -38,6 +38,9 @@ jobs:
           from pathlib import Path
           p = Path("android/app/src/main/AndroidManifest.xml")
           s = p.read_text()
+          if "com.google.android.gms.permission.AD_ID" not in s:
+              pos = s.find(">", s.find("<manifest"))
+              s = s[:pos + 1] + '\\n    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />' + s[pos + 1:]
           if "android.permission.POST_NOTIFICATIONS" not in s:
               pos = s.find(">", s.find("<manifest"))
               s = s[:pos + 1] + '\\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />' + s[pos + 1:]
