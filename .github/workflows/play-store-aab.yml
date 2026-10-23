@@ -29,17 +29,17 @@ jobs:
           cache: true
 
       - name: Generate Android project with confirmed application ID
-        run: flutter create --org com.edtatevosiani --project-name qrstudioapp --platforms=android .
+        run: flutter create --org com.edtatevosiani99 --project-name qrstudioapp --platforms=android .
 
       - name: Install QR Studio activity
         run: |
-          mkdir -p android/app/src/main/kotlin/com/edtatevosiani/qrstudioapp
+          mkdir -p android/app/src/main/kotlin/com/edtatevosiani99/qrstudioapp
           python3 - <<'PY'
           from pathlib import Path
           src = Path("MainActivity.kt").read_text()
-          src = src.replace("package com.example.qr_studio", "package com.edtatevosiani.qrstudioapp", 1)
+          src = src.replace("package com.example.qr_studio", "package com.edtatevosiani99.qrstudioapp", 1)
           src = src.replace("R.mipmap.ic_launcher", "android.R.drawable.ic_menu_view")
-          Path("android/app/src/main/kotlin/com/edtatevosiani/qrstudioapp/MainActivity.kt").write_text(src)
+          Path("android/app/src/main/kotlin/com/edtatevosiani99/qrstudioapp/MainActivity.kt").write_text(src)
           p = Path("android/app/src/main/AndroidManifest.xml")
           s = p.read_text()
           if "com.google.android.gms.permission.AD_ID" not in s:
