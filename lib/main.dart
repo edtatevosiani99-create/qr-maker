@@ -29,8 +29,8 @@ class QRStudioApp extends StatefulWidget {
 }
 
 class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStateMixin {
-  static const String _bannerTestUnitId = 'ca-app-pub-3904535066175358/9214105998';
-  static const String _interstitialTestUnitId = 'ca-app-pub-3904535066175358/9429728416';
+  static const String _bannerTestUnitId = 'ca-app-pub-3940256099942544/6300978111';
+  static const String _interstitialTestUnitId = 'ca-app-pub-3940256099942544/1033173712';
   BannerAd? _bannerAd;
   bool _bannerLoaded = false;
   InterstitialAd? _interstitialAd;
