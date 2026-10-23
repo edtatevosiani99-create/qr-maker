@@ -18,7 +18,6 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await MobileAds.instance.initialize();
   runApp(const QRStudioApp());
 }
 
@@ -37,6 +36,17 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   InterstitialAd? _interstitialAd;
   int _savedQrCount = 0;
   bool _interstitialShowing = false;
+
+  Future<void> _initializeAds() async {
+    try {
+      await MobileAds.instance.initialize();
+      if (!mounted) return;
+      _loadBannerAd();
+      _loadInterstitialAd();
+    } catch (_) {
+      // Ads must never prevent the app interface from starting.
+    }
+  }
 
   void _loadBannerAd() {
     final ad = BannerAd(
@@ -151,8 +161,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
 
   @override void initState() {
     super.initState();
-    _loadBannerAd();
-    _loadInterstitialAd();
+    _initializeAds();
     c['main']!.text = 'https://example.com';
     _scanLineController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500))..repeat(reverse: true);
   }
