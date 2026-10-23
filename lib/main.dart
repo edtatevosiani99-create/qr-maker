@@ -36,6 +36,10 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   InterstitialAd? _interstitialAd;
   int _savedQrCount = 0;
   bool _interstitialShowing = false;
+  bool _pendingInterstitial = false;
+  bool _interstitialLoadInProgress = false;
+  Timer? _bannerRetryTimer;
+  Timer? _interstitialRetryTimer;
 
   Future<void> _initializeAds() async {
     try {
@@ -49,18 +53,25 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   }
 
   void _loadBannerAd() {
+    if (!mounted) return;
+    _bannerRetryTimer?.cancel();
     final ad = BannerAd(
       adUnitId: _bannerTestUnitId,
       request: const AdRequest(),
       size: AdSize.banner,
       listener: BannerAdListener(
         onAdLoaded: (ad) {
+          _bannerRetryTimer?.cancel();
           if (!mounted) { ad.dispose(); return; }
           setState(() => _bannerLoaded = true);
         },
         onAdFailedToLoad: (ad, error) {
           ad.dispose();
-          if (mounted) setState(() => _bannerLoaded = false);
+          if (!mounted) return;
+          setState(() => _bannerLoaded = false);
+          // Retry transient failures; an unavailable AdMob fill may still need account-side review.
+          _bannerRetryTimer?.cancel();
+          _bannerRetryTimer = Timer(const Duration(seconds: 30), _loadBannerAd);
         },
       ),
     );
@@ -69,11 +80,16 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   }
 
   void _loadInterstitialAd() {
+    if (!mounted || _interstitialLoadInProgress || _interstitialAd != null) return;
+    _interstitialLoadInProgress = true;
+    _interstitialRetryTimer?.cancel();
     InterstitialAd.load(
       adUnitId: _interstitialTestUnitId,
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
+          _interstitialLoadInProgress = false;
+          _interstitialRetryTimer?.cancel();
           _interstitialAd?.dispose();
           _interstitialAd = ad;
           ad.fullScreenContentCallback = FullScreenContentCallback(
@@ -90,21 +106,39 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
               _loadInterstitialAd();
             },
           );
+          if (_pendingInterstitial && !_interstitialShowing) {
+            _showPendingInterstitial();
+          }
         },
-        onAdFailedToLoad: (error) { _interstitialAd = null; },
+        onAdFailedToLoad: (error) {
+          _interstitialLoadInProgress = false;
+          _interstitialAd = null;
+          if (!mounted) return;
+          _interstitialRetryTimer?.cancel();
+          _interstitialRetryTimer = Timer(const Duration(seconds: 30), () {
+            if (mounted) _loadInterstitialAd();
+          });
+        },
       ),
     );
+  }
+
+  void _showPendingInterstitial() {
+    final ad = _interstitialAd;
+    if (ad == null || _interstitialShowing) return;
+    _pendingInterstitial = false;
+    _interstitialShowing = true;
+    ad.show();
   }
 
   void _onQrSaved() {
     _savedQrCount++;
     if (_savedQrCount >= 8) {
       _savedQrCount = 0;
-      final ad = _interstitialAd;
-      if (ad != null && !_interstitialShowing) {
-        _interstitialShowing = true;
-        ad.show();
-      } else if (ad == null) {
+      _pendingInterstitial = true;
+      if (_interstitialAd != null) {
+        _showPendingInterstitial();
+      } else {
         _loadInterstitialAd();
       }
     }
@@ -165,7 +199,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     c['main']!.text = 'https://example.com';
     _scanLineController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500))..repeat(reverse: true);
   }
-  @override void dispose() { _bannerAd?.dispose(); _interstitialAd?.dispose(); _logoRefreshTimer?.cancel(); _scanLineController.dispose(); scannerController.dispose(); photoImage?.dispose(); qrLogoImage?.dispose(); for (final x in c.values) x.dispose(); super.dispose(); }
+  @override void dispose() { _bannerRetryTimer?.cancel(); _interstitialRetryTimer?.cancel(); _bannerAd?.dispose(); _interstitialAd?.dispose(); _logoRefreshTimer?.cancel(); _scanLineController.dispose(); scannerController.dispose(); photoImage?.dispose(); qrLogoImage?.dispose(); for (final x in c.values) x.dispose(); super.dispose(); }
 
   Future<ui.Image> _makeQrLogo(ui.Image source, Color borderColor) async {
     const canvasSize = 1000.0;
