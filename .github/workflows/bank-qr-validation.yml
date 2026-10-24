@@ -29,3 +29,9 @@ jobs:
         run: flutter analyze --no-fatal-infos --no-fatal-warnings
       - name: Build debug APK
         run: flutter build apk --debug
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: qr-studio-bank-qr-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error
