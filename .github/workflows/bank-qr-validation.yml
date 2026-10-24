@@ -1,0 +1,39 @@
+name: Validate QR Studio Android
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'lib/**'
+      - 'pubspec.yaml'
+      - '.github/workflows/bank-qr-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.7'
+          channel: stable
+          cache: true
+      - name: Generate missing Android project files
+        run: flutter create --platforms=android --org com.edtatevosiani99 --project-name qrstudioapp .
+      - name: Get dependencies
+        run: flutter pub get
+      - name: Analyze Dart code
+        run: flutter analyze lib --no-fatal-infos --no-fatal-warnings
+      - name: Build debug APK
+        run: flutter build apk --debug
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: qr-studio-bank-qr-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error
