@@ -56,8 +56,8 @@ jobs:
         run: flutter pub get
       - name: Analyze Dart code
         run: flutter analyze lib --no-fatal-infos --no-fatal-warnings
-      - name: Build debug APK
-        run: flutter build apk --debug
+      - name: Build ABI-specific debug APKs
+        run: flutter build apk --debug --split-per-abi
       - name: Smoke-test app launch on Android emulator
         continue-on-error: true
         uses: reactivecircus/android-emulator-runner@v2
@@ -71,7 +71,7 @@ jobs:
           disable-animations: true
           script: |
             set -euo pipefail
-            adb install build/app/outputs/flutter-apk/app-debug.apk
+            adb install build/app/outputs/flutter-apk/app-x86_64-debug.apk
             adb shell am force-stop com.edtatevosiani99.qrstudioapp
             adb shell monkey -p com.edtatevosiani99.qrstudioapp 1
             sleep 12
@@ -84,6 +84,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: qr-studio-bank-qr-debug-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          name: qr-studio-bank-qr-arm64-debug-apk
+          path: build/app/outputs/flutter-apk/app-arm64-v8a-debug.apk
           if-no-files-found: error
