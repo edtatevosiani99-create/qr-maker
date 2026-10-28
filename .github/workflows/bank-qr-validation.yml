@@ -43,10 +43,10 @@ jobs:
               if name not in s:
                   additions.append(permission)
           if additions:
-              s = s[:manifest_end + 1] + "\\n" + "\\n".join(additions) + s[manifest_end + 1:]
+              s = s[:manifest_end + 1] + "\n" + "\n".join(additions) + s[manifest_end + 1:]
           app_id = '        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3904535066175358~4536494382" />'
           if "com.google.android.gms.ads.APPLICATION_ID" not in s:
-              s = s.replace("</application>", app_id + "\\n    </application>")
+              s = s.replace("</application>", app_id + "\n    </application>")
           p.write_text(s)
           if "ca-app-pub-3904535066175358~4536494382" not in s:
               raise SystemExit("AdMob application ID was not added to AndroidManifest.xml")
