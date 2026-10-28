@@ -57,6 +57,25 @@ jobs:
         run: flutter analyze lib --no-fatal-infos --no-fatal-warnings
       - name: Build debug APK
         run: flutter build apk --debug
+      - name: Smoke-test app launch on Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          script: |
+            set -euo pipefail
+            adb install build/app/outputs/flutter-apk/app-debug.apk
+            adb shell am force-stop com.edtatevosiani99.qrstudioapp
+            adb shell monkey -p com.edtatevosiani99.qrstudioapp 1
+            sleep 12
+            if ! adb shell pidof com.edtatevosiani99.qrstudioapp; then
+              adb logcat -d -t 1500
+              echo "QR Studio process exited after launch."
+              exit 1
+            fi
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
