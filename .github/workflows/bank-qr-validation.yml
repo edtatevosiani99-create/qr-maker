@@ -54,6 +54,8 @@ jobs:
           PY
       - name: Get dependencies
         run: flutter pub get
+      - name: Restore QR Studio launcher icon
+        run: dart run flutter_launcher_icons
       - name: Analyze Dart code
         run: flutter analyze lib --no-fatal-infos --no-fatal-warnings
       - name: Build ABI-specific debug APKs
