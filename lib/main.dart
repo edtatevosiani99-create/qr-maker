@@ -15,6 +15,7 @@ import 'package:zxing2/qrcode.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'features/bank_qr/bank_qr_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +30,7 @@ class QRStudioApp extends StatefulWidget {
 }
 
 class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStateMixin {
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   static const String _bannerTestUnitId = 'ca-app-pub-3904535066175358/9214105998';
   static const String _interstitialTestUnitId = 'ca-app-pub-3904535066175358/9429728416';
   BannerAd? _bannerAd;
@@ -328,6 +330,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: _navigatorKey,
       debugShowCheckedModeBanner:false, themeMode:themeMode,
       theme:ThemeData(useMaterial3:true, brightness:Brightness.light, scaffoldBackgroundColor:const Color(0xFFE8F5FF), colorScheme:ColorScheme.fromSeed(seedColor:const Color(0xFF2B7FFF))),
       darkTheme:ThemeData(useMaterial3:true, brightness:Brightness.dark, scaffoldBackgroundColor:const Color(0xFF03152C), colorScheme:ColorScheme.fromSeed(seedColor:const Color(0xFF1E9BFF), brightness:Brightness.dark)),
@@ -348,7 +351,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
             padding:EdgeInsets.fromLTRB(wide ? 28 : 16,10,wide ? 28 : 16,28),
             child:Center(child:ConstrainedBox(
               constraints:const BoxConstraints(maxWidth:980),
-              child:wide ? (isScannerOpen ? Column(children:[header(),const SizedBox(height:12),modeSelector(),const SizedBox(height:16),scannerView()]) : Row(crossAxisAlignment:CrossAxisAlignment.start,children:[Expanded(child:form()),const SizedBox(width:24),Expanded(child:preview())])) : Column(children:[header(),const SizedBox(height:12),modeSelector(),const SizedBox(height:16),if(isScannerOpen) scannerView() else ...[formBody(),const SizedBox(height:18),previewCard(),const SizedBox(height:10),checkQrButton(),const SizedBox(height:18),footerButtons()]]),
+              child:wide ? (isScannerOpen ? Column(children:[header(),const SizedBox(height:12),modeSelector(),const SizedBox(height:16),scannerView()]) : Row(crossAxisAlignment:CrossAxisAlignment.start,children:[Expanded(child:form()),const SizedBox(width:24),Expanded(child:preview())])) : Column(children:[header(),const SizedBox(height:12),modeSelector(),const SizedBox(height:16),if(isScannerOpen) scannerView() else ...[bankQrButton(),const SizedBox(height:12),formBody(),const SizedBox(height:18),previewCard(),const SizedBox(height:10),checkQrButton(),const SizedBox(height:18),footerButtons()]]),
             )),
           );
         })),
@@ -389,7 +392,27 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     );
   }
 
-  Widget form() => Column(children:[header(),const SizedBox(height:12),modeSelector(),const SizedBox(height:16),formBody(),const SizedBox(height:18),footerButtons()]);
+  Widget form() => Column(children:[header(),const SizedBox(height:12),modeSelector(),const SizedBox(height:12),bankQrButton(),const SizedBox(height:16),formBody(),const SizedBox(height:18),footerButtons()]);
+
+  Widget bankQrButton() => SizedBox(
+    width: double.infinity,
+    child: OutlinedButton.icon(
+      onPressed: () => _navigatorKey.currentState?.push(MaterialPageRoute<void>(
+        builder: (_) => BankQrScreen(language: lang),
+      )),
+      icon: const Icon(Icons.account_balance_wallet_outlined),
+      label: Text(
+        lang == 'Русский' ? 'Банковский QR — бесплатно' :
+        lang == 'Deutsch' ? 'Bank-QR — kostenlos' :
+        lang == 'ქართული' ? 'საბანკო QR — უფასო' :
+        'Bank QR — Free',
+      ),
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size.fromHeight(48),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      ),
+    ),
+  );
 
   String scannerText(String key) {
     const strings = {
