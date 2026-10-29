@@ -30,6 +30,7 @@ class QRStudioApp extends StatefulWidget {
 }
 
 class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStateMixin {
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   static const String _bannerTestUnitId = 'ca-app-pub-3904535066175358/9214105998';
   static const String _interstitialTestUnitId = 'ca-app-pub-3904535066175358/9429728416';
   BannerAd? _bannerAd;
@@ -329,6 +330,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: _navigatorKey,
       debugShowCheckedModeBanner:false, themeMode:themeMode,
       theme:ThemeData(useMaterial3:true, brightness:Brightness.light, scaffoldBackgroundColor:const Color(0xFFE8F5FF), colorScheme:ColorScheme.fromSeed(seedColor:const Color(0xFF2B7FFF))),
       darkTheme:ThemeData(useMaterial3:true, brightness:Brightness.dark, scaffoldBackgroundColor:const Color(0xFF03152C), colorScheme:ColorScheme.fromSeed(seedColor:const Color(0xFF1E9BFF), brightness:Brightness.dark)),
@@ -395,7 +397,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   Widget bankQrButton() => SizedBox(
     width: double.infinity,
     child: OutlinedButton.icon(
-      onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+      onPressed: () => _navigatorKey.currentState?.push(MaterialPageRoute<void>(
         builder: (_) => BankQrScreen(language: lang),
       )),
       icon: const Icon(Icons.account_balance_wallet_outlined),
