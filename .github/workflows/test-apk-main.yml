@@ -1,0 +1,73 @@
+name: QR Studio Test APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/test-apk-main.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build-test-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.7'
+          channel: stable
+          cache: true
+
+      - name: Generate Android project
+        run: flutter create --org com.edtatevosiani99 --project-name qrstudioapp --platforms=android .
+
+      - name: Install QR Studio activity and permissions
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p android/app/src/main/kotlin/com/edtatevosiani99/qrstudioapp
+          sed 's/^package com\\.example\\.qr_studio$/package com.edtatevosiani99.qrstudioapp/' MainActivity.kt > android/app/src/main/kotlin/com/edtatevosiani99/qrstudioapp/MainActivity.kt
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("android/app/src/main/AndroidManifest.xml")
+          s = p.read_text()
+          pos = s.find(">", s.find("<manifest"))
+          for permission in [
+              '    <uses-permission android:name="android.permission.INTERNET" />',
+              '    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />',
+          ]:
+              name = permission.split('"')[1]
+              if name not in s:
+                  s = s[:pos + 1] + "\\n" + permission + s[pos + 1:]
+                  pos = s.find(">", s.find("<manifest"))
+          p.write_text(s)
+          PY
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate launcher icon
+        run: dart run flutter_launcher_icons
+
+      - name: Build test APK
+        run: flutter build apk --debug
+
+      - name: Upload test APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: qr-studio-main-test-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error
+          retention-days: 30
