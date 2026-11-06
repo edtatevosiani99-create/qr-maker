@@ -38,9 +38,11 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p android/app/src/main/kotlin/com/edtatevosiani99/qrstudioapp
-          sed 's/^package com\\.example\\.qr_studio$/package com.edtatevosiani99.qrstudioapp/' MainActivity.kt > android/app/src/main/kotlin/com/edtatevosiani99/qrstudioapp/MainActivity.kt
           python3 - <<'PY'
           from pathlib import Path
+          activity = Path("MainActivity.kt").read_text()
+          activity = activity.replace("package com.example.qr_studio", "package com.edtatevosiani99.qrstudioapp")
+          Path("android/app/src/main/kotlin/com/edtatevosiani99/qrstudioapp/MainActivity.kt").write_text(activity)
           p = Path("android/app/src/main/AndroidManifest.xml")
           s = p.read_text()
           pos = s.find(">", s.find("<manifest"))
@@ -50,7 +52,7 @@ jobs:
           ]:
               name = permission.split('"')[1]
               if name not in s:
-                  s = s[:pos + 1] + "\\n" + permission + s[pos + 1:]
+                  s = s[:pos + 1] + chr(10) + permission + s[pos + 1:]
                   pos = s.find(">", s.find("<manifest"))
           p.write_text(s)
           PY
