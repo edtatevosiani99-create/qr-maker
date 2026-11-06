@@ -72,11 +72,11 @@ jobs:
           p.write_text(s)
           PY
       - name: Build optimized test APK
-        run: flutter build apk --release --target-platform android-arm64
+        run: flutter build apk --release --split-per-abi
       - name: Upload optimized test APK
         uses: actions/upload-artifact@v4
         with:
-          name: qr-studio-arm64-test-apk-release
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: qr-studio-arm64-split-test-apk-release
+          path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
           if-no-files-found: error
           retention-days: 30
