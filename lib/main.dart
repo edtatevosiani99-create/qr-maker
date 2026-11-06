@@ -330,7 +330,33 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     return MaterialApp(
       debugShowCheckedModeBanner:false, themeMode:themeMode,
       theme:ThemeData(useMaterial3:true, brightness:Brightness.light, scaffoldBackgroundColor:const Color(0xFFE8F5FF), colorScheme:ColorScheme.fromSeed(seedColor:const Color(0xFF2B7FFF))),
-      darkTheme:ThemeData(useMaterial3:true, brightness:Brightness.dark, scaffoldBackgroundColor:const Color(0xFF03152C), colorScheme:ColorScheme.fromSeed(seedColor:const Color(0xFF1E9BFF), brightness:Brightness.dark)),
+      darkTheme:ThemeData(
+         useMaterial3:true,
+         brightness:Brightness.dark,
+         scaffoldBackgroundColor:const Color(0xFF171D25),
+         colorScheme:ColorScheme.fromSeed(
+           seedColor:const Color(0xFF1E9BFF),
+           brightness:Brightness.dark,
+         ).copyWith(
+           surface:const Color(0xFF252D37),
+           surfaceContainerLowest:const Color(0xFF171D25),
+           surfaceContainerLow:const Color(0xFF202832),
+           surfaceContainer:const Color(0xFF252D37),
+           surfaceContainerHigh:const Color(0xFF303A46),
+           surfaceContainerHighest:const Color(0xFF394451),
+           onSurface:const Color(0xFFF1F3F5),
+           onSurfaceVariant:const Color(0xFFBBC4CE),
+           outline:const Color(0xFF687583),
+           outlineVariant:const Color(0xFF4B5663),
+         ),
+         dividerColor:const Color(0xFF46515E),
+         inputDecorationTheme:const InputDecorationTheme(
+           filled:true,
+           fillColor:Color(0xFF252D37),
+           labelStyle:TextStyle(color:Color(0xFFBBC4CE)),
+           hintStyle:TextStyle(color:Color(0xFF929EAA)),
+         ),
+       ),
       home:Scaffold(
         bottomNavigationBar: _bannerLoaded && _bannerAd != null
             ? SafeArea(
