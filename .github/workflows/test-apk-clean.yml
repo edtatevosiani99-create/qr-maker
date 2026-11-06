@@ -52,10 +52,10 @@ jobs:
                   pos = s.find(">", s.find("<manifest"))
           app_meta = '        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3904535066175358~4536494382" />'
           if "com.google.android.gms.ads.APPLICATION_ID" not in s:
-              s = s.replace("</application>", app_meta + "\\n    </application>")
+              s = s.replace("</application>", app_meta + chr(10) + "    </application>")
           if "com.google.android.gms.permission.AD_ID" not in s:
               pos = s.find(">", s.find("<manifest"))
-              s = s[:pos + 1] + '\\n    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />' + s[pos + 1:]
+              s = s[:pos + 1] + chr(10) + '    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />' + s[pos + 1:]
           p.write_text(s)
           PY
       - name: Install dependencies
