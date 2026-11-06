@@ -56,12 +56,27 @@ jobs:
         run: flutter pub get
       - name: Generate launcher icon
         run: dart run flutter_launcher_icons
-      - name: Build test APK
-        run: flutter build apk --debug
-      - name: Upload test APK
+      - name: Configure temporary test signing
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("android/app/build.gradle.kts")
+          s = p.read_text()
+          marker = "    release {"
+          if marker not in s:
+              raise SystemExit("Release build type not found")
+          start = s.index(marker) + len(marker)
+          if "signingConfig = signingConfigs.getByName(\"debug\")" not in s:
+              s = s[:start] + '\n        signingConfig = signingConfigs.getByName("debug")' + s[start:]
+          p.write_text(s)
+          PY
+      - name: Build optimized test APK
+        run: flutter build apk --release
+      - name: Upload optimized test APK
         uses: actions/upload-artifact@v4
         with:
-          name: qr-studio-main-test-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          name: qr-studio-main-test-apk-release
+          path: build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
           retention-days: 30
