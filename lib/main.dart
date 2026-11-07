@@ -811,7 +811,29 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     );
   }
 
-  InputDecoration fieldDecoration(String label)=>InputDecoration(labelText:label.isEmpty?null:label,filled:true,fillColor:Theme.of(context).colorScheme.surface,contentPadding:const EdgeInsets.symmetric(horizontal:14,vertical:13),border:OutlineInputBorder(borderRadius:BorderRadius.circular(10),borderSide:BorderSide(color:Theme.of(context).colorScheme.outlineVariant)),enabledBorder:OutlineInputBorder(borderRadius:BorderRadius.circular(10),borderSide:BorderSide(color:Theme.of(context).colorScheme.outlineVariant)));
+  InputDecoration fieldDecoration(String label) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final outline = dark ? const Color(0xFF687583) : Theme.of(context).colorScheme.outlineVariant;
+    final shape = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: BorderSide(color: outline, width: 1.2),
+    );
+    return InputDecoration(
+      labelText: label.isEmpty ? null : label,
+      filled: true,
+      fillColor: dark ? const Color(0xFF171D25) : Theme.of(context).colorScheme.surface,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+      labelStyle: TextStyle(color: dark ? const Color(0xFFBBC4CE) : Theme.of(context).colorScheme.onSurfaceVariant),
+      hintStyle: TextStyle(color: dark ? const Color(0xFF929EAA) : Theme.of(context).colorScheme.onSurfaceVariant),
+      border: shape,
+      enabledBorder: shape,
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: dark ? const Color(0xFF8A98A8) : Theme.of(context).colorScheme.primary, width: 1.6),
+      ),
+      disabledBorder: shape,
+    );
+  }
 
   Widget input(String key,String label,{TextInputType? keyboard})=>Padding(
     padding:const EdgeInsets.only(bottom:10),
