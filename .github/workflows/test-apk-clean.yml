@@ -1,5 +1,5 @@
 name: QR Studio Clean Test APK
-# Rebuild requested after dark-theme-only UI update
+# Rebuild requested after muted dark-theme surfaces update
 
 on:
   workflow_dispatch:
