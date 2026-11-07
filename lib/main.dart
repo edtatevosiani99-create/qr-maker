@@ -334,6 +334,21 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
          useMaterial3:true,
          brightness:Brightness.dark,
          scaffoldBackgroundColor:const Color(0xFF171D25),
+         canvasColor:const Color(0xFF252D37),
+         cardColor:const Color(0xFF252D37),
+         dialogBackgroundColor:const Color(0xFF303A46),
+         bottomSheetTheme:const BottomSheetThemeData(
+           backgroundColor:Color(0xFF303A46),
+           modalBackgroundColor:Color(0xFF303A46),
+         ),
+         popupMenuTheme:const PopupMenuThemeData(
+           color:Color(0xFF303A46),
+           surfaceTintColor:Colors.transparent,
+         ),
+         drawerTheme:const DrawerThemeData(
+           backgroundColor:Color(0xFF252D37),
+           surfaceTintColor:Colors.transparent,
+         ),
          colorScheme:ColorScheme.fromSeed(
            seedColor:const Color(0xFF1E9BFF),
            brightness:Brightness.dark,
