@@ -670,9 +670,9 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
       width:double.infinity,
       padding:const EdgeInsets.fromLTRB(10,10,10,12),
       decoration:BoxDecoration(
-        color:Theme.of(context).colorScheme.surface,
+        color:panelSurfaceColor,
         borderRadius:BorderRadius.circular(14),
-        border:Border.all(color:const Color(0xFF5B2DFF).withOpacity(.55),width:1.4),
+        border:Border.all(color:isDarkTheme ? panelOutlineColor : const Color(0xFF5B2DFF).withOpacity(.55),width:1.4),
       ),
       child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
         Row(children:[
@@ -719,9 +719,9 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   Widget logoSection()=>Container(
     padding:const EdgeInsets.all(12),
     decoration:BoxDecoration(
-      color:Theme.of(context).colorScheme.surface,
+      color:panelSurfaceColor,
       borderRadius:BorderRadius.circular(14),
-      border:Border.all(color:Theme.of(context).colorScheme.outlineVariant),
+      border:Border.all(color:panelOutlineColor),
     ),
     child:Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[
       Row(children:[
@@ -789,9 +789,9 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
         margin:const EdgeInsets.only(right:9),
         padding:const EdgeInsets.all(7),
         decoration:BoxDecoration(
-          color:Theme.of(context).colorScheme.surface,
+          color:panelSurfaceColor,
           borderRadius:BorderRadius.circular(12),
-          border:Border.all(color:chosen ? const Color(0xFF00B89C) : Theme.of(context).colorScheme.outlineVariant,width:chosen ? 2.5 : 1),
+          border:Border.all(color:chosen ? const Color(0xFF00B89C) : panelOutlineColor,width:chosen ? 2.5 : 1),
         ),
         child:Column(mainAxisAlignment:MainAxisAlignment.center,children:[
           Container(
@@ -928,7 +928,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
               child:Container(
                 padding:const EdgeInsets.symmetric(horizontal:14,vertical:9),
                 decoration:BoxDecoration(
-                  color:Theme.of(context).colorScheme.surface,
+                  color:panelSurfaceColor,
                   borderRadius:BorderRadius.circular(10),
                   border:Border.all(
                     color:transparentBg ? const Color(0xFF7A00FF) : panelOutlineColor,
