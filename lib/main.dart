@@ -408,7 +408,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
       logo(54), const SizedBox(width:11),
       Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
         ShaderMask(shaderCallback:(r)=>const LinearGradient(colors:[Color(0xFF0077CC),Color(0xFF6545C4),Color(0xFFDB4F9B)]).createShader(r),child:Text(t('title'),style:const TextStyle(fontSize:25,fontWeight:FontWeight.w800,color:Colors.white))),
-        Text(t('subtitle'),style:TextStyle(fontSize:11,color:Theme.of(context).colorScheme.onSurfaceVariant)),
+        Text(t('subtitle'),style:TextStyle(fontSize:11,color:panelMutedColor)),
       ])),
       languageButton(), const SizedBox(width:4),
       IconButton(onPressed:()=>setState(()=>themeMode=themeMode==ThemeMode.light?ThemeMode.dark:ThemeMode.light),icon:Icon(themeMode==ThemeMode.light?Icons.dark_mode:Icons.light_mode)),
@@ -644,8 +644,17 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     Text(label, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600)),
   ]);
 
+
+  // Form-panel colors follow the selected app theme. This State context is
+  // above MaterialApp, so Theme.of(context) here would read the outer theme.
+  bool get isDarkTheme => themeMode == ThemeMode.dark;
+  Color get panelSurfaceColor => isDarkTheme ? const Color(0xFF171D25) : const Color(0xFFFFFFFF);
+  Color get panelOutlineColor => isDarkTheme ? const Color(0xFF687583) : const Color(0xFFB8C4D0);
+  Color get panelTextColor => isDarkTheme ? const Color(0xFFF1F3F5) : const Color(0xFF20252B);
+  Color get panelMutedColor => isDarkTheme ? const Color(0xFFBBC4CE) : const Color(0xFF687582);
+
   Widget formBody() => Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[
-    Text(t('type'),style:const TextStyle(fontSize:16,fontWeight:FontWeight.w700)),const SizedBox(height:9),
+    Text(t('type'),style:TextStyle(fontSize:16,fontWeight:FontWeight.w700,color:panelTextColor)),const SizedBox(height:9),
     Wrap(spacing:7,runSpacing:7,children:[QRType.url,QRType.text,QRType.phone,QRType.wifi,QRType.contact,QRType.email,QRType.location].map(typeChip).toList()),
     const SizedBox(height:14),
     const SizedBox(height:12),specific(),
@@ -654,8 +663,8 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
       DropdownButtonFormField<String>(value:security,decoration:fieldDecoration(t('security')),items:['WPA','WEP','None'].map((x)=>DropdownMenuItem(value:x,child:Text(x=='None'?t('none'):x))).toList(),onChanged:(x)=>setState(()=>security=x!)),
     ],
     if(type==QRType.location) ...[input('lat',t('lat'),keyboard:TextInputType.number),input('lon',t('lon'),keyboard:TextInputType.number),input('address',t('address'))],
-    const SizedBox(height:4),Text(t('fg'),style:const TextStyle(fontSize:13,fontWeight:FontWeight.w700)),const SizedBox(height:6),gradientColorBar(false),
-    const SizedBox(height:12),Text(t('bg'),style:const TextStyle(fontSize:13,fontWeight:FontWeight.w700)),const SizedBox(height:6),gradientColorBar(true),
+    const SizedBox(height:4),Text(t('fg'),style:TextStyle(fontSize:13,fontWeight:FontWeight.w700,color:panelTextColor)),const SizedBox(height:6),gradientColorBar(false),
+    const SizedBox(height:12),Text(t('bg'),style:TextStyle(fontSize:13,fontWeight:FontWeight.w700,color:panelTextColor)),const SizedBox(height:6),gradientColorBar(true),
     const SizedBox(height:14),
     Container(
       width:double.infinity,
@@ -669,7 +678,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
         Row(children:[
           const Icon(Icons.palette_outlined,size:19,color:Color(0xFF5B2DFF)),
           const SizedBox(width:7),
-          Expanded(child:Text(t('designs'),style:const TextStyle(fontSize:14,fontWeight:FontWeight.w800))),
+          Expanded(child:Text(t('designs'),style:TextStyle(fontSize:14,fontWeight:FontWeight.w800,color:panelTextColor))),
         ]),
         const SizedBox(height:9),
         SizedBox(height:112,child:ListView(
@@ -686,9 +695,9 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
         )),
       ]),
     ),
-    const SizedBox(height:13),Text(t('size') + ': ' + size.round().toString() + ' px',style:const TextStyle(fontSize:12,fontWeight:FontWeight.w700)),
+    const SizedBox(height:13),Text(t('size') + ': ' + size.round().toString() + ' px',style:TextStyle(fontSize:12,fontWeight:FontWeight.w700,color:panelTextColor)),
     Slider(min:256,max:1024,value:size,activeColor:const Color(0xFF5B2DFF),onChanged:(x)=>setState(()=>size=x)),
-    Text(t('error'),style:const TextStyle(fontSize:12,fontWeight:FontWeight.w700)),const SizedBox(height:6),
+    Text(t('error'),style:TextStyle(fontSize:12,fontWeight:FontWeight.w700,color:panelTextColor)),const SizedBox(height:6),
     DropdownButtonFormField<String>(value:photoImage != null ? 'H' : error,decoration:fieldDecoration(''),items:['L','M','Q','H'].map((x)=>DropdownMenuItem(value:x,child:Text(x))).toList(),onChanged:photoImage != null ? null : (x)=>setState(()=>error=x!)),
     const SizedBox(height:10),
     logoSection(),
@@ -719,7 +728,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
         const Icon(Icons.add_photo_alternate_outlined,size:20),
         const SizedBox(width:8),
         Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-          Text(t('logo'),style:const TextStyle(fontSize:13,fontWeight:FontWeight.w700)),
+          Text(t('logo'),style:TextStyle(fontSize:13,fontWeight:FontWeight.w700,color:panelTextColor)),
           Text(photoImage == null ? t('logoHint') : t('photoSelected'),style:TextStyle(fontSize:10,color:Theme.of(context).colorScheme.onSurfaceVariant)),
         ])),
         if(photoImage != null)
@@ -791,7 +800,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
             child:Icon(Icons.qr_code_2_rounded,size:31,color:qrColor),
           ),
           const SizedBox(height:4),
-          Text(t(id),maxLines:1,overflow:TextOverflow.ellipsis,style:TextStyle(fontSize:10,fontWeight:chosen ? FontWeight.w800 : FontWeight.w500)),
+          Text(t(id),maxLines:1,overflow:TextOverflow.ellipsis,style:TextStyle(fontSize:10,fontWeight:chosen ? FontWeight.w800 : FontWeight.w500,color:panelTextColor)),
         ]),
       ),
     );
@@ -805,8 +814,8 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
       onTap:()=>setState(()=>type=x),
       child:AnimatedContainer(
         duration:const Duration(milliseconds:160),constraints:const BoxConstraints(minWidth:98,minHeight:40),padding:const EdgeInsets.symmetric(horizontal:12),
-        decoration:BoxDecoration(gradient:selected?const LinearGradient(colors:[Color(0xFF00CFFF),Color(0xFF7A00FF),Color(0xFFFF1BC7)]):null,color:selected?null:Theme.of(context).colorScheme.surface,borderRadius:BorderRadius.circular(10),border:Border.all(color:selected?Colors.transparent:Theme.of(context).colorScheme.outlineVariant)),
-        child:Row(mainAxisSize:MainAxisSize.min,children:[Icon(icons[x],size:18,color:selected?Colors.white:Theme.of(context).colorScheme.onSurfaceVariant),const SizedBox(width:7),Text(t(key),style:TextStyle(fontSize:12,fontWeight:FontWeight.w600,color:selected?Colors.white:Theme.of(context).colorScheme.onSurface))]),
+        decoration:BoxDecoration(gradient:selected?const LinearGradient(colors:[Color(0xFF00CFFF),Color(0xFF7A00FF),Color(0xFFFF1BC7)]):null,color:selected?null:panelSurfaceColor,borderRadius:BorderRadius.circular(10),border:Border.all(color:selected?Colors.transparent:Theme.of(context).colorScheme.outlineVariant)),
+        child:Row(mainAxisSize:MainAxisSize.min,children:[Icon(icons[x],size:18,color:selected?Colors.white:Theme.of(context).colorScheme.onSurfaceVariant),const SizedBox(width:7),Text(t(key),style:TextStyle(fontSize:12,fontWeight:FontWeight.w600,color:selected?Colors.white:panelTextColor))]),
       ),
     );
   }
@@ -898,7 +907,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
           Text(
             'RGB: #' + current.value.toRadixString(16).padLeft(8,'0').substring(2).toUpperCase(),
             textAlign:TextAlign.center,
-            style:TextStyle(fontSize:11,color:Theme.of(context).colorScheme.onSurfaceVariant,fontWeight:FontWeight.w600),
+            style:TextStyle(fontSize:11,color:panelMutedColor,fontWeight:FontWeight.w600),
           ),
           const SizedBox(height:8),
           Row(
@@ -922,7 +931,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
                   color:Theme.of(context).colorScheme.surface,
                   borderRadius:BorderRadius.circular(10),
                   border:Border.all(
-                    color:transparentBg ? const Color(0xFF7A00FF) : Theme.of(context).colorScheme.outline,
+                    color:transparentBg ? const Color(0xFF7A00FF) : panelOutlineColor,
                     width:transparentBg ? 2.5 : 1,
                   ),
                 ),
@@ -933,7 +942,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
                       width:22,height:22,
                       decoration:BoxDecoration(
                         borderRadius:BorderRadius.circular(4),
-                        border:Border.all(color:Theme.of(context).colorScheme.outline),
+                        border:Border.all(color:panelOutlineColor),
                         gradient:const LinearGradient(
                           begin:Alignment.topLeft,end:Alignment.bottomRight,
                           colors:[Colors.white,Colors.white,Color(0xFFBDBDBD),Color(0xFFBDBDBD)],
@@ -942,7 +951,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
                       ),
                     ),
                     const SizedBox(width:8),
-                    Text(t('transparent'),style:const TextStyle(fontSize:12,fontWeight:FontWeight.w700)),
+                    Text(t('transparent'),style:TextStyle(fontSize:12,fontWeight:FontWeight.w700,color:panelTextColor)),
                     if(transparentBg) ...[
                       const SizedBox(width:6),
                       const Icon(Icons.check_circle,size:16,color:Color(0xFF7A00FF)),
@@ -980,7 +989,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
           color:color,
           borderRadius:BorderRadius.circular(9),
           border:Border.all(
-            color:selected ? const Color(0xFF7A00FF) : Theme.of(context).colorScheme.outline,
+            color:selected ? const Color(0xFF7A00FF) : panelOutlineColor,
             width:selected ? 3 : 1.5,
           ),
           boxShadow:const [BoxShadow(color:Color(0x33000000),blurRadius:3,offset:Offset(0,1))],
