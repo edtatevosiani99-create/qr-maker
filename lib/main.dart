@@ -725,7 +725,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     ),
     child:Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[
       Row(children:[
-        const Icon(Icons.add_photo_alternate_outlined,size:20),
+        Icon(Icons.add_photo_alternate_outlined,size:20,color:panelTextColor),
         const SizedBox(width:8),
         Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
           Text(t('logo'),style:TextStyle(fontSize:13,fontWeight:FontWeight.w700,color:panelTextColor)),
