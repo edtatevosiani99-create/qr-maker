@@ -729,7 +729,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
         const SizedBox(width:8),
         Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
           Text(t('logo'),style:TextStyle(fontSize:13,fontWeight:FontWeight.w700,color:panelTextColor)),
-          Text(photoImage == null ? t('logoHint') : t('photoSelected'),style:TextStyle(fontSize:10,color:Theme.of(context).colorScheme.onSurfaceVariant)),
+          Text(photoImage == null ? t('logoHint') : t('photoSelected'),style:TextStyle(fontSize:10,color:panelMutedColor)),
         ])),
         if(photoImage != null)
           ClipRRect(borderRadius:BorderRadius.circular(8),child:Image.memory(photoBytes!,width:42,height:42,fit:BoxFit.cover)),
@@ -814,8 +814,8 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
       onTap:()=>setState(()=>type=x),
       child:AnimatedContainer(
         duration:const Duration(milliseconds:160),constraints:const BoxConstraints(minWidth:98,minHeight:40),padding:const EdgeInsets.symmetric(horizontal:12),
-        decoration:BoxDecoration(gradient:selected?const LinearGradient(colors:[Color(0xFF00CFFF),Color(0xFF7A00FF),Color(0xFFFF1BC7)]):null,color:selected?null:panelSurfaceColor,borderRadius:BorderRadius.circular(10),border:Border.all(color:selected?Colors.transparent:Theme.of(context).colorScheme.outlineVariant)),
-        child:Row(mainAxisSize:MainAxisSize.min,children:[Icon(icons[x],size:18,color:selected?Colors.white:Theme.of(context).colorScheme.onSurfaceVariant),const SizedBox(width:7),Text(t(key),style:TextStyle(fontSize:12,fontWeight:FontWeight.w600,color:selected?Colors.white:panelTextColor))]),
+        decoration:BoxDecoration(gradient:selected?const LinearGradient(colors:[Color(0xFF00CFFF),Color(0xFF7A00FF),Color(0xFFFF1BC7)]):null,color:selected?null:panelSurfaceColor,borderRadius:BorderRadius.circular(10),border:Border.all(color:selected?Colors.transparent:panelOutlineColor)),
+        child:Row(mainAxisSize:MainAxisSize.min,children:[Icon(icons[x],size:18,color:selected?Colors.white:panelMutedColor),const SizedBox(width:7),Text(t(key),style:TextStyle(fontSize:12,fontWeight:FontWeight.w600,color:selected?Colors.white:panelTextColor))]),
       ),
     );
   }
