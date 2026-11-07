@@ -812,7 +812,9 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   }
 
   InputDecoration fieldDecoration(String label) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
+    // This State context is above MaterialApp, so Theme.of(context) does not see its darkTheme.
+    // Read the selected app theme directly to ensure every shared input uses the dark colors.
+    final dark = themeMode == ThemeMode.dark;
     final outline = dark ? const Color(0xFF687583) : Theme.of(context).colorScheme.outlineVariant;
     final shape = OutlineInputBorder(
       borderRadius: BorderRadius.circular(10),
