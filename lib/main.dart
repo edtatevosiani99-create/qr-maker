@@ -297,8 +297,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     painter.paint(canvas, Size(size, size));
     final picture = recorder.endRecording();
     final image = await picture.toImage(size.round(), size.round());
-    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);    image.dispose();
-    picture.dispose();
+    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);    image.dispose();    picture.dispose();
     return bytes?.buffer.asUint8List();
   }
 
@@ -587,7 +586,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
                       for (final barcode in capture.barcodes) {
                         final value = barcode.rawValue;
                         if (value != null && value.trim().isNotEmpty) {
-                          _handleScannedValue(value);
+                          unawaited(_handleScannedValue(value));
                           break;
                         }
                       }
@@ -597,8 +596,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
                   Container(color: const Color(0xFF20252D), child: const Center(child: Icon(Icons.check_circle_rounded, color: Colors.greenAccent, size: 58))),
                 if (scannedValue == null) ...[
                   Container(color: Colors.black.withOpacity(.16)),
-                  Center(child: Container(
-                    width: 230, height: 230,
+                  Center(child: Container(                    width: 230, height: 230,
                     decoration: BoxDecoration(color: Colors.white.withOpacity(.035), borderRadius: BorderRadius.circular(18)),
                   )),
                   Center(child: SizedBox(width: 230, height: 230, child: CustomPaint(painter: ScannerCornersPainter()))),
@@ -897,8 +895,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
         children:[
           GestureDetector(
             behavior:HitTestBehavior.opaque,
-            onTapDown:(d)=>setColorFromPosition(background,d.localPosition.dx,width),
-            onPanStart:(d)=>setColorFromPosition(background,d.localPosition.dx,width),
+            onTapDown:(d)=>setColorFromPosition(background,d.localPosition.dx,width),            onPanStart:(d)=>setColorFromPosition(background,d.localPosition.dx,width),
             onPanUpdate:(d)=>setColorFromPosition(background,d.localPosition.dx,width),
             child:Container(
               height:48,
@@ -1197,8 +1194,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
 
   Widget footerButtons()=>Row(children:[
     Expanded(
-      child:Container(
-        decoration:BoxDecoration(
+      child:Container(        decoration:BoxDecoration(
           gradient:const LinearGradient(colors:[Color(0xFF00C8FF),Color(0xFF7A00FF),Color(0xFFFF5A00)]),
           borderRadius:BorderRadius.circular(24),
         ),
