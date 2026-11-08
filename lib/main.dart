@@ -225,7 +225,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
 
   String get data {
     switch (type) {
-      case QRType.url:
+      case QRType.url: return _normalizeWebUrl(v('main'));
       case QRType.text: return v('main');
       case QRType.phone: return 'tel:' + v('phone');
       case QRType.wifi:
@@ -297,8 +297,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     painter.paint(canvas, Size(size, size));
     final picture = recorder.endRecording();
     final image = await picture.toImage(size.round(), size.round());
-    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-    image.dispose();
+    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);    image.dispose();
     picture.dispose();
     return bytes?.buffer.asUint8List();
   }
@@ -458,6 +457,34 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     )),
   ]);
 
+  String _normalizeWebUrl(String input) {
+    final value = input.trim();
+    if (value.isEmpty) return '';
+    final parsed = Uri.tryParse(value);
+    if (parsed != null && parsed.hasScheme) return value;
+    return 'https://$value';
+  }
+
+  Future<void> _handleScannedValue(String value) async {
+    final cleaned = value.trim();
+    if (cleaned.isEmpty || !mounted) return;
+    setState(() => scannedValue = cleaned);
+
+    final uri = Uri.tryParse(cleaned);
+    if (uri == null ||
+        !uri.hasScheme ||
+        !const {'http', 'https'}.contains(uri.scheme.toLowerCase()) ||
+        uri.host.isEmpty) {
+      return;
+    }
+
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      // Keep the scan result visible so the user can still open or copy it.
+    }
+  }
+
   Future<void> chooseScanImage() async {
     try {
       final picked = await picker.pickImage(source: ImageSource.gallery);
@@ -477,7 +504,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
       }
       final source = RGBLuminanceSource(decodedImage.width, decodedImage.height, pixels);
       final result = QRCodeReader().decode(BinaryBitmap(HybridBinarizer(source)));
-      if (mounted) setState(() => scannedValue = result.text.trim());
+      if (mounted) await _handleScannedValue(result.text);
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(scannerText('galleryError'))));
@@ -560,7 +587,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
                       for (final barcode in capture.barcodes) {
                         final value = barcode.rawValue;
                         if (value != null && value.trim().isNotEmpty) {
-                          setState(() => scannedValue = value.trim());
+                          _handleScannedValue(value);
                           break;
                         }
                       }
@@ -597,8 +624,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
                 ] else
                   Padding(padding: const EdgeInsets.all(18), child: Center(child: Text(scannedValue!, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 15)))),
               ]),
-            ),
-          ),
+            ),          ),
           const SizedBox(height: 14),
           Text(scannedValue == null ? scannerText('frameHint') : scannerText('result'), textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500)),
           if (scannedValue != null) ...[
@@ -897,8 +923,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
                       color:current,
                       border:Border.all(color:Colors.white,width:3),
                       boxShadow:[BoxShadow(color:Colors.black.withOpacity(.35),blurRadius:5)],
-                    ),
-                  ),
+                    ),                  ),
                 ),
               ),
             ),
@@ -1197,8 +1222,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
         label:Text(t('share')),
         style:OutlinedButton.styleFrom(
           minimumSize:const Size.fromHeight(48),
-          shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(24)),
-        ),
+          shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(24)),        ),
       ),
     ),
   ]);
