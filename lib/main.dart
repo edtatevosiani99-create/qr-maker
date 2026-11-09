@@ -444,10 +444,10 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
         body:SafeArea(child:LayoutBuilder(builder:(ctx,box) {
           final wide = box.maxWidth > 820;
           return SingleChildScrollView(
-            padding:EdgeInsets.fromLTRB(wide ? 28 : 16,10,wide ? 28 : 16,28),
+            padding:EdgeInsets.fromLTRB(wide ? 28 : 16,8,wide ? 28 : 16,16),
             child:Center(child:ConstrainedBox(
               constraints:const BoxConstraints(maxWidth:980),
-              child:wide ? (isScannerOpen ? Column(children:[header(),const SizedBox(height:12),modeSelector(),const SizedBox(height:16),scannerView()]) : Row(crossAxisAlignment:CrossAxisAlignment.start,children:[Expanded(child:form()),const SizedBox(width:24),Expanded(child:preview())])) : Column(children:[header(),const SizedBox(height:12),modeSelector(),const SizedBox(height:16),if(isScannerOpen) scannerView() else ...[formBody(),const SizedBox(height:18),previewCard(),const SizedBox(height:10),checkQrButton(),const SizedBox(height:18),footerButtons()]]),
+              child:wide ? (isScannerOpen ? Column(children:[header(),const SizedBox(height:8),modeSelector(),const SizedBox(height:10),scannerView()]) : Row(crossAxisAlignment:CrossAxisAlignment.start,children:[Expanded(child:form()),const SizedBox(width:24),Expanded(child:preview())])) : Column(children:[header(),const SizedBox(height:12),modeSelector(),const SizedBox(height:16),if(isScannerOpen) scannerView() else ...[formBody(),const SizedBox(height:10),previewCard(),const SizedBox(height:7),checkQrButton(),const SizedBox(height:10),footerButtons()]]),
             )),
           );
         })),
@@ -488,7 +488,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     );
   }
 
-  Widget form() => Column(children:[header(),const SizedBox(height:12),modeSelector(),const SizedBox(height:16),formBody(),const SizedBox(height:18),footerButtons()]);
+  Widget form() => Column(children:[header(),const SizedBox(height:8),modeSelector(),const SizedBox(height:10),formBody(),const SizedBox(height:10),footerButtons()]);
 
   String scannerText(String key) {
     const strings = {
@@ -738,16 +738,16 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   Color get panelMutedColor => isDarkTheme ? const Color(0xFFBBC4CE) : const Color(0xFF687582);
 
   Widget formBody() => Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[
-    Text(t('type'),style:TextStyle(fontSize:16,fontWeight:FontWeight.w700,color:panelTextColor)),const SizedBox(height:9),
+    Text(t('type'),style:TextStyle(fontSize:16,fontWeight:FontWeight.w700,color:panelTextColor)),const SizedBox(height:6),
     Wrap(spacing:7,runSpacing:7,children:[QRType.url,QRType.text,QRType.phone,QRType.wifi,QRType.contact,QRType.email,QRType.location].map(typeChip).toList()),
-    const SizedBox(height:14),
-    const SizedBox(height:12),specific(),
+    const SizedBox(height:8),
+    const SizedBox(height:7),specific(),
     if(type==QRType.wifi) ...[
       const SizedBox(height:2),
       DropdownButtonFormField<String>(value:security,decoration:fieldDecoration(t('security')),items:['WPA','WEP','None'].map((x)=>DropdownMenuItem(value:x,child:Text(x=='None'?t('none'):x))).toList(),onChanged:(x)=>setState(()=>security=x!)),
     ],
     if(type==QRType.location) ...[input('lat',t('lat'),keyboard:TextInputType.number),input('lon',t('lon'),keyboard:TextInputType.number),input('address',t('address'))],
-    const SizedBox(height:4),
+    const SizedBox(height:2),
     Row(children:[
       Expanded(child:OutlinedButton.icon(
         onPressed:()=>setState(()=>showColorPanel=!showColorPanel),
@@ -776,11 +776,11 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
       )),
     ]),
     if(showColorPanel) ...[
-      const SizedBox(height:10),
+      const SizedBox(height:7),
       colorEditor(),
     ],
     if(showDesignPanel) ...[
-      const SizedBox(height:10),
+      const SizedBox(height:7),
       Container(
       width:double.infinity,
       padding:const EdgeInsets.fromLTRB(10,10,10,12),
@@ -826,11 +826,11 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
       ]),
       ),
     ],
-    const SizedBox(height:13),Text(t('size') + ': ' + size.round().toString() + ' px',style:TextStyle(fontSize:12,fontWeight:FontWeight.w700,color:panelTextColor)),
+    const SizedBox(height:8),Text(t('size') + ': ' + size.round().toString() + ' px',style:TextStyle(fontSize:12,fontWeight:FontWeight.w700,color:panelTextColor)),
     Slider(min:256,max:1024,value:size,activeColor:const Color(0xFF5B2DFF),onChanged:(x)=>setState(()=>size=x)),
-    Text(t('error'),style:TextStyle(fontSize:12,fontWeight:FontWeight.w700,color:panelTextColor)),const SizedBox(height:6),
+    Text(t('error'),style:TextStyle(fontSize:12,fontWeight:FontWeight.w700,color:panelTextColor)),const SizedBox(height:4),
     DropdownButtonFormField<String>(value:photoImage != null ? 'H' : error,decoration:fieldDecoration(''),items:['L','M','Q','H'].map((x)=>DropdownMenuItem(value:x,child:Text(x))).toList(),onChanged:photoImage != null ? null : (x)=>setState(()=>error=x!)),
-    const SizedBox(height:10),
+    const SizedBox(height:7),
     logoSection(),
     if (photoImage != null) ...[
       const SizedBox(height:10),
@@ -978,7 +978,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   }
 
   Widget input(String key,String label,{TextInputType? keyboard})=>Padding(
-    padding:const EdgeInsets.only(bottom:10),
+    padding:const EdgeInsets.only(bottom:6),
     child:TextField(controller:c[key],keyboardType:keyboard,onChanged:(_)=>setState((){}),decoration:fieldDecoration(label)),
   );
 
@@ -1251,7 +1251,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     if(background)scheduleQrLogoRefresh();
   }
 
-  Widget preview()=>Column(children:[previewCard(),const SizedBox(height:10),checkQrButton(),const SizedBox(height:12),footerButtons()]);
+  Widget preview()=>Column(children:[previewCard(),const SizedBox(height:7),checkQrButton(),const SizedBox(height:9),footerButtons()]);
 
   Widget contrastWarning()=>Container(
     margin:const EdgeInsets.only(bottom:10),
@@ -1287,7 +1287,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
           errorLevel:errorLevel,
         ),
       )),
-      const SizedBox(width:14),
+      const SizedBox(width:10),
       Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(t('preview'),style:const TextStyle(color:Colors.white,fontWeight:FontWeight.w700,fontSize:14)),const SizedBox(height:5),Text(t('ready'),style:TextStyle(color:Colors.white.withOpacity(.78),fontSize:11))])),
       ]),
     ]),
