@@ -66,12 +66,12 @@ jobs:
       - name: Generate launcher icons
         run: dart run flutter_launcher_icons
 
-      - name: Build debug APK
-        run: flutter build apk --debug
+      - name: Build optimized release APK
+        run: flutter build apk --release
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: qr-studio-debug-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          name: qr-studio-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
