@@ -59,7 +59,6 @@ jobs:
 EOF
           sed 's/^package .*/package com.edtatevosiani99.qrstudioapp/' MainActivity.kt > android/app/src/main/kotlin/com/edtatevosiani99/qrstudiapp/MainActivity.kt
           sed -i 's/com.qrstudio.app/com.edtatevosiani99.qrstudioapp/g' android/app/build.gradle.kts
-          sed -i 's/com.qrstudio.app/com.edtatevosiani99.qrstudioapp/g' android/app/build.gradle.kts
 
       - name: Install dependencies
         run: flutter pub get
