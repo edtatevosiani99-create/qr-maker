@@ -21,5 +21,11 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
+    buildTypes {
+        release {
+            // Test-only signing so the optimized APK can be installed directly.
+            signingConfig = signingConfigs.getByName("debug")
+        }
+    }
 }
 flutter { source = "../.." }
