@@ -179,19 +179,19 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   final designNames = const {
     'Русский': {
       'brand_instagram':'Instagram','brand_facebook':'Facebook','brand_tiktok':'TikTok','brand_youtube':'YouTube','brand_x':'X (Twitter)','brand_whatsapp':'WhatsApp','brand_telegram':'Telegram','brand_snapchat':'Snapchat','brand_spotify':'Spotify','brand_linkedin':'LinkedIn',
-      'shape_round_dots':'Круглые точки','shape_diamond':'Ромбы','shape_hexagon':'Шестиугольники','shape_rounded_squares':'Скруглённые','shape_droplet':'Капли','shape_stars':'Звёзды','shape_honeycomb':'Соты','shape_wave':'Волны','shape_lines':'Линии','shape_frame':'Рамка'
+      'shape_round_dots':'Круглые точки','shape_diamond':'Ромбы','shape_hexagon':'Шестиугольники','shape_rounded_squares':'Скруглённые','shape_droplet':'Капли','shape_stars':'Звёзды','shape_honeycomb':'Соты','shape_wave':'Волны','shape_lines':'Линии','shape_frame':'Рамка','preset_ocean':'Океан','preset_emerald':'Изумруд','preset_ruby':'Рубин','preset_cyberpunk':'Киберпанк','preset_lavender':'Лаванда','preset_monochrome':'Монохром','preset_copper':'Медь','preset_arctic':'Арктика','preset_forest':'Лес','preset_coral':'Коралл'
     },
     'English': {
       'brand_instagram':'Instagram','brand_facebook':'Facebook','brand_tiktok':'TikTok','brand_youtube':'YouTube','brand_x':'X (Twitter)','brand_whatsapp':'WhatsApp','brand_telegram':'Telegram','brand_snapchat':'Snapchat','brand_spotify':'Spotify','brand_linkedin':'LinkedIn',
-      'shape_round_dots':'Round dots','shape_diamond':'Diamond','shape_hexagon':'Hexagon','shape_rounded_squares':'Rounded squares','shape_droplet':'Droplet','shape_stars':'Stars','shape_honeycomb':'Honeycomb','shape_wave':'Wave','shape_lines':'Lines','shape_frame':'Frame'
+      'shape_round_dots':'Round dots','shape_diamond':'Diamond','shape_hexagon':'Hexagon','shape_rounded_squares':'Rounded squares','shape_droplet':'Droplet','shape_stars':'Stars','shape_honeycomb':'Honeycomb','shape_wave':'Wave','shape_lines':'Lines','shape_frame':'Frame','preset_ocean':'Ocean','preset_emerald':'Emerald','preset_ruby':'Ruby','preset_cyberpunk':'Cyberpunk','preset_lavender':'Lavender','preset_monochrome':'Monochrome','preset_copper':'Copper','preset_arctic':'Arctic','preset_forest':'Forest','preset_coral':'Coral'
     },
     'Deutsch': {
       'brand_instagram':'Instagram','brand_facebook':'Facebook','brand_tiktok':'TikTok','brand_youtube':'YouTube','brand_x':'X (Twitter)','brand_whatsapp':'WhatsApp','brand_telegram':'Telegram','brand_snapchat':'Snapchat','brand_spotify':'Spotify','brand_linkedin':'LinkedIn',
-      'shape_round_dots':'Runde Punkte','shape_diamond':'Diamant','shape_hexagon':'Sechsecke','shape_rounded_squares':'Abgerundet','shape_droplet':'Tropfen','shape_stars':'Sterne','shape_honeycomb':'Waben','shape_wave':'Wellen','shape_lines':'Linien','shape_frame':'Rahmen'
+      'shape_round_dots':'Runde Punkte','shape_diamond':'Diamant','shape_hexagon':'Sechsecke','shape_rounded_squares':'Abgerundet','shape_droplet':'Tropfen','shape_stars':'Sterne','shape_honeycomb':'Waben','shape_wave':'Wellen','shape_lines':'Linien','shape_frame':'Rahmen','preset_ocean':'Ozean','preset_emerald':'Smaragd','preset_ruby':'Rubin','preset_cyberpunk':'Cyberpunk','preset_lavender':'Lavendel','preset_monochrome':'Monochrom','preset_copper':'Kupfer','preset_arctic':'Arktis','preset_forest':'Wald','preset_coral':'Koralle'
     },
     'ქართული': {
       'brand_instagram':'Instagram','brand_facebook':'Facebook','brand_tiktok':'TikTok','brand_youtube':'YouTube','brand_x':'X (Twitter)','brand_whatsapp':'WhatsApp','brand_telegram':'Telegram','brand_snapchat':'Snapchat','brand_spotify':'Spotify','brand_linkedin':'LinkedIn',
-      'shape_round_dots':'მრგვალი წერტილები','shape_diamond':'რომბები','shape_hexagon':'ექვსკუთხედები','shape_rounded_squares':'მომრგვალებული','shape_droplet':'წვეთები','shape_stars':'ვარსკვლავები','shape_honeycomb':'ფიჭა','shape_wave':'ტალღები','shape_lines':'ხაზები','shape_frame':'ჩარჩო'
+      'shape_round_dots':'მრგვალი წერტილები','shape_diamond':'რომბები','shape_hexagon':'ექვსკუთხედები','shape_rounded_squares':'მომრგვალებული','shape_droplet':'წვეთები','shape_stars':'ვარსკვლავები','shape_honeycomb':'ფიჭა','shape_wave':'ტალღები','shape_lines':'ხაზები','shape_frame':'ჩარჩო','preset_ocean':'ოკეანე','preset_emerald':'ზურმუხტი','preset_ruby':'ლალი','preset_cyberpunk':'კიბერპანკი','preset_lavender':'ლავანდა','preset_monochrome':'მონოქრომი','preset_copper':'სპილენძი','preset_arctic':'არქტიკა','preset_forest':'ტყე','preset_coral':'მარჯანი'
     }
   };
 
@@ -750,6 +750,17 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
             designOption('shape_wave',const Color(0xFF087FC3),Colors.white),
             designOption('shape_lines',const Color(0xFF222222),Colors.white),
             designOption('shape_frame',const Color(0xFF6032A8),const Color(0xFFFFFCF2)),
+            // Ten additional color-and-pattern ready-made templates.
+            designOption('preset_ocean',const Color(0xFF006D9C),const Color(0xFFEAFBFF)),
+            designOption('preset_emerald',const Color(0xFF087A55),const Color(0xFFE9FFF4)),
+            designOption('preset_ruby',const Color(0xFFB3133B),const Color(0xFFFFF0F3)),
+            designOption('preset_cyberpunk',const Color(0xFF6D28D9),const Color(0xFFFFF0FF)),
+            designOption('preset_lavender',const Color(0xFF7651A8),const Color(0xFFF8F1FF)),
+            designOption('preset_monochrome',const Color(0xFF171717),const Color(0xFFF4F4F4)),
+            designOption('preset_copper',const Color(0xFF9A4F24),const Color(0xFFFFF4E8)),
+            designOption('preset_arctic',const Color(0xFF176B9A),const Color(0xFFF0FAFF)),
+            designOption('preset_forest',const Color(0xFF315B36),const Color(0xFFF0F7E9)),
+            designOption('preset_coral',const Color(0xFFD94F63),const Color(0xFFFFF1EF)),
           ],
         )),
       ]),
@@ -1362,6 +1373,41 @@ class StyledQrPainter extends CustomPainter {
             break;
           case 'shape_frame':
             canvas.drawRRect(RRect.fromRectAndRadius(rect, Radius.circular(unit * .12)), modules);
+            break;
+          case 'preset_ocean':
+            final ocean = Path()..moveTo(rect.left, rect.center.dy)..quadraticBezierTo(rect.center.dx, rect.top - unit * .18, rect.right, rect.center.dy)..lineTo(rect.right, rect.bottom)..lineTo(rect.left, rect.bottom)..close();
+            canvas.drawPath(ocean, modules);
+            break;
+          case 'preset_emerald':
+            canvas.drawRRect(RRect.fromRectAndRadius(rect, Radius.circular(unit * .34)), modules);
+            break;
+          case 'preset_ruby':
+            final ruby = Path()..moveTo(rect.center.dx, rect.top)..lineTo(rect.right, rect.center.dy)..lineTo(rect.center.dx, rect.bottom)..lineTo(rect.left, rect.center.dy)..close();
+            canvas.drawPath(ruby, modules);
+            break;
+          case 'preset_cyberpunk':
+            canvas.drawCircle(rect.center, unit * .46, modules);
+            break;
+          case 'preset_lavender':
+            final lavender = Path()..moveTo(rect.left + unit * .2, rect.top)..lineTo(rect.right - unit * .2, rect.top)..lineTo(rect.right, rect.center.dy)..lineTo(rect.right - unit * .2, rect.bottom)..lineTo(rect.left + unit * .2, rect.bottom)..lineTo(rect.left, rect.center.dy)..close();
+            canvas.drawPath(lavender, modules);
+            break;
+          case 'preset_monochrome':
+            canvas.drawRect(rect, modules);
+            break;
+          case 'preset_copper':
+            canvas.drawRRect(RRect.fromRectAndRadius(rect, Radius.circular(unit * .16)), modules);
+            break;
+          case 'preset_arctic':
+            canvas.drawCircle(rect.center, unit * .43, modules);
+            break;
+          case 'preset_forest':
+            final leaf = Path()..moveTo(rect.center.dx, rect.top)..quadraticBezierTo(rect.right, rect.center.dy, rect.center.dx, rect.bottom)..quadraticBezierTo(rect.left, rect.center.dy, rect.center.dx, rect.top)..close();
+            canvas.drawPath(leaf, modules);
+            break;
+          case 'preset_coral':
+            final coral = Path()..moveTo(rect.center.dx, rect.top)..lineTo(rect.right, rect.bottom)..lineTo(rect.left, rect.bottom)..close();
+            canvas.drawPath(coral, modules);
             break;
           case 'green':
             canvas.drawRRect(RRect.fromRectAndRadius(rect, Radius.circular(unit * .30)), modules);
