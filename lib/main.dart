@@ -155,6 +155,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   String selectedDesign = 'classic';
   bool transparentBg = false;
   bool showColorPanel = false;
+  bool showDesignPanel = false;
   bool editingBackground = false;
   double colorBrightness = 1.0;
   bool isCheckingQr = false;
@@ -711,26 +712,40 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     ],
     if(type==QRType.location) ...[input('lat',t('lat'),keyboard:TextInputType.number),input('lon',t('lon'),keyboard:TextInputType.number),input('address',t('address'))],
     const SizedBox(height:4),
-    SizedBox(
-      width:double.infinity,
-      child:OutlinedButton.icon(
+    Row(children:[
+      Expanded(child:OutlinedButton.icon(
         onPressed:()=>setState(()=>showColorPanel=!showColorPanel),
-        icon:Icon(showColorPanel ? Icons.expand_less : Icons.palette_outlined),
-        label:Text(lang == 'Русский' ? 'Цвета' : lang == 'Deutsch' ? 'Farben' : lang == 'ქართული' ? 'ფერები' : 'Colors'),
+        icon:Icon(showColorPanel ? Icons.expand_less : Icons.palette_outlined,size:18),
+        label:Text(lang == 'Русский' ? 'Цвета' : lang == 'Deutsch' ? 'Farben' : lang == 'ქართული' ? 'ფერები' : 'Colors',maxLines:1,overflow:TextOverflow.ellipsis),
         style:OutlinedButton.styleFrom(
           foregroundColor:panelTextColor,
           side:BorderSide(color:panelOutlineColor),
           minimumSize:const Size.fromHeight(46),
+          padding:const EdgeInsets.symmetric(horizontal:8),
           shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(12)),
         ),
-      ),
-    ),
+      )),
+      const SizedBox(width:8),
+      Expanded(child:OutlinedButton.icon(
+        onPressed:()=>setState(()=>showDesignPanel=!showDesignPanel),
+        icon:Icon(showDesignPanel ? Icons.expand_less : Icons.qr_code_2,size:18),
+        label:Text(lang == 'Русский' ? 'Дизайны' : lang == 'Deutsch' ? 'Designs' : lang == 'ქართული' ? 'დიზაინები' : 'Designs',maxLines:1,overflow:TextOverflow.ellipsis),
+        style:OutlinedButton.styleFrom(
+          foregroundColor:panelTextColor,
+          side:BorderSide(color:panelOutlineColor),
+          minimumSize:const Size.fromHeight(46),
+          padding:const EdgeInsets.symmetric(horizontal:8),
+          shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(12)),
+        ),
+      )),
+    ]),
     if(showColorPanel) ...[
       const SizedBox(height:10),
       colorEditor(),
     ],
-    const SizedBox(height:14),
-    Container(
+    if(showDesignPanel) ...[
+      const SizedBox(height:10),
+      Container(
       width:double.infinity,
       padding:const EdgeInsets.fromLTRB(10,10,10,12),
       decoration:BoxDecoration(
@@ -773,7 +788,8 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
           ],
         )),
       ]),
-    ),
+      ),
+    ],
     const SizedBox(height:13),Text(t('size') + ': ' + size.round().toString() + ' px',style:TextStyle(fontSize:12,fontWeight:FontWeight.w700,color:panelTextColor)),
     Slider(min:256,max:1024,value:size,activeColor:const Color(0xFF5B2DFF),onChanged:(x)=>setState(()=>size=x)),
     Text(t('error'),style:TextStyle(fontSize:12,fontWeight:FontWeight.w700,color:panelTextColor)),const SizedBox(height:6),
