@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 import 'dart:typed_data';
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:gal/gal.dart';
@@ -175,7 +176,26 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     'ქართული': {'title':'QR Studio','subtitle':'შექმენი • მოარგე • შეინახე','type':'QR კოდის ტიპი','url':'URL','text':'ტექსტი','phone':'ტელეფონი','wifi':'Wi‑Fi','contact':'კონტაქტი','email':'ელფოსტა','location':'გეოლოკაცია','fg':'QR ფერი','bg':'ფონი','transparent':'გამჭვირვალე ფონი','size':'ზომა','error':'შეცდომის გასწორება','save':'PNG შენახვა','share':'გაზიარება','checkQr':'QR-ის შემოწმება','qrEmpty':'QR კოდის მონაცემები ცარიელია.','qrReadable':'QR კოდი იკითხება','qrMismatch':'QR კოდის მონაცემები არ ემთხვევა','qrConfirmed':'აპმა დაასკანერა შექმნილი QR გამოსახულება და დაადასტურა, რომ შიგთავსი საწყის მონაცემებს ემთხვევა.','qrMismatchHint':'QR გამოსახულება წაიკითხა, მაგრამ მონაცემები საწყისს არ ემთხვევა. სცადეთ სხვა დიზაინი ან წაშალეთ ლოგო.','qrFailed':'QR კოდის წაკითხვა ვერ მოხერხდა','qrFailedHint':'აპმა სცადა შექმნილი QR გამოსახულების წაკითხვა, მაგრამ ვერ შეძლო. სცადეთ მარტივი დიზაინი, უფრო მაღალი კონტრასტი ან პატარა ლოგო.','ok':'კარგი','name':'სახელი','data':'მონაცემები','subject':'თემა','message':'შეტყობინება','ssid':'Wi‑Fi სახელი','password':'პაროლი','security':'დაცვა','lat':'გრძედი','lon':'განედი','address':'მისამართი','photo':'ფოტოს არჩევა','logo':'ლოგო QR-ში','logoHint':'სურვილისამებრ: გალერეიდან სურათი ჩასვით QR-ის ცენტრში','photoSelected':'ლოგო არჩეულია • კორექცია H','removeLogo':'ლოგოს წაშლა','photoError':'სურათი ვერ გაიხსნა','saved':'PNG გალერეაში შეინახა','permission':'გთხოვთ დაუშვათ გალერეაზე წვდომა','preview':'თქვენი QR კოდი','ready':'მზადაა შესანახად','logoSize':'ლოგოს ზომა','lowContrastQr':'კონტრასტი ძალიან დაბალია: აირჩიეთ უფრო მუქი QR ფერი.','lowContrastBg':'კონტრასტი ძალიან დაბალია: აირჩიეთ უფრო ღია ფონი.','contrastWarning':'გაფრთხილება: QR-სა და ფონს შორის კონტრასტი დაბალია — სკანირება შეიძლება გართულდეს.','none':'დაცვის გარეშე','designs':'QR დიზაინი','classic':'კლასიკური','neon':'ნეონი','sunset':'მზის ჩასვლა','mint':'პიტნა','violet':'იისფერი'}
   };
 
-  String t(String k) => labels[lang]![k] ?? k;
+  final designNames = const {
+    'Русский': {
+      'brand_instagram':'Instagram','brand_facebook':'Facebook','brand_tiktok':'TikTok','brand_youtube':'YouTube','brand_x':'X (Twitter)','brand_whatsapp':'WhatsApp','brand_telegram':'Telegram','brand_snapchat':'Snapchat','brand_spotify':'Spotify','brand_linkedin':'LinkedIn',
+      'shape_round_dots':'Круглые точки','shape_diamond':'Ромбы','shape_hexagon':'Шестиугольники','shape_rounded_squares':'Скруглённые','shape_droplet':'Капли','shape_stars':'Звёзды','shape_honeycomb':'Соты','shape_wave':'Волны','shape_lines':'Линии','shape_frame':'Рамка'
+    },
+    'English': {
+      'brand_instagram':'Instagram','brand_facebook':'Facebook','brand_tiktok':'TikTok','brand_youtube':'YouTube','brand_x':'X (Twitter)','brand_whatsapp':'WhatsApp','brand_telegram':'Telegram','brand_snapchat':'Snapchat','brand_spotify':'Spotify','brand_linkedin':'LinkedIn',
+      'shape_round_dots':'Round dots','shape_diamond':'Diamond','shape_hexagon':'Hexagon','shape_rounded_squares':'Rounded squares','shape_droplet':'Droplet','shape_stars':'Stars','shape_honeycomb':'Honeycomb','shape_wave':'Wave','shape_lines':'Lines','shape_frame':'Frame'
+    },
+    'Deutsch': {
+      'brand_instagram':'Instagram','brand_facebook':'Facebook','brand_tiktok':'TikTok','brand_youtube':'YouTube','brand_x':'X (Twitter)','brand_whatsapp':'WhatsApp','brand_telegram':'Telegram','brand_snapchat':'Snapchat','brand_spotify':'Spotify','brand_linkedin':'LinkedIn',
+      'shape_round_dots':'Runde Punkte','shape_diamond':'Diamant','shape_hexagon':'Sechsecke','shape_rounded_squares':'Abgerundet','shape_droplet':'Tropfen','shape_stars':'Sterne','shape_honeycomb':'Waben','shape_wave':'Wellen','shape_lines':'Linien','shape_frame':'Rahmen'
+    },
+    'ქართული': {
+      'brand_instagram':'Instagram','brand_facebook':'Facebook','brand_tiktok':'TikTok','brand_youtube':'YouTube','brand_x':'X (Twitter)','brand_whatsapp':'WhatsApp','brand_telegram':'Telegram','brand_snapchat':'Snapchat','brand_spotify':'Spotify','brand_linkedin':'LinkedIn',
+      'shape_round_dots':'მრგვალი წერტილები','shape_diamond':'რომბები','shape_hexagon':'ექვსკუთხედები','shape_rounded_squares':'მომრგვალებული','shape_droplet':'წვეთები','shape_stars':'ვარსკვლავები','shape_honeycomb':'ფიჭა','shape_wave':'ტალღები','shape_lines':'ხაზები','shape_frame':'ჩარჩო'
+    }
+  };
+
+  String t(String k) => designNames[lang]?[k] ?? labels[lang]![k] ?? k;
   String v(String k) => c[k]!.text.trim();
   double _luminance(Color color) {
     double channel(int value) {
@@ -191,7 +211,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     return (hi + 0.05) / (lo + 0.05);
   }
  
-  int get errorLevel => photoImage != null ? 2 : (const {'L':1,'M':0,'Q':3,'H':2}[error] ?? 0);
+  int get errorLevel => (photoImage != null || selectedDesign.startsWith('brand_')) ? 2 : (const {'L':1,'M':0,'Q':3,'H':2}[error] ?? 0);
 
   @override void initState() {
     super.initState();
@@ -708,13 +728,28 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
         SizedBox(height:112,child:ListView(
           scrollDirection:Axis.horizontal,
           children:[
-            designOption('green',const Color(0xFF078F42),Colors.white),
-            designOption('social',const Color(0xFF1749C8),const Color(0xFFEAF1FF)),
-            designOption('classic',Colors.black,Colors.white),
-            designOption('maze',const Color(0xFF3978F6),Colors.white),
-            designOption('gold',const Color(0xFF8A5A00),const Color(0xFFFFFDF5)),
-            designOption('pink',const Color(0xFFDB4F9B),const Color(0xFFFFF2FA)),
-            designOption('red',const Color(0xFFD60018),const Color(0xFFFFF7F7)),
+            // Branded social-platform presets.
+            designOption('brand_instagram',const Color(0xFFC13584),const Color(0xFFFFF4FA)),
+            designOption('brand_facebook',const Color(0xFF1877F2),const Color(0xFFF1F6FF)),
+            designOption('brand_tiktok',const Color(0xFF111111),const Color(0xFFF4FFFF)),
+            designOption('brand_youtube',const Color(0xFFFF0033),const Color(0xFFFFF3F3)),
+            designOption('brand_x',const Color(0xFF111111),Colors.white),
+            designOption('brand_whatsapp',const Color(0xFF128C7E),const Color(0xFFF0FFF8)),
+            designOption('brand_telegram',const Color(0xFF229ED9),const Color(0xFFF0FAFF)),
+            designOption('brand_snapchat',const Color(0xFF111111),const Color(0xFFFFFDEB)),
+            designOption('brand_spotify',const Color(0xFF111111),const Color(0xFFEFFFF5)),
+            designOption('brand_linkedin',const Color(0xFF0A66C2),const Color(0xFFF1F7FF)),
+            // Ten distinct QR module geometries.
+            designOption('shape_round_dots',Colors.black,Colors.white),
+            designOption('shape_diamond',const Color(0xFF1749C8),Colors.white),
+            designOption('shape_hexagon',const Color(0xFF6633AA),const Color(0xFFF8F3FF)),
+            designOption('shape_rounded_squares',const Color(0xFF1678C8),Colors.white),
+            designOption('shape_droplet',const Color(0xFF1267B5),const Color(0xFFF1F8FF)),
+            designOption('shape_stars',const Color(0xFF5530A8),Colors.white),
+            designOption('shape_honeycomb',const Color(0xFF171717),const Color(0xFFFFF9E8)),
+            designOption('shape_wave',const Color(0xFF087FC3),Colors.white),
+            designOption('shape_lines',const Color(0xFF222222),Colors.white),
+            designOption('shape_frame',const Color(0xFF6032A8),const Color(0xFFFFFCF2)),
           ],
         )),
       ]),
@@ -1273,6 +1308,61 @@ class StyledQrPainter extends CustomPainter {
         if (!matrix.isDark(y, x) || inEye(x, y)) continue;
         final rect = Rect.fromLTWH(origin + x * unit, origin + y * unit, unit * .94, unit * .94);
         switch (design) {
+          case 'shape_round_dots':
+            canvas.drawCircle(rect.center, unit * .47, modules);
+            break;
+          case 'shape_diamond':
+            final path = Path()..moveTo(rect.center.dx, rect.top)..lineTo(rect.right, rect.center.dy)..lineTo(rect.center.dx, rect.bottom)..lineTo(rect.left, rect.center.dy)..close();
+            canvas.drawPath(path, modules);
+            break;
+          case 'shape_hexagon':
+          case 'shape_honeycomb':
+            final path = Path()
+              ..moveTo(rect.left + rect.width * .25, rect.top)
+              ..lineTo(rect.right - rect.width * .25, rect.top)
+              ..lineTo(rect.right, rect.center.dy)
+              ..lineTo(rect.right - rect.width * .25, rect.bottom)
+              ..lineTo(rect.left + rect.width * .25, rect.bottom)
+              ..lineTo(rect.left, rect.center.dy)..close();
+            canvas.drawPath(path, modules);
+            break;
+          case 'shape_rounded_squares':
+            canvas.drawRRect(RRect.fromRectAndRadius(rect, Radius.circular(unit * .30)), modules);
+            break;
+          case 'shape_droplet':
+            final path = Path()
+              ..moveTo(rect.center.dx, rect.top)
+              ..cubicTo(rect.right, rect.center.dy, rect.right, rect.bottom, rect.center.dx, rect.bottom)
+              ..cubicTo(rect.left, rect.bottom, rect.left, rect.center.dy, rect.center.dx, rect.top)
+              ..close();
+            canvas.drawPath(path, modules);
+            break;
+          case 'shape_stars':
+            final path = Path();
+            for (var point = 0; point < 10; point++) {
+              final radius = point.isEven ? unit * .48 : unit * .22;
+              final angle = -math.pi / 2 + point * math.pi / 5;
+              final p = Offset(rect.center.dx + math.cos(angle) * radius, rect.center.dy + math.sin(angle) * radius);
+              if (point == 0) { path.moveTo(p.dx, p.dy); } else { path.lineTo(p.dx, p.dy); }
+            }
+            path.close();
+            canvas.drawPath(path, modules);
+            break;
+          case 'shape_wave':
+            final wave = Path()
+              ..moveTo(rect.left, rect.top + unit * .20)
+              ..quadraticBezierTo(rect.center.dx, rect.top - unit * .12, rect.right, rect.top + unit * .20)
+              ..lineTo(rect.right, rect.bottom - unit * .20)
+              ..quadraticBezierTo(rect.center.dx, rect.bottom + unit * .12, rect.left, rect.bottom - unit * .20)
+              ..close();
+            canvas.drawPath(wave, modules);
+            break;
+          case 'shape_lines':
+            canvas.drawRRect(RRect.fromRectAndRadius(rect, Radius.circular(unit * .08)), modules);
+            break;
+          case 'shape_frame':
+            canvas.drawRRect(RRect.fromRectAndRadius(rect, Radius.circular(unit * .12)), modules);
+            break;
           case 'green':
             canvas.drawRRect(RRect.fromRectAndRadius(rect, Radius.circular(unit * .30)), modules);
             break;
@@ -1354,6 +1444,28 @@ class StyledQrPainter extends CustomPainter {
       final pad = Paint()..color = scanBacking;
       canvas.drawRRect(RRect.fromRectAndRadius(rect.inflate(unit * .65), Radius.circular(unit)), pad);
       canvas.drawImageRect(logo!, Rect.fromLTWH(0, 0, logo!.width.toDouble(), logo!.height.toDouble()), rect, Paint()..filterQuality = FilterQuality.high);
+    } else if (design.startsWith('brand_')) {
+      // Compact centered brand mark; H-level correction is enabled for these presets.
+      const marks = {
+        'brand_instagram':'◎','brand_facebook':'f','brand_tiktok':'♪','brand_youtube':'▶',
+        'brand_x':'X','brand_whatsapp':'☎','brand_telegram':'➤','brand_snapchat':'S',
+        'brand_spotify':'≋','brand_linkedin':'in'
+      };
+      final side = size.width * .145;
+      final rect = Rect.fromCenter(center: size.center(Offset.zero), width: side, height: side);
+      final backing = background.alpha == 0 ? Colors.white : background;
+      canvas.drawRRect(RRect.fromRectAndRadius(rect.inflate(unit * .65), Radius.circular(unit * .85)), Paint()..color = backing);
+      canvas.drawRRect(RRect.fromRectAndRadius(rect, Radius.circular(unit * .65)), Paint()..color = Colors.white);
+      final mark = marks[design] ?? '•';
+      final text = TextPainter(
+        text: TextSpan(text: mark, style: TextStyle(
+          color: foreground, fontSize: side * (mark.length > 1 ? .43 : .68),
+          fontWeight: FontWeight.w900, fontFamily: 'Arial',
+        )),
+        textDirection: TextDirection.ltr,
+        textAlign: TextAlign.center,
+      )..layout(maxWidth: side * .92);
+      text.paint(canvas, Offset(rect.center.dx - text.width / 2, rect.center.dy - text.height / 2));
     }
   }
 
