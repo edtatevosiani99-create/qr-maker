@@ -16,6 +16,7 @@ import 'package:zxing2/qrcode.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -181,7 +182,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
 
   final designNames = const {
     'Русский': {
-      'brand_instagram':'Instagram','brand_facebook':'Facebook','brand_tiktok':'TikTok','brand_youtube':'YouTube','brand_x':'X (Twitter)','brand_whatsapp':'WhatsApp','brand_telegram':'Telegram','brand_snapchat':'Snapchat','brand_spotify':'Spotify','brand_linkedin':'LinkedIn',
+      'brand_instagram':'Instagram','brand_facebook':'Facebook','brand_tiktok':'TikTok','brand_youtube':'YouTube','brand_x':'X','brand_whatsapp':'WhatsApp','brand_telegram':'Telegram','brand_snapchat':'Snapchat','brand_discord':'Discord','brand_linkedin':'LinkedIn',
       'shape_round_dots':'Круглые точки','shape_diamond':'Ромбы','shape_hexagon':'Шестиугольники','shape_rounded_squares':'Скруглённые','shape_droplet':'Капли','shape_stars':'Звёзды','shape_honeycomb':'Соты','shape_wave':'Волны','shape_lines':'Линии','shape_frame':'Рамка'
     },
     'English': {
@@ -749,16 +750,16 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
           scrollDirection:Axis.horizontal,
           children:[
             // Branded social-platform presets.
-            designOption('brand_instagram',const Color(0xFFC13584),const Color(0xFFFFF4FA)),
-            designOption('brand_facebook',const Color(0xFF1877F2),const Color(0xFFF1F6FF)),
-            designOption('brand_tiktok',const Color(0xFF111111),const Color(0xFFF4FFFF)),
-            designOption('brand_youtube',const Color(0xFFFF0033),const Color(0xFFFFF3F3)),
+            designOption('brand_whatsapp',const Color(0xFF128C7E),const Color(0xFFE9FFF3)),
+            designOption('brand_facebook',const Color(0xFF1877F2),const Color(0xFFEAF2FF)),
+            designOption('brand_instagram',const Color(0xFFC13584),const Color(0xFFFFEAF4)),
+            designOption('brand_tiktok',const Color(0xFF111111),const Color(0xFFF1F1F1)),
+            designOption('brand_youtube',const Color(0xFFFF0033),const Color(0xFFFFE9EC)),
+            designOption('brand_telegram',const Color(0xFF229ED9),const Color(0xFFE6F7FF)),
             designOption('brand_x',const Color(0xFF111111),Colors.white),
-            designOption('brand_whatsapp',const Color(0xFF128C7E),const Color(0xFFF0FFF8)),
-            designOption('brand_telegram',const Color(0xFF229ED9),const Color(0xFFF0FAFF)),
-            designOption('brand_snapchat',const Color(0xFF111111),const Color(0xFFFFFDEB)),
-            designOption('brand_spotify',const Color(0xFF111111),const Color(0xFFEFFFF5)),
-            designOption('brand_linkedin',const Color(0xFF0A66C2),const Color(0xFFF1F7FF)),
+            designOption('brand_linkedin',const Color(0xFF0A66C2),const Color(0xFFE8F3FF)),
+            designOption('brand_snapchat',const Color(0xFF111111),const Color(0xFFFFF200)),
+            designOption('brand_discord',const Color(0xFF5865F2),const Color(0xFFEEF0FF)),
             // Ten distinct QR module geometries.
             designOption('shape_round_dots',Colors.black,Colors.white),
             designOption('shape_diamond',const Color(0xFF1749C8),Colors.white),
@@ -1190,7 +1191,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     final delta=position-center;
     final radius=math.min(size.width,size.height)/2;
     final distance=(delta.distance/(radius*.92)).clamp(0.0,1.0);
-    final hue=(math.atan2(delta.dy,delta.dx)*180/math.pi+360)%360;
+    final hue=(math.atan2(delta.dy,delta.dx)*180/math.pi+90+360)%360;
     final color=HSVColor.fromAHSV(1,hue,distance,colorBrightness).toColor();
     setState((){
       if(background){bg=color;transparentBg=false;}
@@ -1553,10 +1554,17 @@ class StyledQrPainter extends CustomPainter {
       canvas.drawImageRect(logo!, Rect.fromLTWH(0, 0, logo!.width.toDouble(), logo!.height.toDouble()), rect, Paint()..filterQuality = FilterQuality.high);
     } else if (design.startsWith('brand_')) {
       // Compact centered brand mark; H-level correction is enabled for these presets.
-      const marks = {
-        'brand_instagram':'◎','brand_facebook':'f','brand_tiktok':'♪','brand_youtube':'▶',
-        'brand_x':'X','brand_whatsapp':'☎','brand_telegram':'➤','brand_snapchat':'S',
-        'brand_spotify':'≋','brand_linkedin':'in'
+      const marks = <String,IconData>{
+        'brand_instagram':FontAwesomeIcons.instagram,
+        'brand_facebook':FontAwesomeIcons.facebookF,
+        'brand_tiktok':FontAwesomeIcons.tiktok,
+        'brand_youtube':FontAwesomeIcons.youtube,
+        'brand_x':FontAwesomeIcons.xTwitter,
+        'brand_whatsapp':FontAwesomeIcons.whatsapp,
+        'brand_telegram':FontAwesomeIcons.telegram,
+        'brand_snapchat':FontAwesomeIcons.snapchat,
+        'brand_discord':FontAwesomeIcons.discord,
+        'brand_linkedin':FontAwesomeIcons.linkedinIn,
       };
       final side = size.width * .145;
       final rect = Rect.fromCenter(center: size.center(Offset.zero), width: side, height: side);
@@ -1565,9 +1573,11 @@ class StyledQrPainter extends CustomPainter {
       canvas.drawRRect(RRect.fromRectAndRadius(rect, Radius.circular(unit * .65)), Paint()..color = Colors.white);
       final mark = marks[design] ?? '•';
       final text = TextPainter(
-        text: TextSpan(text: mark, style: TextStyle(
-          color: foreground, fontSize: side * (mark.length > 1 ? .43 : .68),
-          fontWeight: FontWeight.w900, fontFamily: 'Arial',
+        text: TextSpan(text: String.fromCharCode((marks[design] ?? FontAwesomeIcons.qrcode).codePoint), style: TextStyle(
+          color: foreground, fontSize: side * .66,
+          fontWeight: FontWeight.w900,
+          fontFamily: (marks[design] ?? FontAwesomeIcons.qrcode).fontFamily,
+          package: (marks[design] ?? FontAwesomeIcons.qrcode).fontPackage,
         )),
         textDirection: TextDirection.ltr,
         textAlign: TextAlign.center,
@@ -1593,15 +1603,15 @@ class ColorWheelPainter extends CustomPainter {
   void paint(Canvas canvas,Size size){
     final center=Offset(size.width/2,size.height/2);
     final radius=math.min(size.width,size.height)*.46;
-    const slices=72;
+    const slices=180;
     final paint=Paint()..style=PaintingStyle.fill;
     for(var i=0;i<slices;i++){
       final start=i*2*math.pi/slices-math.pi/2;
       final sweep=2*math.pi/slices+.006;
-      for(var ring=0;ring<4;ring++){
-        final inner=radius*(ring/4);
-        final outer=radius*((ring+1)/4);
-        paint.color=HSVColor.fromAHSV(1,(i/slices)*360,(ring+1)/4,brightness).toColor();
+      for(var ring=0;ring<36;ring++){
+        final inner=radius*(ring/36);
+        final outer=radius*((ring+1)/36);
+        paint.color=HSVColor.fromAHSV(1,(i/slices)*360,(ring+1)/36,brightness).toColor();
         final path=Path()
           ..moveTo(center.dx+math.cos(start)*inner,center.dy+math.sin(start)*inner)
           ..lineTo(center.dx+math.cos(start)*outer,center.dy+math.sin(start)*outer)
