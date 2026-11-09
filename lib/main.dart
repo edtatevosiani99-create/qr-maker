@@ -16,7 +16,6 @@ import 'package:zxing2/qrcode.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -1554,17 +1553,10 @@ class StyledQrPainter extends CustomPainter {
       canvas.drawImageRect(logo!, Rect.fromLTWH(0, 0, logo!.width.toDouble(), logo!.height.toDouble()), rect, Paint()..filterQuality = FilterQuality.high);
     } else if (design.startsWith('brand_')) {
       // Compact centered brand mark; H-level correction is enabled for these presets.
-      const marks = <String,IconData>{
-        'brand_instagram':FontAwesomeIcons.instagram,
-        'brand_facebook':FontAwesomeIcons.facebookF,
-        'brand_tiktok':FontAwesomeIcons.tiktok,
-        'brand_youtube':FontAwesomeIcons.youtube,
-        'brand_x':FontAwesomeIcons.xTwitter,
-        'brand_whatsapp':FontAwesomeIcons.whatsapp,
-        'brand_telegram':FontAwesomeIcons.telegram,
-        'brand_snapchat':FontAwesomeIcons.snapchat,
-        'brand_discord':FontAwesomeIcons.discord,
-        'brand_linkedin':FontAwesomeIcons.linkedinIn,
+      const marks = {
+        'brand_instagram':'◎','brand_facebook':'f','brand_tiktok':'♪','brand_youtube':'▶',
+        'brand_x':'𝕏','brand_whatsapp':'☎','brand_telegram':'➤','brand_snapchat':'♟',
+        'brand_discord':'◕','brand_linkedin':'in'
       };
       final side = size.width * .145;
       final rect = Rect.fromCenter(center: size.center(Offset.zero), width: side, height: side);
@@ -1573,11 +1565,9 @@ class StyledQrPainter extends CustomPainter {
       canvas.drawRRect(RRect.fromRectAndRadius(rect, Radius.circular(unit * .65)), Paint()..color = Colors.white);
       final mark = marks[design] ?? '•';
       final text = TextPainter(
-        text: TextSpan(text: String.fromCharCode((marks[design] ?? FontAwesomeIcons.qrcode).codePoint), style: TextStyle(
-          color: foreground, fontSize: side * .66,
-          fontWeight: FontWeight.w900,
-          fontFamily: (marks[design] ?? FontAwesomeIcons.qrcode).fontFamily,
-          package: (marks[design] ?? FontAwesomeIcons.qrcode).fontPackage,
+        text: TextSpan(text: marks[design] ?? '•', style: TextStyle(
+          color: foreground, fontSize: side * (design == 'brand_linkedin' ? .43 : .66),
+          fontWeight: FontWeight.w900, fontFamily: 'Arial',
         )),
         textDirection: TextDirection.ltr,
         textAlign: TextAlign.center,
