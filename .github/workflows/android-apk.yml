@@ -28,8 +28,30 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Generate Android project structure
+        run: flutter create --platforms=android --org com.edtatevosiani99 --project-name qr_studio .
+
+      - name: Restore QR Studio Android configuration
+        shell: bash
+        run: |
+          mkdir -p android/app/src/main/res/values
+          mkdir -p android/app/src/main/kotlin/com/edtatevosiani99/qrstudiapp
+          mkdir -p android/gradle/wrapper
+          cp build.gradle.kts android/app/build.gradle.kts
+          cp settings.gradle.kts android/settings.gradle.kts
+          cp gradle.properties android/gradle.properties
+          cp gradle-wrapper.properties android/gradle/wrapper/gradle-wrapper.properties
+          cp styles.xml android/app/src/main/res/values/styles.xml
+          sed 's/\\\\n/\n/g' AndroidManifest.xml > android/app/src/main/AndroidManifest.xml
+          sed 's/^package .*/package com.edtatevosiani99.qrstudioapp/' MainActivity.kt > android/app/src/main/kotlin/com/edtatevosiani99/qrstudiapp/MainActivity.kt
+          sed -i 's/com\\.qrst​​udio\\.app/com.edtatevosiani99.qrstudioapp/g' android/app/build.gradle.kts
+          sed -i 's/com\\.qrst​​udio\\.app/com.edtatevosiani99.qrstudioapp/g' android/app/build.gradle.kts
+
       - name: Install dependencies
         run: flutter pub get
+
+      - name: Generate launcher icons
+        run: dart run flutter_launcher_icons
 
       - name: Build debug APK
         run: flutter build apk --debug
