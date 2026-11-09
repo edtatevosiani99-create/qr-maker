@@ -154,6 +154,9 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   String error = 'M', security = 'WPA';
   String selectedDesign = 'classic';
   bool transparentBg = false;
+  bool showColorPanel = false;
+  bool editingBackground = false;
+  double colorBrightness = 1.0;
   bool isCheckingQr = false;
   String? qrCheckState;
   bool isScannerOpen = false;
@@ -707,8 +710,25 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
       DropdownButtonFormField<String>(value:security,decoration:fieldDecoration(t('security')),items:['WPA','WEP','None'].map((x)=>DropdownMenuItem(value:x,child:Text(x=='None'?t('none'):x))).toList(),onChanged:(x)=>setState(()=>security=x!)),
     ],
     if(type==QRType.location) ...[input('lat',t('lat'),keyboard:TextInputType.number),input('lon',t('lon'),keyboard:TextInputType.number),input('address',t('address'))],
-    const SizedBox(height:4),Text(t('fg'),style:TextStyle(fontSize:13,fontWeight:FontWeight.w700,color:panelTextColor)),const SizedBox(height:6),gradientColorBar(false),
-    const SizedBox(height:12),Text(t('bg'),style:TextStyle(fontSize:13,fontWeight:FontWeight.w700,color:panelTextColor)),const SizedBox(height:6),gradientColorBar(true),
+    const SizedBox(height:4),
+    SizedBox(
+      width:double.infinity,
+      child:OutlinedButton.icon(
+        onPressed:()=>setState(()=>showColorPanel=!showColorPanel),
+        icon:Icon(showColorPanel ? Icons.expand_less : Icons.palette_outlined),
+        label:Text(lang == 'Русский' ? 'Цвета' : lang == 'Deutsch' ? 'Farben' : lang == 'ქართული' ? 'ფერები' : 'Colors'),
+        style:OutlinedButton.styleFrom(
+          foregroundColor:panelTextColor,
+          side:BorderSide(color:panelOutlineColor),
+          minimumSize:const Size.fromHeight(46),
+          shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(12)),
+        ),
+      ),
+    ),
+    if(showColorPanel) ...[
+      const SizedBox(height:10),
+      colorEditor(),
+    ],
     const SizedBox(height:14),
     Container(
       width:double.infinity,
@@ -1090,6 +1110,93 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
         fg=color;
       }
     });
+  }
+
+
+  Widget colorEditor()=>Container(
+    padding:const EdgeInsets.all(12),
+    decoration:BoxDecoration(
+      color:panelSurfaceColor,
+      borderRadius:BorderRadius.circular(14),
+      border:Border.all(color:panelOutlineColor),
+    ),
+    child:Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[
+      previewCard(),
+      const SizedBox(height:12),
+      SegmentedButton<bool>(
+        segments:[
+          ButtonSegment<bool>(value:false,label:Text(lang == 'Русский' ? 'Цвет QR' : lang == 'Deutsch' ? 'QR-Farbe' : lang == 'ქართული' ? 'QR ფერი' : 'QR color')),
+          ButtonSegment<bool>(value:true,label:Text(lang == 'Русский' ? 'Фон' : lang == 'Deutsch' ? 'Hintergrund' : lang == 'ქართული' ? 'ფონი' : 'Background')),
+        ],
+        selected:<bool>{editingBackground},
+        onSelectionChanged:(values)=>setState(()=>editingBackground=values.first),
+      ),
+      const SizedBox(height:12),
+      Center(
+        child:GestureDetector(
+          onPanDown:(d)=>setColorFromWheel(editingBackground,d.localPosition,const Size(248,248)),
+          onPanUpdate:(d)=>setColorFromWheel(editingBackground,d.localPosition,const Size(248,248)),
+          child:SizedBox(
+            width:248,height:248,
+            child:CustomPaint(
+              painter:ColorWheelPainter(brightness:colorBrightness),
+              child:Center(
+                child:Container(
+                  width:48,height:48,
+                  decoration:BoxDecoration(
+                    shape:BoxShape.circle,
+                    color:editingBackground ? (transparentBg ? Colors.transparent : bg) : fg,
+                    border:Border.all(color:panelTextColor,width:2),
+                  ),
+                  child:transparentBg && editingBackground ? const Icon(Icons.grid_on,size:24,color:Colors.grey) : null,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+      const SizedBox(height:5),
+      Text(
+        'RGB: #${(editingBackground ? (transparentBg ? Colors.transparent : bg) : fg).value.toRadixString(16).padLeft(8,'0').substring(2).toUpperCase()}',
+        textAlign:TextAlign.center,
+        style:TextStyle(fontSize:11,color:panelMutedColor,fontWeight:FontWeight.w600),
+      ),
+      Row(children:[
+        Text(lang == 'Русский' ? 'Яркость' : lang == 'Deutsch' ? 'Helligkeit' : lang == 'ქართული' ? 'სიკაშკაშე' : 'Brightness',style:TextStyle(fontSize:11,color:panelTextColor)),
+        Expanded(child:Slider(
+          min:.15,max:1,value:colorBrightness,
+          activeColor:const Color(0xFF5B2DFF),
+          onChanged:(value)=>setState(()=>colorBrightness=value),
+        )),
+      ]),
+      Row(mainAxisAlignment:MainAxisAlignment.center,children:[
+        colorQuickButton(Colors.black,editingBackground),
+        const SizedBox(width:12),
+        colorQuickButton(Colors.white,editingBackground),
+        if(editingBackground) ...[
+          const SizedBox(width:12),
+          OutlinedButton.icon(
+            onPressed:(){setState(()=>transparentBg=true);scheduleQrLogoRefresh();},
+            icon:const Icon(Icons.grid_on,size:16),
+            label:Text(t('transparent')),
+          ),
+        ],
+      ]),
+    ]),
+  );
+
+  void setColorFromWheel(bool background,Offset position,Size size){
+    final center=Offset(size.width/2,size.height/2);
+    final delta=position-center;
+    final radius=math.min(size.width,size.height)/2;
+    final distance=(delta.distance/(radius*.92)).clamp(0.0,1.0);
+    final hue=(math.atan2(delta.dy,delta.dx)*180/math.pi+360)%360;
+    final color=HSVColor.fromAHSV(1,hue,distance,colorBrightness).toColor();
+    setState((){
+      if(background){bg=color;transparentBg=false;}
+      else{fg=color;}
+    });
+    if(background)scheduleQrLogoRefresh();
   }
 
   Widget preview()=>Column(children:[previewCard(),const SizedBox(height:10),checkQrButton(),const SizedBox(height:12),footerButtons()]);
@@ -1475,6 +1582,41 @@ class StyledQrPainter extends CustomPainter {
       background != oldDelegate.background || design != oldDelegate.design ||
       logo != oldDelegate.logo || logoScale != oldDelegate.logoScale ||
       errorLevel != oldDelegate.errorLevel;
+}
+
+
+class ColorWheelPainter extends CustomPainter {
+  const ColorWheelPainter({required this.brightness});
+  final double brightness;
+
+  @override
+  void paint(Canvas canvas,Size size){
+    final center=Offset(size.width/2,size.height/2);
+    final radius=math.min(size.width,size.height)*.46;
+    const slices=72;
+    final paint=Paint()..style=PaintingStyle.fill;
+    for(var i=0;i<slices;i++){
+      final start=i*2*math.pi/slices-math.pi/2;
+      final sweep=2*math.pi/slices+.006;
+      for(var ring=0;ring<4;ring++){
+        final inner=radius*(ring/4);
+        final outer=radius*((ring+1)/4);
+        paint.color=HSVColor.fromAHSV(1,(i/slices)*360,(ring+1)/4,brightness).toColor();
+        final path=Path()
+          ..moveTo(center.dx+math.cos(start)*inner,center.dy+math.sin(start)*inner)
+          ..lineTo(center.dx+math.cos(start)*outer,center.dy+math.sin(start)*outer)
+          ..arcTo(Rect.fromCircle(center:center,radius:outer),start,sweep,false)
+          ..lineTo(center.dx+math.cos(start+sweep)*inner,center.dy+math.sin(start+sweep)*inner)
+          ..arcTo(Rect.fromCircle(center:center,radius:inner),start+sweep,-sweep,false)
+          ..close();
+        canvas.drawPath(path,paint);
+      }
+    }
+    canvas.drawCircle(center,radius*.12,Paint()..color=Colors.white);
+  }
+
+  @override
+  bool shouldRepaint(covariant ColorWheelPainter oldDelegate)=>brightness!=oldDelegate.brightness;
 }
 
 class ScannerCornersPainter extends CustomPainter {
