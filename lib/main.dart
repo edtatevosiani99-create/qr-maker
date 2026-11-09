@@ -1552,27 +1552,67 @@ class StyledQrPainter extends CustomPainter {
       canvas.drawRRect(RRect.fromRectAndRadius(rect.inflate(unit * .65), Radius.circular(unit)), pad);
       canvas.drawImageRect(logo!, Rect.fromLTWH(0, 0, logo!.width.toDouble(), logo!.height.toDouble()), rect, Paint()..filterQuality = FilterQuality.high);
     } else if (design.startsWith('brand_')) {
-      // Compact centered brand mark; H-level correction is enabled for these presets.
-      const marks = {
-        'brand_instagram':'◎','brand_facebook':'f','brand_tiktok':'♪','brand_youtube':'▶',
-        'brand_x':'𝕏','brand_whatsapp':'☎','brand_telegram':'➤','brand_snapchat':'♟',
-        'brand_discord':'◕','brand_linkedin':'in'
-      };
-      final side = size.width * .145;
-      final rect = Rect.fromCenter(center: size.center(Offset.zero), width: side, height: side);
-      final backing = background.alpha == 0 ? Colors.white : background;
-      canvas.drawRRect(RRect.fromRectAndRadius(rect.inflate(unit * .65), Radius.circular(unit * .85)), Paint()..color = backing);
-      canvas.drawRRect(RRect.fromRectAndRadius(rect, Radius.circular(unit * .65)), Paint()..color = Colors.white);
-      final mark = marks[design] ?? '•';
-      final text = TextPainter(
-        text: TextSpan(text: marks[design] ?? '•', style: TextStyle(
-          color: foreground, fontSize: side * (design == 'brand_linkedin' ? .43 : .66),
-          fontWeight: FontWeight.w900, fontFamily: 'Arial',
-        )),
-        textDirection: TextDirection.ltr,
-        textAlign: TextAlign.center,
-      )..layout(maxWidth: side * .92);
-      text.paint(canvas, Offset(rect.center.dx - text.width / 2, rect.center.dy - text.height / 2));
+      final side = size.width * .19;
+      final rect = Rect.fromCenter(center:size.center(Offset.zero),width:side,height:side);
+      final center=rect.center;
+      final white=Paint()..color=Colors.white..style=PaintingStyle.fill;
+      final ink=Paint()..color=foreground..style=PaintingStyle.fill;
+      final stroke=Paint()..color=foreground..style=PaintingStyle.stroke..strokeWidth=side*.095..strokeCap=StrokeCap.round..strokeJoin=StrokeJoin.round;
+      final plate=background.alpha==0?Colors.white:background;
+      canvas.drawRRect(RRect.fromRectAndRadius(rect.inflate(unit*.65),Radius.circular(unit)),Paint()..color=plate);
+      canvas.drawRRect(RRect.fromRectAndRadius(rect,Radius.circular(side*.20)),white);
+      switch(design){
+        case 'brand_instagram':
+          canvas.drawRRect(RRect.fromRectAndRadius(rect.deflate(side*.19),Radius.circular(side*.22)),stroke);
+          canvas.drawCircle(center,side*.19,stroke);
+          canvas.drawCircle(Offset(rect.right-side*.28,rect.top+side*.28),side*.055,ink);
+          break;
+        case 'brand_facebook':
+          final p=Path()..moveTo(center.dx+side*.12,rect.bottom-side*.12)..lineTo(center.dx+side*.12,center.dy-side*.02)..lineTo(center.dx+side*.31,center.dy-side*.02)..lineTo(center.dx+side*.31,center.dy-side*.20)..lineTo(center.dx+side*.12,center.dy-side*.20)..lineTo(center.dx+side*.12,rect.top+side*.20)..quadraticBezierTo(center.dx+side*.12,rect.top+side*.04,center.dx+side*.30,rect.top+side*.04)..lineTo(center.dx+side*.42,rect.top+side*.04);
+          canvas.drawPath(p,stroke..strokeWidth=side*.17);
+          break;
+        case 'brand_tiktok':
+          final p=Path()..moveTo(center.dx+side*.02,rect.top+side*.14)..lineTo(center.dx+side*.02,center.dy+side*.18)..cubicTo(center.dx+side*.02,center.dy+side*.48,rect.left+side*.10,rect.bottom-side*.06,rect.left+side*.28,rect.bottom-side*.06)..cubicTo(rect.left+side*.47,rect.bottom-side*.06,center.dx-side*.12,center.dy+side*.25,center.dx-side*.12,center.dy+side*.08)..lineTo(center.dx-side*.12,rect.top+side*.14);
+          canvas.drawPath(p,stroke..strokeWidth=side*.14);
+          canvas.drawLine(Offset(center.dx+side*.02,rect.top+side*.12),Offset(center.dx+side*.32,rect.top+side*.12),stroke..strokeWidth=side*.14);
+          canvas.drawLine(Offset(center.dx+side*.28,rect.top+side*.12),Offset(center.dx+side*.28,center.dy-side*.02),stroke..strokeWidth=side*.14);
+          break;
+        case 'brand_youtube':
+          canvas.drawRRect(RRect.fromRectAndRadius(rect.deflate(side*.10),Radius.circular(side*.22)),ink);
+          final p=Path()..moveTo(center.dx-side*.09,center.dy-side*.16)..lineTo(center.dx+side*.19,center.dy)..lineTo(center.dx-side*.09,center.dy+side*.16)..close();
+          canvas.drawPath(p,white);
+          break;
+        case 'brand_x':
+          canvas.drawLine(Offset(rect.left+side*.19,rect.top+side*.13),Offset(rect.right-side*.16,rect.bottom-side*.13),stroke..strokeWidth=side*.12);
+          canvas.drawLine(Offset(rect.right-side*.16,rect.top+side*.13),Offset(rect.left+side*.19,rect.bottom-side*.13),stroke..strokeWidth=side*.12);
+          break;
+        case 'brand_whatsapp':
+          canvas.drawCircle(center,side*.34,stroke..strokeWidth=side*.085);
+          final tail=Path()..moveTo(rect.left+side*.22,rect.bottom-side*.23)..lineTo(rect.left+side*.13,rect.bottom-side*.08)..lineTo(rect.left+side*.31,rect.bottom-side*.13)..close();
+          canvas.drawPath(tail,ink);
+          final phone=Path()..moveTo(center.dx-side*.17,center.dy-side*.19)..quadraticBezierTo(center.dx-side*.28,center.dy-side*.03,center.dx+side*.04,center.dy+side*.20)..quadraticBezierTo(center.dx+side*.17,center.dy+side*.29,center.dx+side*.23,center.dy+side*.13);
+          canvas.drawPath(phone,stroke..strokeWidth=side*.11);
+          break;
+        case 'brand_telegram':
+          final p=Path()..moveTo(rect.left+side*.10,center.dy)..lineTo(rect.right-side*.08,rect.top+side*.12)..lineTo(center.dx+side*.13,rect.bottom-side*.10)..lineTo(center.dx-side*.02,center.dy+side*.10)..lineTo(rect.left+side*.10,center.dy)..close();
+          canvas.drawPath(p,ink);
+          canvas.drawLine(Offset(center.dx-side*.02,center.dy+side*.10),Offset(center.dx+side*.29,rect.top+side*.18),Paint()..color=Colors.white..strokeWidth=side*.06);
+          break;
+        case 'brand_snapchat':
+          final p=Path()..moveTo(center.dx,rect.top+side*.12)..cubicTo(rect.left+side*.20,rect.top+side*.12,rect.left+side*.17,center.dy+side*.05,rect.left+side*.19,center.dy+side*.23)..cubicTo(rect.left+side*.15,center.dy+side*.34,rect.left+side*.08,center.dy+side*.35,rect.left+side*.10,center.dy+side*.43)..quadraticBezierTo(center.dx-side*.05,center.dy+side*.51,center.dx,rect.bottom-side*.12)..quadraticBezierTo(center.dx+side*.05,center.dy+side*.51,rect.right-side*.10,center.dy+side*.43)..cubicTo(rect.right-side*.08,center.dy+side*.35,rect.right-side*.15,center.dy+side*.34,rect.right-side*.19,center.dy+side*.23)..cubicTo(rect.right-side*.17,center.dy+side*.05,rect.right-side*.20,rect.top+side*.12,center.dx,rect.top+side*.12)..close();
+          canvas.drawPath(p,ink);
+          break;
+        case 'brand_discord':
+          final p=Path()..moveTo(rect.left+side*.16,center.dy-side*.17)..quadraticBezierTo(center.dx,rect.top-side*.02,rect.right-side*.16,center.dy-side*.17)..quadraticBezierTo(rect.right-side*.04,center.dy+side*.02,rect.right-side*.08,center.dy+side*.23)..quadraticBezierTo(center.dx,rect.bottom+side*.02,rect.left+side*.08,center.dy+side*.23)..quadraticBezierTo(rect.left+side*.04,center.dy+side*.02,rect.left+side*.16,center.dy-side*.17)..close();
+          canvas.drawPath(p,ink);
+          canvas.drawCircle(Offset(center.dx-side*.16,center.dy+side*.03),side*.045,white);
+          canvas.drawCircle(Offset(center.dx+side*.16,center.dy+side*.03),side*.045,white);
+          break;
+        case 'brand_linkedin':
+          final tp=TextPainter(text:TextSpan(text:'in',style:TextStyle(color:foreground,fontSize:side*.60,fontWeight:FontWeight.w900)),textDirection:TextDirection.ltr)..layout();
+          tp.paint(canvas,Offset(center.dx-tp.width/2,center.dy-tp.height/2));
+          break;
+      }
     }
   }
 
