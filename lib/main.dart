@@ -758,7 +758,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
           side:BorderSide(color:panelOutlineColor),
           minimumSize:const Size.fromHeight(46),
           padding:const EdgeInsets.symmetric(horizontal:8),
-          shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(12)),
+          shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(7)),
         ),
       )),
       const SizedBox(width:8),
@@ -771,7 +771,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
           side:BorderSide(color:panelOutlineColor),
           minimumSize:const Size.fromHeight(46),
           padding:const EdgeInsets.symmetric(horizontal:8),
-          shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(12)),
+          shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(7)),
         ),
       )),
     ]),
@@ -871,7 +871,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
           onPressed:choosePhoto,
           icon:const Icon(Icons.photo_library_outlined,size:18),
           label:Text(t('photo')),
-          style:OutlinedButton.styleFrom(minimumSize:const Size.fromHeight(42),shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(12))),
+          style:OutlinedButton.styleFrom(minimumSize:const Size.fromHeight(42),shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(7))),
         )),
         if(photoImage != null) ...[
           const SizedBox(width:8),
@@ -945,7 +945,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
       onTap:()=>setState(()=>type=x),
       child:AnimatedContainer(
         duration:const Duration(milliseconds:160),constraints:const BoxConstraints(minWidth:98,minHeight:40),padding:const EdgeInsets.symmetric(horizontal:12),
-        decoration:BoxDecoration(gradient:selected?const LinearGradient(colors:[Color(0xFF00CFFF),Color(0xFF7A00FF),Color(0xFFFF1BC7)]):null,color:selected?null:panelSurfaceColor,borderRadius:BorderRadius.circular(10),border:Border.all(color:selected?Colors.transparent:panelOutlineColor)),
+        decoration:BoxDecoration(gradient:selected?const LinearGradient(colors:[Color(0xFF00CFFF),Color(0xFF7A00FF),Color(0xFFFF1BC7)]):null,color:selected?null:panelSurfaceColor,borderRadius:BorderRadius.circular(7),border:Border.all(color:selected?Colors.transparent:panelOutlineColor)),
         child:Row(mainAxisSize:MainAxisSize.min,children:[Icon(icons[x],size:18,color:selected?Colors.white:panelMutedColor),const SizedBox(width:7),Text(t(key),style:TextStyle(fontSize:12,fontWeight:FontWeight.w600,color:selected?Colors.white:panelTextColor))]),
       ),
     );
@@ -957,7 +957,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     final dark = themeMode == ThemeMode.dark;
     final outline = dark ? const Color(0xFF687583) : Theme.of(context).colorScheme.outlineVariant;
     final shape = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(7),
       borderSide: BorderSide(color: outline, width: 1.2),
     );
     return InputDecoration(
@@ -970,7 +970,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
       border: shape,
       enabledBorder: shape,
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(7),
         borderSide: BorderSide(color: dark ? const Color(0xFF8A98A8) : Theme.of(context).colorScheme.primary, width: 1.6),
       ),
       disabledBorder: shape,
@@ -1013,7 +1013,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
                     Color(0xFF00FFFF),Color(0xFF0000FF),Color(0xFFFF00FF),Color(0xFFFF0000)
                   ],
                 ),
-                borderRadius:BorderRadius.circular(10),
+                borderRadius:BorderRadius.circular(7),
               ),
               alignment:Alignment.center,
               child:Align(
@@ -1058,7 +1058,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
                 padding:const EdgeInsets.symmetric(horizontal:14,vertical:9),
                 decoration:BoxDecoration(
                   color:panelSurfaceColor,
-                  borderRadius:BorderRadius.circular(10),
+                  borderRadius:BorderRadius.circular(7),
                   border:Border.all(
                     color:transparentBg ? const Color(0xFF7A00FF) : panelOutlineColor,
                     width:transparentBg ? 2.5 : 1,
@@ -1258,7 +1258,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     padding:const EdgeInsets.symmetric(horizontal:12,vertical:9),
     decoration:BoxDecoration(
       color:Colors.orange.withOpacity(.14),
-      borderRadius:BorderRadius.circular(10),
+      borderRadius:BorderRadius.circular(7),
       border:Border.all(color:Colors.orange.withOpacity(.55)),
     ),
     child:Row(children:[
@@ -1344,7 +1344,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
             backgroundColor:const Color(0xFF1877D2),
             foregroundColor:Colors.white,
             minimumSize:const Size.fromHeight(46),
-            shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(22)),
+            shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(9)),
           ),
         ),
       ),
@@ -1390,7 +1390,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     Expanded(
       child:Container(        decoration:BoxDecoration(
           gradient:const LinearGradient(colors:[Color(0xFF00C8FF),Color(0xFF7A00FF),Color(0xFFFF5A00)]),
-          borderRadius:BorderRadius.circular(24),
+          borderRadius:BorderRadius.circular(9),
         ),
         child:FilledButton.icon(
           onPressed:savePng,
@@ -1412,7 +1412,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
         label:Text(t('share')),
         style:OutlinedButton.styleFrom(
           minimumSize:const Size.fromHeight(48),
-          shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(24)),        ),
+          shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(9)),        ),
       ),
     ),
   ]);
