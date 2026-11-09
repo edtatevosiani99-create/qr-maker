@@ -16,6 +16,7 @@ import 'package:zxing2/qrcode.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -147,6 +148,34 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
 
   ThemeMode themeMode = ThemeMode.light;
   String lang = 'English';
+  bool _preferencesLoaded = false;
+
+  Future<void> _loadPreferences() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedTheme = prefs.getString('qr_studio_theme');
+      final savedLanguage = prefs.getString('qr_studio_language');
+      if (!mounted) return;
+      setState(() {
+        themeMode = savedTheme == 'dark' ? ThemeMode.dark : ThemeMode.light;
+        const supportedLanguages = {'English', 'Русский', 'Deutsch', 'ქართული'};
+        lang = supportedLanguages.contains(savedLanguage) ? savedLanguage! : 'English';
+        _preferencesLoaded = true;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _preferencesLoaded = true);
+    }
+  }
+
+  Future<void> _savePreferences() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('qr_studio_theme', themeMode == ThemeMode.dark ? 'dark' : 'light');
+      await prefs.setString('qr_studio_language', lang);
+    } catch (_) {
+      // Keep the app usable if local preference storage is unavailable.
+    }
+  }
   QRType type = QRType.url;
   Color fg = Colors.black, bg = Colors.white;
   double size = 684;
@@ -219,6 +248,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
 
   @override void initState() {
     super.initState();
+    _loadPreferences();
     // Queue the launch interstitial immediately. If AdMob takes longer to respond,
     // show it when it eventually loads instead of silently skipping the launch ad.
     _pendingInterstitial = true;
@@ -349,6 +379,12 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
+    if (!_preferencesLoaded) {
+      return const MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: Scaffold(body: Center(child: CircularProgressIndicator())),
+      );
+    }
     return MaterialApp(
       debugShowCheckedModeBanner:false, themeMode:themeMode,
       theme:ThemeData(useMaterial3:true, brightness:Brightness.light, scaffoldBackgroundColor:const Color(0xFFE8F5FF), colorScheme:ColorScheme.fromSeed(seedColor:const Color(0xFF2B7FFF))),
@@ -433,7 +469,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
         Text(t('subtitle'),style:TextStyle(fontSize:11,color:panelMutedColor)),
       ])),
       languageButton(), const SizedBox(width:4),
-      IconButton(onPressed:()=>setState(()=>themeMode=themeMode==ThemeMode.light?ThemeMode.dark:ThemeMode.light),icon:Icon(themeMode==ThemeMode.light?Icons.dark_mode:Icons.light_mode)),
+      IconButton(onPressed:(){setState(()=>themeMode=themeMode==ThemeMode.light?ThemeMode.dark:ThemeMode.light);_savePreferences();},icon:Icon(themeMode==ThemeMode.light?Icons.dark_mode:Icons.light_mode)),
     ]),
   );
 
@@ -446,7 +482,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   Widget languageButton() {
     const flags={'Русский':'🇷🇺','English':'🇬🇧','Deutsch':'🇩🇪','ქართული':'🇬🇪'};
     return PopupMenuButton<String>(
-      onSelected:(x)=>setState(()=>lang=x),
+      onSelected:(x){setState(()=>lang=x);_savePreferences();},
       itemBuilder:(_)=>flags.entries.map((e)=>PopupMenuItem(value:e.key,child:Text(e.value + '  ' + e.key))).toList(),
       child:Row(children:[Text(flags[lang]!,style:const TextStyle(fontSize:20)),const Icon(Icons.keyboard_arrow_down)]),
     );
