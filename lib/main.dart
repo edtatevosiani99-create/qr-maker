@@ -186,15 +186,15 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
       'shape_round_dots':'Круглые точки','shape_diamond':'Ромбы','shape_hexagon':'Шестиугольники','shape_rounded_squares':'Скруглённые','shape_droplet':'Капли','shape_stars':'Звёзды','shape_honeycomb':'Соты','shape_wave':'Волны','shape_lines':'Линии','shape_frame':'Рамка'
     },
     'English': {
-      'brand_instagram':'Instagram','brand_facebook':'Facebook','brand_tiktok':'TikTok','brand_youtube':'YouTube','brand_x':'X (Twitter)','brand_whatsapp':'WhatsApp','brand_telegram':'Telegram','brand_snapchat':'Snapchat','brand_spotify':'Spotify','brand_linkedin':'LinkedIn',
+      'brand_instagram':'Instagram','brand_facebook':'Facebook','brand_tiktok':'TikTok','brand_youtube':'YouTube','brand_x':'X','brand_whatsapp':'WhatsApp','brand_telegram':'Telegram','brand_snapchat':'Snapchat','brand_discord':'Discord','brand_linkedin':'LinkedIn',
       'shape_round_dots':'Round dots','shape_diamond':'Diamond','shape_hexagon':'Hexagon','shape_rounded_squares':'Rounded squares','shape_droplet':'Droplet','shape_stars':'Stars','shape_honeycomb':'Honeycomb','shape_wave':'Wave','shape_lines':'Lines','shape_frame':'Frame'
     },
     'Deutsch': {
-      'brand_instagram':'Instagram','brand_facebook':'Facebook','brand_tiktok':'TikTok','brand_youtube':'YouTube','brand_x':'X (Twitter)','brand_whatsapp':'WhatsApp','brand_telegram':'Telegram','brand_snapchat':'Snapchat','brand_spotify':'Spotify','brand_linkedin':'LinkedIn',
+      'brand_instagram':'Instagram','brand_facebook':'Facebook','brand_tiktok':'TikTok','brand_youtube':'YouTube','brand_x':'X','brand_whatsapp':'WhatsApp','brand_telegram':'Telegram','brand_snapchat':'Snapchat','brand_discord':'Discord','brand_linkedin':'LinkedIn',
       'shape_round_dots':'Runde Punkte','shape_diamond':'Diamant','shape_hexagon':'Sechsecke','shape_rounded_squares':'Abgerundet','shape_droplet':'Tropfen','shape_stars':'Sterne','shape_honeycomb':'Waben','shape_wave':'Wellen','shape_lines':'Linien','shape_frame':'Rahmen'
     },
     'ქართული': {
-      'brand_instagram':'Instagram','brand_facebook':'Facebook','brand_tiktok':'TikTok','brand_youtube':'YouTube','brand_x':'X (Twitter)','brand_whatsapp':'WhatsApp','brand_telegram':'Telegram','brand_snapchat':'Snapchat','brand_spotify':'Spotify','brand_linkedin':'LinkedIn',
+      'brand_instagram':'Instagram','brand_facebook':'Facebook','brand_tiktok':'TikTok','brand_youtube':'YouTube','brand_x':'X','brand_whatsapp':'WhatsApp','brand_telegram':'Telegram','brand_snapchat':'Snapchat','brand_discord':'Discord','brand_linkedin':'LinkedIn',
       'shape_round_dots':'მრგვალი წერტილები','shape_diamond':'რომბები','shape_hexagon':'ექვსკუთხედები','shape_rounded_squares':'მომრგვალებული','shape_droplet':'წვეთები','shape_stars':'ვარსკვლავები','shape_honeycomb':'ფიჭა','shape_wave':'ტალღები','shape_lines':'ხაზები','shape_frame':'ჩარჩო'
     }
   };
