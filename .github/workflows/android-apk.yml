@@ -42,10 +42,24 @@ jobs:
           cp gradle.properties android/gradle.properties
           cp gradle-wrapper.properties android/gradle/wrapper/gradle-wrapper.properties
           cp styles.xml android/app/src/main/res/values/styles.xml
-          sed 's/\\\\n/\n/g' AndroidManifest.xml > android/app/src/main/AndroidManifest.xml
+          cat > android/app/src/main/AndroidManifest.xml <<'EOF'
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <application android:label="QR Studio" android:name="${applicationName}" android:icon="@mipmap/ic_launcher" android:allowBackup="true" android:supportsRtl="true">
+        <activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTop" android:theme="@style/LaunchTheme" android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode" android:hardwareAccelerated="true" android:windowSoftInputMode="adjustResize">
+            <meta-data android:name="io.flutter.embedding.android.NormalTheme" android:resource="@style/NormalTheme"/>
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+        <meta-data android:name="flutterEmbedding" android:value="2"/>
+    </application>
+</manifest>
+EOF
           sed 's/^package .*/package com.edtatevosiani99.qrstudioapp/' MainActivity.kt > android/app/src/main/kotlin/com/edtatevosiani99/qrstudiapp/MainActivity.kt
-          sed -i 's/com\\.qrst​​udio\\.app/com.edtatevosiani99.qrstudioapp/g' android/app/build.gradle.kts
-          sed -i 's/com\\.qrst​​udio\\.app/com.edtatevosiani99.qrstudioapp/g' android/app/build.gradle.kts
+          sed -i 's/com.qrstudio.app/com.edtatevosiani99.qrstudioapp/g' android/app/build.gradle.kts
+          sed -i 's/com.qrstudio.app/com.edtatevosiani99.qrstudioapp/g' android/app/build.gradle.kts
 
       - name: Install dependencies
         run: flutter pub get
