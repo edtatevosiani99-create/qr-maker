@@ -264,6 +264,9 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   double logoScale = .15;
   String error = 'M', security = 'WPA';
   String selectedDesign = 'classic';
+  String designCategory = 'modules';
+  String selectedEyeStyle = 'square';
+  double logoOpacity = 1.0;
   bool transparentBg = false;
   bool showColorPanel = false;
   bool showDesignPanel = false;
@@ -437,6 +440,8 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
       logo: photoImage,
       logoScale: logoScale,
       errorLevel: errorLevel,
+      eyeStyle: selectedEyeStyle,
+      logoOpacity: logoOpacity,
     );
     painter.paint(canvas, Size(size, size));
     final picture = recorder.endRecording();
@@ -893,33 +898,32 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
           Expanded(child:Text(t('designs'),style:TextStyle(fontSize:14,fontWeight:FontWeight.w800,color:panelTextColor))),
         ]),
         const SizedBox(height:9),
-        SizedBox(height:112,child:ListView(
-          scrollDirection:Axis.horizontal,
-          children:[
-            // Branded social-platform presets.
-            designOption('brand_whatsapp',const Color(0xFF128C7E),const Color(0xFFE9FFF3)),
-            designOption('brand_facebook',const Color(0xFF1877F2),const Color(0xFFEAF2FF)),
-            designOption('brand_instagram',const Color(0xFFC13584),const Color(0xFFFFEAF4)),
-            designOption('brand_tiktok',const Color(0xFF111111),const Color(0xFFF1F1F1)),
-            designOption('brand_youtube',const Color(0xFFFF0033),const Color(0xFFFFE9EC)),
-            designOption('brand_telegram',const Color(0xFF229ED9),const Color(0xFFE6F7FF)),
-            designOption('brand_x',const Color(0xFF111111),Colors.white),
-            designOption('brand_linkedin',const Color(0xFF0A66C2),const Color(0xFFE8F3FF)),
-            designOption('brand_snapchat',const Color(0xFF111111),const Color(0xFFFFF200)),
-            designOption('brand_discord',const Color(0xFF5865F2),const Color(0xFFEEF0FF)),
-            // Ten distinct QR module geometries.
-            designOption('shape_round_dots',Colors.black,Colors.white),
-            designOption('shape_diamond',const Color(0xFF1749C8),Colors.white),
-            designOption('shape_hexagon',const Color(0xFF6633AA),const Color(0xFFF8F3FF)),
-            designOption('shape_rounded_squares',const Color(0xFF1678C8),Colors.white),
-            designOption('shape_droplet',const Color(0xFF1267B5),const Color(0xFFF1F8FF)),
-            designOption('shape_stars',const Color(0xFF5530A8),Colors.white),
-            designOption('shape_honeycomb',const Color(0xFF171717),const Color(0xFFFFF9E8)),
-            designOption('shape_wave',const Color(0xFF087FC3),Colors.white),
-            designOption('shape_lines',const Color(0xFF222222),Colors.white),
-            designOption('shape_frame',const Color(0xFF6032A8),const Color(0xFFFFFCF2)),
-          ],
-        )),
+        Row(children:[
+          Expanded(child:OutlinedButton(onPressed:()=>setState(()=>designCategory='modules'),style:OutlinedButton.styleFrom(backgroundColor:designCategory=='modules'?const Color(0xFF5B2DFF).withOpacity(.13):Colors.transparent,foregroundColor:panelTextColor,side:BorderSide(color:designCategory=='modules'?const Color(0xFF5B2DFF):panelOutlineColor),padding:const EdgeInsets.symmetric(horizontal:4,vertical:9)),child:Text(lang=='Русский'?'Внутренние точки':lang=='Deutsch'?'QR-Punkte':lang=='ქართული'?'შიდა წერტილები':'Inner dots',maxLines:1,overflow:TextOverflow.ellipsis,style:const TextStyle(fontSize:11,fontWeight:FontWeight.w700)))),
+          const SizedBox(width:7),
+          Expanded(child:OutlinedButton(onPressed:()=>setState(()=>designCategory='eyes'),style:OutlinedButton.styleFrom(backgroundColor:designCategory=='eyes'?const Color(0xFF5B2DFF).withOpacity(.13):Colors.transparent,foregroundColor:panelTextColor,side:BorderSide(color:designCategory=='eyes'?const Color(0xFF5B2DFF):panelOutlineColor),padding:const EdgeInsets.symmetric(horizontal:4,vertical:9)),child:Text(lang=='Русский'?'Большие квадраты':lang=='Deutsch'?'Große Quadrate':lang=='ქართული'?'დიდი კვადრატები':'Large squares',maxLines:1,overflow:TextOverflow.ellipsis,style:const TextStyle(fontSize:11,fontWeight:FontWeight.w700)))),
+        ]),
+        const SizedBox(height:8),
+        SizedBox(height:112,child:ListView(scrollDirection:Axis.horizontal,children:designCategory=='modules' ? [
+          designOption('classic',Colors.black,Colors.white),
+          designOption('shape_round_dots',Colors.black,Colors.white),
+          designOption('shape_diamond',const Color(0xFF1749C8),Colors.white),
+          designOption('shape_hexagon',const Color(0xFF6633AA),const Color(0xFFF8F3FF)),
+          designOption('shape_rounded_squares',const Color(0xFF1678C8),Colors.white),
+          designOption('shape_droplet',const Color(0xFF1267B5),const Color(0xFFF1F8FF)),
+          designOption('shape_stars',const Color(0xFF5530A8),Colors.white),
+          designOption('shape_honeycomb',const Color(0xFF171717),const Color(0xFFFFF9E8)),
+          designOption('shape_wave',const Color(0xFF087FC3),Colors.white),
+          designOption('shape_lines',const Color(0xFF222222),Colors.white),
+          designOption('shape_frame',const Color(0xFF6032A8),const Color(0xFFFFFCF2)),
+        ] : [
+          _eyeStyleOption('square','Square'),
+          _eyeStyleOption('rounded','Rounded'),
+          _eyeStyleOption('circle','Circle'),
+          _eyeStyleOption('diamond','Diamond'),
+          _eyeStyleOption('double','Double'),
+          _eyeStyleOption('neon','Neon'),
+        ]))
       ]),
       ),
     ],
@@ -941,6 +945,8 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
         activeColor:const Color(0xFF5B2DFF),
         onChanged:(x)=>setState(()=>logoScale=x),
       ),
+      Text((lang=='Русский'?'Прозрачность логотипа':lang=='Deutsch'?'Logo-Deckkraft':lang=='ქართული'?'ლოგოს გამჭვირვალობა':'Logo opacity')+': '+(logoOpacity*100).round().toString()+'%',style:const TextStyle(fontSize:12,fontWeight:FontWeight.w700)),
+      Slider(min:.25,max:1,divisions:15,value:logoOpacity,activeColor:const Color(0xFF5B2DFF),onChanged:(x)=>setState(()=>logoOpacity=x)),
     ],
   ]);
 
@@ -998,6 +1004,11 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   };
 
   bool get selectedGapless => selectedDesign != 'violet';
+
+  Widget _eyeStyleOption(String id,String label) {
+    final selected=selectedEyeStyle==id;
+    return GestureDetector(onTap:()=>setState(()=>selectedEyeStyle=id),child:Container(width:88,margin:const EdgeInsets.only(right:8),padding:const EdgeInsets.all(7),decoration:BoxDecoration(color:selected?const Color(0xFF5B2DFF).withOpacity(.12):panelSurfaceColor,borderRadius:BorderRadius.circular(9),border:Border.all(color:selected?const Color(0xFF5B2DFF):panelOutlineColor,width:selected?2:1)),child:Column(mainAxisAlignment:MainAxisAlignment.center,children:[Icon(id=='circle'?Icons.circle_outlined:id=='diamond'?Icons.diamond_outlined:id=='double'?Icons.filter_none:id=='neon'?Icons.blur_on:Icons.crop_square,size:30,color:panelTextColor),const SizedBox(height:5),Text(label,style:TextStyle(fontSize:10,fontWeight:FontWeight.w700,color:panelTextColor),maxLines:1,overflow:TextOverflow.ellipsis)])));
+  }
 
   Widget designOption(String id, Color qrColor, Color backgroundColor) {
     final chosen = selectedDesign == id;
@@ -1391,6 +1402,8 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
           logo:photoImage,
           logoScale:logoScale,
           errorLevel:errorLevel,
+          eyeStyle:selectedEyeStyle,
+          logoOpacity:logoOpacity,
         ),
       )),
       const SizedBox(width:10),
@@ -1534,6 +1547,8 @@ class StyledQrPainter extends CustomPainter {
     required this.logo,
     required this.logoScale,
     required this.errorLevel,
+    required this.eyeStyle,
+    required this.logoOpacity,
   });
 
   final String data;
@@ -1543,6 +1558,8 @@ class StyledQrPainter extends CustomPainter {
   final ui.Image? logo;
   final double logoScale;
   final int errorLevel;
+  final String eyeStyle;
+  final double logoOpacity;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1674,14 +1691,20 @@ class StyledQrPainter extends CustomPainter {
 
     for (final eye in eyeRegions) {
       final rect = Rect.fromLTWH(origin + eye.left * unit, origin + eye.top * unit, eye.width * unit, eye.height * unit);
-      final outer = RRect.fromRectAndRadius(rect, Radius.circular(unit * (design == 'neon' || design == 'mint' || design == 'green' || design == 'red' ? 1.5 : design == 'sunset' || design == 'gold' ? .6 : .15)));
-      final scanBacking = background.alpha == 0 ? Colors.white : background;
-      final clear = Paint()..color = scanBacking;
-      canvas.drawRRect(outer, modules);
-      final inset = rect.deflate(unit * 1.15);
-      canvas.drawRRect(RRect.fromRectAndRadius(inset, Radius.circular(unit * .25)), clear);
-      final inner = inset.deflate(unit * 1.1);      final innerRect = RRect.fromRectAndRadius(inner, Radius.circular(unit * (design == 'neon' ? .5 : .05)));
-      canvas.drawRRect(innerRect, modules);
+      final scanBacking=background.alpha==0?Colors.white:background;
+      final clear=Paint()..color=scanBacking;
+      final radius=eyeStyle=='rounded'||eyeStyle=='neon'?unit*1.35:eyeStyle=='circle'?rect.width/2:unit*.06;
+      if(eyeStyle=='diamond'){final p=Path()..moveTo(rect.center.dx,rect.top)..lineTo(rect.right,rect.center.dy)..lineTo(rect.center.dx,rect.bottom)..lineTo(rect.left,rect.center.dy)..close();canvas.drawPath(p,modules);}
+      else if(eyeStyle=='circle'){canvas.drawCircle(rect.center,rect.width/2,modules);}
+      else{canvas.drawRRect(RRect.fromRectAndRadius(rect,Radius.circular(radius)),modules);}
+      final inset=rect.deflate(unit*1.15);
+      if(eyeStyle=='circle'){canvas.drawCircle(rect.center,inset.width/2,clear);}
+      else if(eyeStyle=='diamond'){final p=Path()..moveTo(rect.center.dx,inset.top)..lineTo(inset.right,rect.center.dy)..lineTo(rect.center.dx,inset.bottom)..lineTo(inset.left,rect.center.dy)..close();canvas.drawPath(p,clear);}
+      else{canvas.drawRRect(RRect.fromRectAndRadius(inset,Radius.circular(eyeStyle=='rounded'||eyeStyle=='neon'?unit*.75:unit*.03)),clear);}
+      final inner=inset.deflate(unit*1.1);
+      if(eyeStyle=='circle'){canvas.drawCircle(rect.center,inner.width/2,modules);}
+      else if(eyeStyle=='diamond'){final p=Path()..moveTo(rect.center.dx,inner.top)..lineTo(inner.right,rect.center.dy)..lineTo(rect.center.dx,inner.bottom)..lineTo(inner.left,rect.center.dy)..close();canvas.drawPath(p,modules);}
+      else{canvas.drawRRect(RRect.fromRectAndRadius(inner,Radius.circular(eyeStyle=='neon'?unit*.45:unit*.02)),modules);}
     }
 
     // Distinctive corner brackets on the sunset and violet templates.
@@ -1708,7 +1731,7 @@ class StyledQrPainter extends CustomPainter {
       final scanBacking = background.alpha == 0 ? Colors.white : background;
       final pad = Paint()..color = scanBacking;
       canvas.drawRRect(RRect.fromRectAndRadius(rect.inflate(unit * .65), Radius.circular(unit)), pad);
-      canvas.drawImageRect(logo!, Rect.fromLTWH(0, 0, logo!.width.toDouble(), logo!.height.toDouble()), rect, Paint()..filterQuality = FilterQuality.high);
+      canvas.drawImageRect(logo!, Rect.fromLTWH(0, 0, logo!.width.toDouble(), logo!.height.toDouble()), rect, Paint()..filterQuality = FilterQuality.high..color=Colors.white.withOpacity(logoOpacity));
     } else if (design.startsWith('brand_')) {
       final side = size.width * .19;
       final rect = Rect.fromCenter(center:size.center(Offset.zero),width:side,height:side);
@@ -1779,7 +1802,7 @@ class StyledQrPainter extends CustomPainter {
       data != oldDelegate.data || foreground != oldDelegate.foreground ||
       background != oldDelegate.background || design != oldDelegate.design ||
       logo != oldDelegate.logo || logoScale != oldDelegate.logoScale ||
-      errorLevel != oldDelegate.errorLevel;
+      errorLevel != oldDelegate.errorLevel || eyeStyle != oldDelegate.eyeStyle || logoOpacity != oldDelegate.logoOpacity;
 }
 
 
