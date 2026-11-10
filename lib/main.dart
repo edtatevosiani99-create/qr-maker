@@ -206,6 +206,8 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   Timer? _logoRefreshTimer;
   int _logoRefreshSerial = 0;
   final c = {for (final k in ['main','name','phone','email','subject','message','ssid','password','lat','lon','address']) k: TextEditingController()};
+  final FocusNode _mainInputFocusNode = FocusNode();
+  bool _mainInputFocused = false;
 
   final labels = const {
     'Русский': {'title':'QR Studio','subtitle':'Создавай • Кастомизируй • Сохраняй','type':'Тип QR-кода','url':'URL','text':'Текст','phone':'Телефон','wifi':'Wi‑Fi','contact':'Контакт','email':'Email','location':'Геолокация','fg':'Цвет QR','bg':'Фон','transparent':'Прозрачный фон','size':'Размер','error':'Коррекция ошибок','save':'Сохранить PNG','share':'Поделиться','checkQr':'Проверить QR','qrEmpty':'Данные QR-кода пусты.','qrReadable':'QR-код читается','qrMismatch':'Содержимое QR не совпадает','qrConfirmed':'Приложение отсканировало созданное изображение QR и подтвердило, что его содержимое совпадает с исходными данными.','qrMismatchHint':'QR-код считан, но данные не совпадают с исходными. Попробуйте другой дизайн или удалите логотип.','qrFailed':'Не удалось отсканировать QR-код','qrFailedHint':'Приложение попыталось проверить созданное изображение QR, но не смогло его распознать. Попробуйте простой дизайн, более высокий контраст или уменьшите логотип.','ok':'ОК','name':'Имя','data':'Данные','subject':'Тема','message':'Сообщение','ssid':'Название Wi‑Fi','password':'Пароль','security':'Защита','lat':'Широта','lon':'Долгота','address':'Адрес','photo':'Выбрать фото','logo':'Логотип в QR','logoHint':'По желанию: вставьте картинку из галереи в центр QR','photoSelected':'Логотип выбран • коррекция H','removeLogo':'Удалить логотип','photoError':'Не удалось открыть это изображение','saved':'PNG сохранён в галерею','permission':'Разрешите доступ к галерее','preview':'Ваш QR-код','ready':'Готов к сохранению','logoSize':'Размер логотипа','lowContrastQr':'Низкий контраст: выберите более тёмный цвет QR.','lowContrastBg':'Низкий контраст: выберите более светлый фон.','contrastWarning':'Предупреждение: низкий контраст QR и фона — сканирование может быть затруднено.','none':'Без защиты','designs':'Дизайн QR-кода','classic':'Классика','neon':'Неон','sunset':'Закат','mint':'Мята','violet':'Фиолетовый'},
@@ -258,10 +260,12 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     // show it when it eventually loads instead of silently skipping the launch ad.
     _pendingInterstitial = true;
     _initializeAds();
-    c['main']!.text = 'https://example.com';
+    _mainInputFocusNode.addListener(() {
+      if (mounted) setState(() => _mainInputFocused = _mainInputFocusNode.hasFocus);
+    });
     _scanLineController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500))..repeat(reverse: true);
   }
-  @override void dispose() { _bannerRetryTimer?.cancel(); _interstitialRetryTimer?.cancel(); _bannerAd?.dispose(); _interstitialAd?.dispose(); _logoRefreshTimer?.cancel(); _scanLineController.dispose(); scannerController.dispose(); photoImage?.dispose(); qrLogoImage?.dispose(); for (final x in c.values) x.dispose(); super.dispose(); }
+  @override void dispose() { _bannerRetryTimer?.cancel(); _interstitialRetryTimer?.cancel(); _bannerAd?.dispose(); _interstitialAd?.dispose(); _logoRefreshTimer?.cancel(); _scanLineController.dispose(); _mainInputFocusNode.dispose(); scannerController.dispose(); photoImage?.dispose(); qrLogoImage?.dispose(); for (final x in c.values) x.dispose(); super.dispose(); }
 
   Future<ui.Image> _makeQrLogo(ui.Image source, Color borderColor) async {
     const canvasSize = 1000.0;
@@ -984,7 +988,16 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
 
   Widget input(String key,String label,{TextInputType? keyboard})=>Padding(
     padding:const EdgeInsets.only(bottom:6),
-    child:TextField(controller:c[key],keyboardType:keyboard,onChanged:(_)=>setState((){}),decoration:fieldDecoration(label)),
+    child:TextField(
+      controller:c[key],
+      focusNode:key == 'main' ? _mainInputFocusNode : null,
+      keyboardType:keyboard,
+      onChanged:(_)=>setState((){}),
+      decoration:fieldDecoration(label).copyWith(
+        hintText:key == 'main' && !_mainInputFocused ? 'https://www' : null,
+        hintStyle:const TextStyle(color:Color(0x66808080)),
+      ),
+    ),
   );
 
   Widget specific(){
