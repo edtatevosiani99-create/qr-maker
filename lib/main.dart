@@ -146,6 +146,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     }
   }
 
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   ThemeMode themeMode = ThemeMode.light;
   String lang = 'English';
   bool _preferencesLoaded = false;
@@ -211,8 +212,13 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
 
   Future<void> _showWelcomeDialog() async {
     final copy = _welcomeCopy();
+    final dialogContext = _navigatorKey.currentContext;
+    if (dialogContext == null) {
+      _welcomeDialogScheduled = false;
+      return;
+    }
     await showDialog<void>(
-      context: context,
+      context: dialogContext,
       barrierDismissible: true,
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -476,6 +482,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
       );
     }
     return MaterialApp(
+      navigatorKey: _navigatorKey,
       debugShowCheckedModeBanner:false, themeMode:themeMode,
       theme:ThemeData(useMaterial3:true, brightness:Brightness.light, scaffoldBackgroundColor:const Color(0xFFE8F5FF), colorScheme:ColorScheme.fromSeed(seedColor:const Color(0xFF2B7FFF))),
       darkTheme:ThemeData(
