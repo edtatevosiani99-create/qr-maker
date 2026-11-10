@@ -192,7 +192,12 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   bool isScannerOpen = false;
   String? scannedValue;
   bool torchEnabled = false;
-  final MobileScannerController scannerController = MobileScannerController();
+  final MobileScannerController scannerController = MobileScannerController(
+    detectionSpeed: DetectionSpeed.normal,
+    detectionTimeoutMs: 150,
+    formats: const [BarcodeFormat.qrCode],
+    autoZoom: true,
+  );
   late final AnimationController _scanLineController;
   Uint8List? photoBytes;
   ui.Image? photoImage;
@@ -509,7 +514,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     )),
     const SizedBox(width:10),
     Expanded(child:FilledButton.icon(
-      onPressed:(){ setState(() { isScannerOpen=true; scannedValue=null; }); Future.delayed(const Duration(milliseconds:900), zoomScannerIn); },
+      onPressed:(){ setState(() { isScannerOpen=true; scannedValue=null; }); },
       icon:const Icon(Icons.qr_code_scanner),
       label:Text(scannerText('scan'),maxLines:1,overflow:TextOverflow.ellipsis),
       style:FilledButton.styleFrom(minimumSize:const Size.fromHeight(48),backgroundColor:isScannerOpen?const Color(0xFF1877D2):Theme.of(context).colorScheme.surfaceVariant,foregroundColor:isScannerOpen?Colors.white:Theme.of(context).colorScheme.onSurfaceVariant),
@@ -1272,7 +1277,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     padding:const EdgeInsets.all(14),
     decoration:BoxDecoration(gradient:const LinearGradient(begin:Alignment.topLeft,end:Alignment.bottomRight,colors:[Color(0xFF061B3B),Color(0xFF0A2D59),Color(0xFF350066)]),borderRadius:BorderRadius.circular(18)),
     child:Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[
-      if (_contrast(fg,bg) < 4.5 && !transparentBg) contrastWarning(),
+      if (_contrast(fg,bg) < 3.0 && !transparentBg) contrastWarning(),
       Row(children:[
       Container(width:160,height:160,padding:const EdgeInsets.all(8),decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(16)),child:CustomPaint(
         key:ValueKey('${selectedDesign}-${fg.value}-${bg.value}-${transparentBg}-${error}-${photoImage != null}-${data}'),
