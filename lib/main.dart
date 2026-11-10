@@ -149,22 +149,98 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   ThemeMode themeMode = ThemeMode.light;
   String lang = 'English';
   bool _preferencesLoaded = false;
+  bool _showWelcome = false;
+  bool _welcomeDialogScheduled = false;
+  String _welcomeLanguage = 'English';
 
   Future<void> _loadPreferences() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final savedTheme = prefs.getString('qr_studio_theme');
       final savedLanguage = prefs.getString('qr_studio_language');
+      final welcomeShown = prefs.getBool('qr_studio_welcome_shown') ?? false;
+      final deviceLanguage = WidgetsBinding.instance.platformDispatcher.locale.languageCode.toLowerCase();
+      final welcomeLanguage = deviceLanguage == 'ru' ? 'Русский' : deviceLanguage == 'de' ? 'Deutsch' : deviceLanguage == 'ka' ? 'ქართული' : 'English';
       if (!mounted) return;
       setState(() {
         themeMode = savedTheme == 'dark' ? ThemeMode.dark : ThemeMode.light;
         const supportedLanguages = {'English', 'Русский', 'Deutsch', 'ქართული'};
         lang = supportedLanguages.contains(savedLanguage) ? savedLanguage! : 'English';
+        _welcomeLanguage = welcomeLanguage;
+        _showWelcome = !welcomeShown;
         _preferencesLoaded = true;
       });
     } catch (_) {
       if (mounted) setState(() => _preferencesLoaded = true);
     }
+  }
+
+  Map<String, String> _welcomeCopy() {
+    const copy = {
+      'English': {
+        'title': 'Welcome to QR Studio!',
+        'tagline': 'Your QR codes. Your style.',
+        'body': 'Create QR codes in seconds, customize their design, add your own logo, and save or share them with ease.',
+        'closing': 'Everything you need to make your QR codes unique.',
+        'button': "Let's get started!",
+      },
+      'Русский': {
+        'title': 'Добро пожаловать в QR Studio!',
+        'tagline': 'Ваши QR-коды. Ваш стиль.',
+        'body': 'Создавайте QR-коды за считанные секунды, настраивайте их дизайн, добавляйте собственный логотип, сохраняйте и делитесь ими.',
+        'closing': 'Всё необходимое, чтобы сделать ваши QR-коды уникальными.',
+        'button': 'Начнём!',
+      },
+      'Deutsch': {
+        'title': 'Willkommen bei QR Studio!',
+        'tagline': 'Deine QR-Codes. Dein Stil.',
+        'body': 'Erstelle QR-Codes in Sekunden, passe ihr Design an, füge dein eigenes Logo hinzu und speichere oder teile sie ganz einfach.',
+        'closing': 'Alles, was du brauchst, um deine QR-Codes einzigartig zu machen.',
+        'button': "Los geht's!",
+      },
+      'ქართული': {
+        'title': 'მოგესალმებით QR Studio-ში!',
+        'tagline': 'თქვენი QR კოდები. თქვენი სტილი.',
+        'body': 'შექმენით QR კოდები წამებში, მოარგეთ მათი დიზაინი, დაამატეთ საკუთარი ლოგო და მარტივად შეინახეთ ან გააზიარეთ.',
+        'closing': 'ყველაფერი, რაც გჭირდებათ თქვენი QR კოდების უნიკალურობისთვის.',
+        'button': 'დავიწყოთ!',
+      },
+    };
+    return copy[_welcomeLanguage] ?? copy['English']!;
+  }
+
+  Future<void> _showWelcomeDialog() async {
+    final copy = _welcomeCopy();
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(copy['title']!, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w800)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(copy['tagline']!, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w700)),
+            const SizedBox(height: 12),
+            Text(copy['body']!, textAlign: TextAlign.center),
+            const SizedBox(height: 10),
+            Text(copy['closing']!, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w600)),
+          ],
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(copy['button']!),
+          ),
+        ],
+      ),
+    );
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('qr_studio_welcome_shown', true);
+    } catch (_) {}
+    if (mounted) setState(() => _showWelcome = false);
   }
 
   Future<void> _savePreferences() async {
@@ -387,6 +463,12 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
+    if (_preferencesLoaded && _showWelcome && !_welcomeDialogScheduled) {
+      _welcomeDialogScheduled = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _showWelcome) _showWelcomeDialog();
+      });
+    }
     if (!_preferencesLoaded) {
       return const MaterialApp(
         debugShowCheckedModeBanner: false,
