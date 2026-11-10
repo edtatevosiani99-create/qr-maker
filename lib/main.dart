@@ -195,7 +195,6 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   final MobileScannerController scannerController = MobileScannerController(
     detectionSpeed: DetectionSpeed.normal,
     detectionTimeoutMs: 150,
-    formats: const [BarcodeFormat.qrCode],
     autoZoom: true,
   );
   late final AnimationController _scanLineController;
