@@ -1262,9 +1262,9 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
       border:Border.all(color:Colors.orange.withOpacity(.55)),
     ),
     child:Row(children:[
-      const Icon(Icons.warning_amber_rounded,size:19,color:Colors.orange),
+      const Icon(Icons.warning_amber_rounded,size:19,color:Colors.white),
       const SizedBox(width:8),
-      Expanded(child:Text(t('contrastWarning'),style:const TextStyle(fontSize:11,fontWeight:FontWeight.w600))),
+      Expanded(child:Text(t('contrastWarning'),style:const TextStyle(fontSize:11,fontWeight:FontWeight.w600,color:Colors.white))),
     ]),
   );
 
