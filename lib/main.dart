@@ -925,7 +925,6 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
           _eyeStyleOption('rounded','Rounded'),
           _eyeStyleOption('circle','Circle'),
           _eyeStyleOption('diamond','Diamond'),
-          _eyeStyleOption('double','Double'),
           _eyeStyleOption('neon','Neon'),
         ]))
       ]),
@@ -1772,14 +1771,7 @@ class StyledQrPainter extends CustomPainter {
           default: canvas.drawRect(r,p);
         }
       }
-      if(eyeStyle=='double') {
-        // Two clearly separated square outlines, with a solid center.
-        canvas.drawRect(rect,modules);
-        canvas.drawRect(rect.deflate(unit*.85),clear);
-        canvas.drawRect(rect.deflate(unit*1.65),modules);
-        canvas.drawRect(rect.deflate(unit*2.45),clear);
-        canvas.drawRect(rect.deflate(unit*2.95),modules);
-      } else if(eyeStyle=='neon') {
+      if(eyeStyle=='neon') {
         // Rounded outer frame and a distinct rounded center block.
         canvas.drawRRect(RRect.fromRectAndRadius(rect,Radius.circular(unit*2.0)),modules);
         canvas.drawRRect(RRect.fromRectAndRadius(rect.deflate(unit*.9),Radius.circular(unit*1.15)),clear);
