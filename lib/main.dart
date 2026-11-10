@@ -1011,7 +1011,24 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
 
   Widget _eyeStyleOption(String id,String label) {
     final selected=selectedEyeStyle==id;
-    return GestureDetector(onTap:()=>setState(()=>selectedEyeStyle=id),child:Container(width:88,margin:const EdgeInsets.only(right:8),padding:const EdgeInsets.all(7),decoration:BoxDecoration(color:selected?const Color(0xFF5B2DFF).withOpacity(.12):panelSurfaceColor,borderRadius:BorderRadius.circular(9),border:Border.all(color:selected?const Color(0xFF5B2DFF):panelOutlineColor,width:selected?2:1)),child:Column(mainAxisAlignment:MainAxisAlignment.center,children:[Icon(id=='circle'?Icons.circle_outlined:id=='diamond'?Icons.diamond_outlined:id=='double'?Icons.filter_none:id=='neon'?Icons.blur_on:Icons.crop_square,size:30,color:panelTextColor),const SizedBox(height:5),Text(label,style:TextStyle(fontSize:10,fontWeight:FontWeight.w700,color:panelTextColor),maxLines:1,overflow:TextOverflow.ellipsis)])));
+    return GestureDetector(
+      onTap:()=>setState(()=>selectedEyeStyle=id),
+      child:Container(
+        width:88,
+        margin:const EdgeInsets.only(right:8),
+        padding:const EdgeInsets.all(7),
+        decoration:BoxDecoration(
+          color:selected?const Color(0xFF5B2DFF).withOpacity(.12):panelSurfaceColor,
+          borderRadius:BorderRadius.circular(9),
+          border:Border.all(color:selected?const Color(0xFF5B2DFF):panelOutlineColor,width:selected?2:1),
+        ),
+        child:Column(mainAxisAlignment:MainAxisAlignment.center,children:[
+          SizedBox(width:34,height:34,child:CustomPaint(painter:EyeStylePreviewPainter(id))),
+          const SizedBox(height:5),
+          Text(label,style:TextStyle(fontSize:10,fontWeight:FontWeight.w700,color:panelTextColor),maxLines:1,overflow:TextOverflow.ellipsis),
+        ]),
+      ),
+    );
   }
 
   Widget designOption(String id, Color qrColor, Color backgroundColor) {
@@ -1019,10 +1036,9 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     return GestureDetector(
       onTap:() {
         setState(() {
+          // Shape presets change geometry only. QR and background colors stay
+          // under the user's separate color controls.
           selectedDesign = id;
-          fg = qrColor;
-          bg = backgroundColor;
-          transparentBg = false;
         });
         scheduleQrLogoRefresh();
       },
@@ -1039,8 +1055,8 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
         child:Column(mainAxisAlignment:MainAxisAlignment.center,children:[
           Container(
             width:35,height:35,
-            decoration:BoxDecoration(color:backgroundColor,borderRadius:BorderRadius.circular(7)),
-            child:Icon(Icons.qr_code_2_rounded,size:31,color:qrColor),
+            decoration:const BoxDecoration(color:Colors.white,borderRadius:BorderRadius.all(Radius.circular(7))),
+            child:const Icon(Icons.qr_code_2_rounded,size:31,color:Colors.black),
           ),
           const SizedBox(height:4),
           Text(t(id),maxLines:1,overflow:TextOverflow.ellipsis,style:TextStyle(fontSize:10,fontWeight:chosen ? FontWeight.w800 : FontWeight.w500,color:panelTextColor)),
@@ -1542,6 +1558,50 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
 }
 
 
+class EyeStylePreviewPainter extends CustomPainter {
+  EyeStylePreviewPainter(this.style);
+  final String style;
+  @override
+  void paint(Canvas canvas, Size size) {
+    final black=Paint()..color=Colors.black;
+    final white=Paint()..color=Colors.white;
+    final r=Offset.zero & size;
+    canvas.drawRect(r,white);
+    final inner=r.deflate(size.width*.27);
+    final core=r.deflate(size.width*.43);
+    switch(style) {
+      case 'circle':
+        canvas.drawCircle(r.center,size.width*.5,black);
+        canvas.drawCircle(r.center,size.width*.23,white);
+        canvas.drawCircle(r.center,size.width*.07,black);
+        break;
+      case 'diamond':
+        Path d(Rect a)=>Path()..moveTo(a.center.dx,a.top)..lineTo(a.right,a.center.dy)..lineTo(a.center.dx,a.bottom)..lineTo(a.left,a.center.dy)..close();
+        canvas.drawPath(d(r),black); canvas.drawPath(d(inner),white); canvas.drawPath(d(core),black);
+        break;
+      case 'rounded':
+        canvas.drawRRect(RRect.fromRectAndRadius(r,Radius.circular(size.width*.22)),black);
+        canvas.drawRRect(RRect.fromRectAndRadius(inner,Radius.circular(size.width*.13)),white);
+        canvas.drawRRect(RRect.fromRectAndRadius(core,Radius.circular(size.width*.06)),black);
+        break;
+      case 'double':
+        canvas.drawRect(r,black); canvas.drawRect(r.deflate(size.width*.13),white);
+        canvas.drawRect(r.deflate(size.width*.25),black); canvas.drawRect(r.deflate(size.width*.36),white);
+        canvas.drawRect(r.deflate(size.width*.43),black);
+        break;
+      case 'neon':
+        canvas.drawRRect(RRect.fromRectAndRadius(r,Radius.circular(size.width*.28)),black);
+        canvas.drawRRect(RRect.fromRectAndRadius(r.deflate(size.width*.15),Radius.circular(size.width*.18)),white);
+        canvas.drawRRect(RRect.fromRectAndRadius(r.deflate(size.width*.29),Radius.circular(size.width*.10)),black);
+        break;
+      default:
+        canvas.drawRect(r,black); canvas.drawRect(inner,white); canvas.drawRect(core,black);
+    }
+  }
+  @override
+  bool shouldRepaint(covariant EyeStylePreviewPainter oldDelegate)=>style!=oldDelegate.style;
+}
+
 class StyledQrPainter extends CustomPainter {
   StyledQrPainter({
     required this.data,
@@ -1697,18 +1757,38 @@ class StyledQrPainter extends CustomPainter {
       final rect = Rect.fromLTWH(origin + eye.left * unit, origin + eye.top * unit, eye.width * unit, eye.height * unit);
       final scanBacking=background.alpha==0?Colors.white:background;
       final clear=Paint()..color=scanBacking;
-      final radius=eyeStyle=='rounded'||eyeStyle=='neon'?unit*1.35:eyeStyle=='circle'?rect.width/2:unit*.06;
-      if(eyeStyle=='diamond'){final p=Path()..moveTo(rect.center.dx,rect.top)..lineTo(rect.right,rect.center.dy)..lineTo(rect.center.dx,rect.bottom)..lineTo(rect.left,rect.center.dy)..close();canvas.drawPath(p,modules);}
-      else if(eyeStyle=='circle'){canvas.drawCircle(rect.center,rect.width/2,modules);}
-      else{canvas.drawRRect(RRect.fromRectAndRadius(rect,Radius.circular(radius)),modules);}
-      final inset=rect.deflate(unit*1.15);
-      if(eyeStyle=='circle'){canvas.drawCircle(rect.center,inset.width/2,clear);}
-      else if(eyeStyle=='diamond'){final p=Path()..moveTo(rect.center.dx,inset.top)..lineTo(inset.right,rect.center.dy)..lineTo(rect.center.dx,inset.bottom)..lineTo(inset.left,rect.center.dy)..close();canvas.drawPath(p,clear);}
-      else{canvas.drawRRect(RRect.fromRectAndRadius(inset,Radius.circular(eyeStyle=='rounded'||eyeStyle=='neon'?unit*.75:unit*.03)),clear);}
-      final inner=inset.deflate(unit*1.1);
-      if(eyeStyle=='circle'){canvas.drawCircle(rect.center,inner.width/2,modules);}
-      else if(eyeStyle=='diamond'){final p=Path()..moveTo(rect.center.dx,inner.top)..lineTo(inner.right,rect.center.dy)..lineTo(rect.center.dx,inner.bottom)..lineTo(inner.left,rect.center.dy)..close();canvas.drawPath(p,modules);}
-      else{canvas.drawRRect(RRect.fromRectAndRadius(inner,Radius.circular(eyeStyle=='neon'?unit*.45:unit*.02)),modules);}
+      final center=rect.center;
+      final outerRadius=eyeStyle=='rounded'?unit*1.25:unit*.05;
+      final inner=rect.deflate(unit*1.15);
+      final core=rect.deflate(unit*2.25);
+      Path diamond(Rect r)=>Path()
+        ..moveTo(r.center.dx,r.top)..lineTo(r.right,r.center.dy)
+        ..lineTo(r.center.dx,r.bottom)..lineTo(r.left,r.center.dy)..close();
+      void shape(Rect r,Paint p,{double radius=0}) {
+        switch(eyeStyle) {
+          case 'circle': canvas.drawCircle(r.center,r.width/2,p); break;
+          case 'diamond': canvas.drawPath(diamond(r),p); break;
+          case 'rounded': canvas.drawRRect(RRect.fromRectAndRadius(r,Radius.circular(radius)),p); break;
+          default: canvas.drawRect(r,p);
+        }
+      }
+      if(eyeStyle=='double') {
+        // Two clearly separated square outlines, with a solid center.
+        canvas.drawRect(rect,modules);
+        canvas.drawRect(rect.deflate(unit*.85),clear);
+        canvas.drawRect(rect.deflate(unit*1.65),modules);
+        canvas.drawRect(rect.deflate(unit*2.45),clear);
+        canvas.drawRect(rect.deflate(unit*2.95),modules);
+      } else if(eyeStyle=='neon') {
+        // Rounded outer frame and a distinct rounded center block.
+        canvas.drawRRect(RRect.fromRectAndRadius(rect,Radius.circular(unit*2.0)),modules);
+        canvas.drawRRect(RRect.fromRectAndRadius(rect.deflate(unit*.9),Radius.circular(unit*1.15)),clear);
+        canvas.drawRRect(RRect.fromRectAndRadius(rect.deflate(unit*1.75),Radius.circular(unit*.55)),modules);
+      } else {
+        shape(rect,modules,radius:outerRadius);
+        shape(inner,clear,radius:outerRadius*.65);
+        shape(core,modules,radius:outerRadius*.35);
+      }
     }
 
     // Distinctive corner brackets on the sunset and violet templates.
