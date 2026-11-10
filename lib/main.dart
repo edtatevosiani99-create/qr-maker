@@ -451,6 +451,10 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   }
 
   Future<void> savePng() async {
+    if (isCheckingQr) return;
+    // Always scan the exact rendered PNG before saving it to the gallery.
+    await checkQr();
+    if (!mounted || qrCheckState != 'success') return;
     final b = await pngBytes(); if (b == null) return;
     try {
       if (!await Gal.hasAccess()) {
