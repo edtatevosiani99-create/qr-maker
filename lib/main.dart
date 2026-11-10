@@ -466,7 +466,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
       logo(54), const SizedBox(width:11),
       Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
         ShaderMask(shaderCallback:(r)=>const LinearGradient(colors:[Color(0xFF0077CC),Color(0xFF6545C4),Color(0xFFDB4F9B)]).createShader(r),child:Text(t('title'),style:const TextStyle(fontSize:25,fontWeight:FontWeight.w800,color:Colors.white))),
-        Text(t('subtitle'),style:TextStyle(fontSize:11,color:panelMutedColor)),
+        Text(t('subtitle'),style:const TextStyle(fontSize:11,color:Colors.black)),
       ])),
       languageButton(), const SizedBox(width:4),
       IconButton(onPressed:(){setState(()=>themeMode=themeMode==ThemeMode.light?ThemeMode.dark:ThemeMode.light);_savePreferences();},icon:Icon(themeMode==ThemeMode.light?Icons.dark_mode:Icons.light_mode)),
