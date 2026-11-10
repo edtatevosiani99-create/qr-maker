@@ -848,16 +848,16 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   ]);
 
   Widget logoSection()=>Container(
-    padding:const EdgeInsets.all(12),
+    padding:const EdgeInsets.all(10),
     decoration:BoxDecoration(
       color:panelSurfaceColor,
-      borderRadius:BorderRadius.circular(14),
+      borderRadius:BorderRadius.circular(12),
       border:Border.all(color:panelOutlineColor),
     ),
     child:Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[
       Row(children:[
         Icon(Icons.add_photo_alternate_outlined,size:20,color:panelTextColor),
-        const SizedBox(width:8),
+        const SizedBox(width:7),
         Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
           Text(t('logo'),style:TextStyle(fontSize:13,fontWeight:FontWeight.w700,color:panelTextColor)),
           Text(photoImage == null ? t('logoHint') : t('photoSelected'),style:TextStyle(fontSize:10,color:panelMutedColor)),
@@ -865,7 +865,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
         if(photoImage != null)
           ClipRRect(borderRadius:BorderRadius.circular(8),child:Image.memory(photoBytes!,width:42,height:42,fit:BoxFit.cover)),
       ]),
-      const SizedBox(height:9),
+      const SizedBox(height:7),
       Row(children:[
         Expanded(child:OutlinedButton.icon(
           onPressed:choosePhoto,
