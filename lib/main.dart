@@ -1226,7 +1226,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
         }else{
           setState((){ fg=color; });
         }
-        if(_contrast(background ? fg : color, background ? color : bg) < 4.5){
+        if(_contrast(background ? fg : color, background ? color : bg) < 2.0){
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content:Text(t('contrastWarning'))),
           );
@@ -1393,7 +1393,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     padding:const EdgeInsets.all(14),
     decoration:BoxDecoration(gradient:const LinearGradient(begin:Alignment.topLeft,end:Alignment.bottomRight,colors:[Color(0xFF061B3B),Color(0xFF0A2D59),Color(0xFF350066)]),borderRadius:BorderRadius.circular(18)),
     child:Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[
-      if (_contrast(fg,bg) < 3.0 && !transparentBg) contrastWarning(),
+      if (_contrast(fg,bg) < 2.0 && !transparentBg) contrastWarning(),
       Row(children:[
       Container(width:160,height:160,padding:const EdgeInsets.all(8),decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(16)),child:CustomPaint(
         key:ValueKey('${selectedDesign}-${fg.value}-${bg.value}-${transparentBg}-${error}-${photoImage != null}-${data}'),
