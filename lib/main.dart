@@ -451,10 +451,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   }
 
   Future<void> savePng() async {
-    if (isCheckingQr) return;
-    // Always scan the exact rendered PNG before saving it to the gallery.
-    await checkQr();
-    if (!mounted || qrCheckState != 'success') return;
+    // Saving is independent from the optional scanability check.
     final b = await pngBytes(); if (b == null) return;
     try {
       if (!await Gal.hasAccess()) {
@@ -1457,10 +1454,27 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
         final b = ((rgba[offset + 2] * alpha) + (255 * (255 - alpha))) ~/ 255;
         pixels[i] = 0xFF000000 | (r << 16) | (g << 8) | b;
       }
-      final source = RGBLuminanceSource(decodedImage.width, decodedImage.height, pixels);
-      final result = QRCodeReader().decode(BinaryBitmap(HybridBinarizer(source)));
+      // First try standard QR polarity (dark modules on a light background).
+      // If the design uses a dark background with light modules, retry with
+      // inverted luminance so the checker can validate reverse-contrast QR.
+      Result? result;
+      try {
+        final source = RGBLuminanceSource(decodedImage.width, decodedImage.height, pixels);
+        result = QRCodeReader().decode(BinaryBitmap(HybridBinarizer(source)));
+      } catch (_) {
+        final invertedPixels = Int32List(pixels.length);
+        for (var i = 0; i < pixels.length; i++) {
+          final p = pixels[i];
+          final r = 255 - ((p >> 16) & 0xFF);
+          final g = 255 - ((p >> 8) & 0xFF);
+          final b = 255 - (p & 0xFF);
+          invertedPixels[i] = 0xFF000000 | (r << 16) | (g << 8) | b;
+        }
+        final invertedSource = RGBLuminanceSource(decodedImage.width, decodedImage.height, invertedPixels);
+        result = QRCodeReader().decode(BinaryBitmap(HybridBinarizer(invertedSource)));
+      }
       if (!mounted) return;
-      setState(() => qrCheckState = result.text == expected ? 'success' : 'mismatch');
+      setState(() => qrCheckState = result!.text == expected ? 'success' : 'mismatch');
     } catch (e) {
       if (!mounted) return;
       setState(() => qrCheckState = 'failed');
