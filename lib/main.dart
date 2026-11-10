@@ -826,9 +826,9 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
       ]),
       ),
     ],
-    const SizedBox(height:8),Text(t('size') + ': ' + size.round().toString() + ' px',style:TextStyle(fontSize:12,fontWeight:FontWeight.w700,color:panelTextColor)),
-    Slider(min:256,max:1024,value:size,activeColor:const Color(0xFF5B2DFF),onChanged:(x)=>setState(()=>size=x)),
-    Text(t('error'),style:TextStyle(fontSize:12,fontWeight:FontWeight.w700,color:panelTextColor)),const SizedBox(height:4),
+    const SizedBox(height:4),Text(t('size') + ': ' + size.round().toString() + ' px',style:TextStyle(fontSize:12,fontWeight:FontWeight.w700,color:panelTextColor)),
+    SizedBox(height:36,child:SliderTheme(data:SliderTheme.of(context).copyWith(trackHeight:2,thumbShape:const RoundSliderThumbShape(enabledThumbRadius:6),overlayShape:const RoundSliderOverlayShape(overlayRadius:9)),child:Slider(min:256,max:1024,value:size,activeColor:const Color(0xFF5B2DFF),onChanged:(x)=>setState(()=>size=x)))),
+    Text(t('error'),style:TextStyle(fontSize:12,fontWeight:FontWeight.w700,color:panelTextColor)),const SizedBox(height:2),
     DropdownButtonFormField<String>(value:photoImage != null ? 'H' : error,decoration:fieldDecoration(''),items:['L','M','Q','H'].map((x)=>DropdownMenuItem(value:x,child:Text(x))).toList(),onChanged:photoImage != null ? null : (x)=>setState(()=>error=x!)),
     const SizedBox(height:7),
     logoSection(),
@@ -848,38 +848,38 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   ]);
 
   Widget logoSection()=>Container(
-    padding:const EdgeInsets.all(10),
+    padding:const EdgeInsets.all(7),
     decoration:BoxDecoration(
       color:panelSurfaceColor,
-      borderRadius:BorderRadius.circular(12),
+      borderRadius:BorderRadius.circular(10),
       border:Border.all(color:panelOutlineColor),
     ),
     child:Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[
       Row(children:[
-        Icon(Icons.add_photo_alternate_outlined,size:20,color:panelTextColor),
-        const SizedBox(width:7),
+        Icon(Icons.add_photo_alternate_outlined,size:18,color:panelTextColor),
+        const SizedBox(width:5),
         Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
           Text(t('logo'),style:TextStyle(fontSize:13,fontWeight:FontWeight.w700,color:panelTextColor)),
           Text(photoImage == null ? t('logoHint') : t('photoSelected'),style:TextStyle(fontSize:10,color:panelMutedColor)),
         ])),
         if(photoImage != null)
-          ClipRRect(borderRadius:BorderRadius.circular(8),child:Image.memory(photoBytes!,width:42,height:42,fit:BoxFit.cover)),
+          ClipRRect(borderRadius:BorderRadius.circular(8),child:Image.memory(photoBytes!,width:36,height:36,fit:BoxFit.cover)),
       ]),
-      const SizedBox(height:7),
+      const SizedBox(height:4),
       Row(children:[
         Expanded(child:OutlinedButton.icon(
           onPressed:choosePhoto,
           icon:const Icon(Icons.photo_library_outlined,size:18),
           label:Text(t('photo')),
-          style:OutlinedButton.styleFrom(minimumSize:const Size.fromHeight(42),shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(7))),
+          style:OutlinedButton.styleFrom(minimumSize:const Size.fromHeight(36),padding:const EdgeInsets.symmetric(vertical:6),shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(7))),
         )),
         if(photoImage != null) ...[
-          const SizedBox(width:8),
+          const SizedBox(width:5),
           IconButton(
             onPressed:removePhoto,
             tooltip:t('removeLogo'),
             icon:const Icon(Icons.delete_outline),
-            style:IconButton.styleFrom(minimumSize:const Size(42,42)),
+            style:IconButton.styleFrom(minimumSize:const Size(36,36)),
           ),
         ],
       ]),
