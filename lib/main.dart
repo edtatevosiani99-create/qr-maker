@@ -1746,16 +1746,12 @@ class StyledQrPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final level = switch (errorLevel) {
-      1 => qr.QrErrorCorrectLevel.low,
-      2 => qr.QrErrorCorrectLevel.high,
-      3 => qr.QrErrorCorrectLevel.quartile,
-      _ => qr.QrErrorCorrectLevel.medium,
+      1 => qr.QrErrorCorrectLevel.L,
+      2 => qr.QrErrorCorrectLevel.H,
+      3 => qr.QrErrorCorrectLevel.Q,
+      _ => qr.QrErrorCorrectLevel.M,
     };
-    // Explicit UTF-8 ECI tells QR readers how to interpret non-Latin text.
-    final payload = qr.QrPayload()
-      ..addECI(qr.QrEciValue.utf8)
-      ..addString(data);
-    final code = qr.QrCode(payload: payload, errorCorrectLevel: level);
+    final code = qr.QrCode.fromData(data: data, errorCorrectLevel: level);
     final matrix = qr.QrImage(code);
     final count = matrix.moduleCount;
     final quiet = 4.0; // Standard QR quiet zone: four modules on every side.
