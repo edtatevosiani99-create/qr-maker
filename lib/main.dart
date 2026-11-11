@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'dart:typed_data';
@@ -626,6 +627,22 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     return 'https://$value';
   }
 
+  // Prefer the scanner's original payload bytes when they are valid UTF-8.
+  // This preserves Georgian, Cyrillic and other non-Latin text instead of
+  // relying only on a platform-decoded rawValue string.
+  String _readBarcodeText(Barcode barcode) {
+    final bytes = barcode.rawBytes;
+    if (bytes != null && bytes.isNotEmpty) {
+      try {
+        final decoded = utf8.decode(bytes, allowMalformed: false);
+        if (decoded.trim().isNotEmpty) return decoded;
+      } catch (_) {
+        // Fall back to ML Kit's decoded value for non-UTF-8/binary payloads.
+      }
+    }
+    return barcode.rawValue ?? '';
+  }
+
   Future<void> _handleScannedValue(String value) async {
     final cleaned = value.trim();
     if (cleaned.isEmpty || !mounted) return;
@@ -746,7 +763,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
                     onDetect: (capture) {
                       if (scannedValue != null) return;
                       for (final barcode in capture.barcodes) {
-                        final value = barcode.rawValue;
+                        final value = _readBarcodeText(barcode);
                         if (value != null && value.trim().isNotEmpty) {
                           unawaited(_handleScannedValue(value));
                           break;
