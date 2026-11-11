@@ -1050,9 +1050,10 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
         ),
         child:Column(mainAxisAlignment:MainAxisAlignment.center,children:[
           Container(
-            width:35,height:35,
-            decoration:const BoxDecoration(color:Colors.white,borderRadius:BorderRadius.all(Radius.circular(7))),
-            child:const Icon(Icons.qr_code_2_rounded,size:31,color:Colors.black),
+            width:43,height:43,
+            padding:const EdgeInsets.all(3),
+            decoration:const BoxDecoration(color:Colors.white,borderRadius:BorderRadius.all(Radius.circular(6))),
+            child:CustomPaint(painter:ModuleStylePreviewPainter(id)),
           ),
           const SizedBox(height:4),
           Text(t(id),maxLines:1,overflow:TextOverflow.ellipsis,style:TextStyle(fontSize:10,fontWeight:chosen ? FontWeight.w800 : FontWeight.w500,color:panelTextColor)),
@@ -1570,6 +1571,94 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   ]);
 }
 
+
+class ModuleStylePreviewPainter extends CustomPainter {
+  ModuleStylePreviewPainter(this.style);
+  final String style;
+
+  bool _finder(int x,int y) {
+    return (x < 5 && y < 5) || (x >= 12 && y < 5) || (x < 5 && y >= 12);
+  }
+
+  bool _dark(int x,int y) {
+    if (_finder(x,y)) return false;
+    // A fixed QR-like pattern makes each preview stable and easy to compare.
+    return ((x * 7 + y * 11 + x * y * 3) % 9 < 5) ||
+        ((x + y * 2) % 7 == 0);
+  }
+
+  void _drawFinder(Canvas canvas, double unit, Paint ink, Paint paper) {
+    for (final origin in const [(0,0),(12,0),(0,12)]) {
+      final x=origin.$1, y=origin.$2;
+      final r=Rect.fromLTWH(x*unit,y*unit,5*unit,5*unit);
+      canvas.drawRect(r,ink);
+      canvas.drawRect(r.deflate(unit),paper);
+      canvas.drawRect(r.deflate(unit*2),ink);
+    }
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paper=Paint()..color=Colors.white;
+    final ink=Paint()..color=Colors.black;
+    canvas.drawRect(Offset.zero & size,paper);
+    const count=21;
+    final unit=size.width/count;
+    for(var y=0;y<count;y++) {
+      for(var x=0;x<count;x++) {
+        if(!_dark(x,y)) continue;
+        final rect=Rect.fromLTWH(x*unit,y*unit,unit*.9,unit*.9);
+        switch(style) {
+          case 'shape_round_dots':
+            canvas.drawCircle(rect.center,unit*.43,ink);
+            break;
+          case 'shape_diamond':
+            final p=Path()..moveTo(rect.center.dx,rect.top)..lineTo(rect.right,rect.center.dy)..lineTo(rect.center.dx,rect.bottom)..lineTo(rect.left,rect.center.dy)..close();
+            canvas.drawPath(p,ink);
+            break;
+          case 'shape_hexagon':
+          case 'shape_honeycomb':
+            final p=Path()..moveTo(rect.left+unit*.22,rect.top)..lineTo(rect.right-unit*.22,rect.top)..lineTo(rect.right,rect.center.dy)..lineTo(rect.right-unit*.22,rect.bottom)..lineTo(rect.left+unit*.22,rect.bottom)..lineTo(rect.left,rect.center.dy)..close();
+            canvas.drawPath(p,ink);
+            break;
+          case 'shape_rounded_squares':
+            canvas.drawRRect(RRect.fromRectAndRadius(rect,Radius.circular(unit*.28)),ink);
+            break;
+          case 'shape_droplet':
+            final p=Path()..moveTo(rect.center.dx,rect.top)..quadraticBezierTo(rect.right,rect.top+unit*.15,rect.right,rect.center.dy)..quadraticBezierTo(rect.right,rect.bottom,rect.center.dx,rect.bottom)..quadraticBezierTo(rect.left,rect.bottom,rect.left,rect.center.dy)..quadraticBezierTo(rect.left,rect.top+unit*.15,rect.center.dx,rect.top)..close();
+            canvas.drawPath(p,ink);
+            break;
+          case 'shape_stars':
+            final p=Path();
+            for(var k=0;k<10;k++) {
+              final a=-math.pi/2+k*math.pi/5;
+              final rad=k.isEven?unit*.46:unit*.19;
+              final point=Offset(rect.center.dx+math.cos(a)*rad,rect.center.dy+math.sin(a)*rad);
+              if(k==0) p.moveTo(point.dx,point.dy); else p.lineTo(point.dx,point.dy);
+            }
+            p.close(); canvas.drawPath(p,ink);
+            break;
+          case 'shape_wave':
+            canvas.drawRRect(RRect.fromRectAndRadius(rect,Radius.circular(unit*.45)),ink);
+            break;
+          case 'shape_lines':
+            canvas.drawRect(Rect.fromLTWH(rect.left,rect.center.dy-unit*.12,rect.width,unit*.24),ink);
+            break;
+          case 'shape_frame':
+            canvas.drawRect(rect,ink);
+            canvas.drawRect(rect.deflate(unit*.22),paper);
+            break;
+          default:
+            canvas.drawRect(rect,ink);
+        }
+      }
+    }
+    _drawFinder(canvas,unit,ink,paper);
+  }
+
+  @override
+  bool shouldRepaint(covariant ModuleStylePreviewPainter oldDelegate)=>style!=oldDelegate.style;
+}
 
 class EyeStylePreviewPainter extends CustomPainter {
   EyeStylePreviewPainter(this.style);
