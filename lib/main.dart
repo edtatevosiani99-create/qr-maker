@@ -1005,22 +1005,6 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     ]),
   );
 
-  // Presets change QR geometry, not just colors.
-  QrEyeShape get selectedEyeShape => switch (selectedDesign) {
-    'neon' => QrEyeShape.circle,
-    'mint' => QrEyeShape.circle,
-    _ => QrEyeShape.square,
-  };
-
-  QrDataModuleShape get selectedModuleShape => switch (selectedDesign) {
-    'neon' => QrDataModuleShape.circle,
-    'sunset' => QrDataModuleShape.circle,
-    'violet' => QrDataModuleShape.circle,
-    _ => QrDataModuleShape.square,
-  };
-
-  bool get selectedGapless => selectedDesign != 'violet';
-
   Widget _eyeStyleOption(String id,String label) {
     final selected=selectedEyeStyle==id;
     return GestureDetector(
