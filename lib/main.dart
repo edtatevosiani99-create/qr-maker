@@ -278,8 +278,6 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   bool isScannerOpen = false;
   String? scannedValue;
   String? scannerDiagnostic;
-  bool _googleScannerBusy = false;
-  static const MethodChannel _googleScannerChannel = MethodChannel('qr_studio_code_scanner');
   bool torchEnabled = false;
   final MobileScannerController scannerController = MobileScannerController(
     detectionSpeed: DetectionSpeed.normal,
@@ -616,7 +614,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     )),
     const SizedBox(width:10),
     Expanded(child:FilledButton.icon(
-      onPressed:(){ setState(() { isScannerOpen=true; scannedValue=null; scannerDiagnostic=null; }); unawaited(_startGoogleCodeScanner()); },
+      onPressed:()=>setState(() { isScannerOpen=true; scannedValue=null; scannerDiagnostic=null; }),
       icon:const Icon(Icons.qr_code_scanner),
       label:Text(scannerText('scan'),maxLines:1,overflow:TextOverflow.ellipsis),
       style:FilledButton.styleFrom(minimumSize:const Size.fromHeight(48),backgroundColor:isScannerOpen?const Color(0xFF1877D2):Theme.of(context).colorScheme.surfaceVariant,foregroundColor:isScannerOpen?Colors.white:Theme.of(context).colorScheme.onSurfaceVariant),
@@ -629,37 +627,6 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     final parsed = Uri.tryParse(value);
     if (parsed != null && parsed.hasScheme) return value;
     return 'https://$value';
-  }
-
-  Future<void> _startGoogleCodeScanner() async {
-    if (_googleScannerBusy || !mounted) return;
-    setState(() {
-      _googleScannerBusy = true;
-      scannedValue = null;
-      scannerDiagnostic = null;
-    });
-    try {
-      final value = await _googleScannerChannel.invokeMethod<String>('scanQr');
-      if (!mounted) return;
-      if (value != null && value.trim().isNotEmpty) {
-        scannerDiagnostic = 'Google Play Services Code Scanner';
-        await _handleScannedValue(value);
-      }
-    } on PlatformException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message ?? 'Google scanner is unavailable on this device.')),
-        );
-      }
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not start Google scanner.')),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _googleScannerBusy = false);
-    }
   }
 
   // Use ML Kit's decoded payload bytes first. Unlike rawValue, these bytes
@@ -795,7 +762,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
             decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: const Color(0xFF286EFF), width: 2)),
             child: IconButton(
               tooltip: scannerText('scanButton'),
-              onPressed: _googleScannerBusy ? null : _startGoogleCodeScanner,
+              onPressed: () { setState(() { scannedValue = null; scannerDiagnostic = null; }); },
               icon: const Icon(Icons.qr_code_scanner_rounded, color: Colors.white, size: 27),
             ),
           ),
@@ -811,11 +778,6 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
               width: double.infinity,
               child: Stack(fit: StackFit.expand, children: [
                 if (scannedValue == null)
-                  if (_googleScannerBusy)
-                    const ColoredBox(color: Color(0xFF20252D), child: Center(child: CircularProgressIndicator(color: Color(0xFF08A9FF))))
-                  else
-                    const ColoredBox(color: Color(0xFF20252D), child: Center(child: Icon(Icons.qr_code_scanner, color: Color(0xFF08A9FF), size: 76)))
-                  /* Mobile scanner retained as fallback implementation:
                   MobileScanner(
                     controller: scannerController,
                     onDetect: (capture) {
@@ -828,7 +790,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
                         }
                       }
                     },
-                  ) */
+                  )
                 else
                   Container(color: const Color(0xFF20252D), child: const Center(child: Icon(Icons.check_circle_rounded, color: Colors.greenAccent, size: 58))),
                 if (scannedValue == null) ...[
@@ -864,9 +826,9 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
           Text(scannedValue == null ? scannerText('frameHint') : scannerText('result'), textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500)),
           if (scannedValue == null) ...[
             FilledButton.icon(
-              onPressed: _googleScannerBusy ? null : _startGoogleCodeScanner,
+              onPressed: () { setState(() { scannedValue = null; scannerDiagnostic = null; }); },
               icon: const Icon(Icons.qr_code_scanner),
-              label: Text(_googleScannerBusy ? 'Scanning…' : scannerText('scanButton')),
+              label: Text(scannerText('scanButton')),
             ),
             const SizedBox(height: 10),
           ],
@@ -878,7 +840,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
             const SizedBox(height: 10),
             if (Uri.tryParse(scannedValue!)?.hasScheme == true && ['http','https'].contains(Uri.tryParse(scannedValue!)!.scheme.toLowerCase()))
               FilledButton.icon(onPressed: () async { final uri = Uri.tryParse(scannedValue!); if (uri != null) await launchUrl(uri, mode: LaunchMode.externalApplication); }, icon: const Icon(Icons.open_in_new), label: Text(scannerText('open'))),
-            OutlinedButton.icon(onPressed: _startGoogleCodeScanner, icon: const Icon(Icons.refresh), label: Text(scannerText('again'))),
+            OutlinedButton.icon(onPressed: () { setState(() { scannedValue = null; scannerDiagnostic = null; }); }, icon: const Icon(Icons.refresh), label: Text(scannerText('again'))),
           ],
           const SizedBox(height: 68),
           Center(child: _scannerAction(
