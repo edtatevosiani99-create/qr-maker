@@ -627,20 +627,21 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     return 'https://$value';
   }
 
-  // Prefer the scanner's original payload bytes when they are valid UTF-8.
-  // This preserves Georgian, Cyrillic and other non-Latin text instead of
-  // relying only on a platform-decoded rawValue string.
+  // mobile_scanner/ML Kit already decodes QR text using the symbol's
+  // character-set information (including UTF-8 ECI). rawBytes is not a
+  // guaranteed UTF-8 text buffer, so interpreting it first corrupts scripts.
   String _readBarcodeText(Barcode barcode) {
+    final decoded = barcode.rawValue;
+    if (decoded != null && decoded.isNotEmpty) return decoded;
     final bytes = barcode.rawBytes;
     if (bytes != null && bytes.isNotEmpty) {
       try {
-        final decoded = utf8.decode(bytes, allowMalformed: false);
-        if (decoded.trim().isNotEmpty) return decoded;
+        return utf8.decode(bytes, allowMalformed: false);
       } catch (_) {
-        // Fall back to ML Kit's decoded value for non-UTF-8/binary payloads.
+        return '';
       }
     }
-    return barcode.rawValue ?? '';
+    return '';
   }
 
   Future<void> _handleScannedValue(String value) async {
@@ -1473,20 +1474,10 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
         result = QRCodeReader().decode(BinaryBitmap(HybridBinarizer(invertedSource)));
       }
       if (!mounted) return;
-      // ZXing can expose non-Latin QR payloads incorrectly in `text` when
-      // the symbol contains UTF-8 bytes without an ECI marker. Prefer the
-      // decoded raw payload bytes when they form valid UTF-8, then fall back
-      // to ZXing's text value. Trim only surrounding whitespace for comparison.
-      var decodedText = result!.text;
-      final rawPayload = result.rawBytes;
-      if (rawPayload != null && rawPayload.isNotEmpty) {
-        try {
-          final utf8Text = utf8.decode(rawPayload, allowMalformed: false);
-          if (utf8Text.trim().isNotEmpty) decodedText = utf8Text;
-        } catch (_) {
-          // Some QR modes are not plain UTF-8; keep the decoder's text.
-        }
-      }
+      // ZXing's Result.rawBytes contains encoded QR codewords, not a
+      // standalone UTF-8 string. Use the decoder's text result, which applies
+      // QR ECI/character-set rules before returning Unicode text.
+      final decodedText = result!.text;
       setState(() => qrCheckState =
           decodedText.trim() == expected ? 'success' : 'mismatch');
     } catch (e) {
