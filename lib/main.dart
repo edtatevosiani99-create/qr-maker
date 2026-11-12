@@ -627,21 +627,26 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     return 'https://$value';
   }
 
-  // mobile_scanner/ML Kit already decodes QR text using the symbol's
-  // character-set information (including UTF-8 ECI). rawBytes is not a
-  // guaranteed UTF-8 text buffer, so interpreting it first corrupts scripts.
+  // Prefer ML Kit's decoded value, but recover UTF-8 payload bytes when
+  // ML Kit has already substituted unsupported characters with U+FFFD.
   String _readBarcodeText(Barcode barcode) {
     final decoded = barcode.rawValue;
-    if (decoded != null && decoded.isNotEmpty) return decoded;
     final bytes = barcode.rawBytes;
+    if (decoded != null && decoded.isNotEmpty &&
+        !decoded.contains('\uFFFD')) {
+      return decoded;
+    }
     if (bytes != null && bytes.isNotEmpty) {
       try {
-        return utf8.decode(bytes, allowMalformed: false);
+        final fromBytes = utf8.decode(bytes, allowMalformed: false);
+        if (fromBytes.isNotEmpty && !fromBytes.contains('\uFFFD')) {
+          return fromBytes;
+        }
       } catch (_) {
-        return '';
+        // The scanner's raw bytes may include QR framing rather than UTF-8.
       }
     }
-    return '';
+    return decoded ?? '';
   }
 
   Future<void> _handleScannedValue(String value) async {
@@ -1740,11 +1745,12 @@ class StyledQrPainter extends CustomPainter {
       3 => qr.QrErrorCorrectLevel.quartile,
       _ => qr.QrErrorCorrectLevel.medium,
     };
-    // Explicit UTF-8 ECI (assignment 26) makes non-ASCII text unambiguous
-    // to QR readers, including Georgian, Cyrillic and other scripts.
+    // Encode the payload as UTF-8 bytes explicitly. Keeping the whole
+    // payload in Byte mode after ECI 26 avoids mixed-mode charset ambiguity
+    // for Georgian, Cyrillic, Arabic, CJK and other non-Latin scripts.
     final payload = qr.QrPayload()
       ..addECI(qr.QrEciValue.utf8)
-      ..addString(data);
+      ..addTypedData(Uint8List.fromList(utf8.encode(data)));
     final code = qr.QrCode(
       payload: payload,
       errorCorrectLevel: level,
