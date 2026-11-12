@@ -1473,7 +1473,22 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
         result = QRCodeReader().decode(BinaryBitmap(HybridBinarizer(invertedSource)));
       }
       if (!mounted) return;
-      setState(() => qrCheckState = result!.text == expected ? 'success' : 'mismatch');
+      // ZXing can expose non-Latin QR payloads incorrectly in `text` when
+      // the symbol contains UTF-8 bytes without an ECI marker. Prefer the
+      // decoded raw payload bytes when they form valid UTF-8, then fall back
+      // to ZXing's text value. Trim only surrounding whitespace for comparison.
+      var decodedText = result!.text;
+      final rawPayload = result.rawBytes;
+      if (rawPayload != null && rawPayload.isNotEmpty) {
+        try {
+          final utf8Text = utf8.decode(rawPayload, allowMalformed: false);
+          if (utf8Text.trim().isNotEmpty) decodedText = utf8Text;
+        } catch (_) {
+          // Some QR modes are not plain UTF-8; keep the decoder's text.
+        }
+      }
+      setState(() => qrCheckState =
+          decodedText.trim() == expected ? 'success' : 'mismatch');
     } catch (e) {
       if (!mounted) return;
       setState(() => qrCheckState = 'failed');
