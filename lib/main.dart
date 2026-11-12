@@ -277,6 +277,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   String? qrCheckState;
   bool isScannerOpen = false;
   String? scannedValue;
+  String? scannerDiagnostic;
   bool torchEnabled = false;
   final MobileScannerController scannerController = MobileScannerController(
     detectionSpeed: DetectionSpeed.normal,
@@ -613,7 +614,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     )),
     const SizedBox(width:10),
     Expanded(child:FilledButton.icon(
-      onPressed:(){ setState(() { isScannerOpen=true; scannedValue=null; }); },
+      onPressed:(){ setState(() { isScannerOpen=true; scannedValue=null; scannerDiagnostic=null; }); },
       icon:const Icon(Icons.qr_code_scanner),
       label:Text(scannerText('scan'),maxLines:1,overflow:TextOverflow.ellipsis),
       style:FilledButton.styleFrom(minimumSize:const Size.fromHeight(48),backgroundColor:isScannerOpen?const Color(0xFF1877D2):Theme.of(context).colorScheme.surfaceVariant,foregroundColor:isScannerOpen?Colors.white:Theme.of(context).colorScheme.onSurfaceVariant),
@@ -633,6 +634,13 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   // intact even when the platform string contains replacement characters.
   String _readBarcodeText(Barcode barcode) {
     final decodedBytes = barcode.rawDecodedBytes;
+    final debugBytes = decodedBytes is DecodedBarcodeBytes
+        ? decodedBytes.bytes
+        : decodedBytes is DecodedVisionBarcodeBytes
+            ? decodedBytes.bytes
+            : null;
+    final raw = barcode.rawValue ?? '';
+    scannerDiagnostic = 'bytesType=${decodedBytes.runtimeType}; bytes=${debugBytes == null ? 'null' : debugBytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join(' ')}; rawValue=$raw; rawCodePoints=${raw.runes.map((r) => r.toRadixString(16)).join(' ')}';
     Uint8List? payloadBytes;
     if (decodedBytes is DecodedBarcodeBytes) {
       payloadBytes = decodedBytes.bytes;
@@ -819,6 +827,8 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
           if (scannedValue != null) ...[
             const SizedBox(height: 10),
             SelectableText(scannedValue!, textAlign: TextAlign.center, style: const TextStyle(color: Color(0xFF8FD8FF))),
+            if (scannerDiagnostic != null)
+              SelectableText('DEBUG: $scannerDiagnostic', textAlign: TextAlign.center, style: const TextStyle(color: Colors.orangeAccent, fontSize: 10)),
             const SizedBox(height: 10),
             if (Uri.tryParse(scannedValue!)?.hasScheme == true && ['http','https'].contains(Uri.tryParse(scannedValue!)!.scheme.toLowerCase()))
               FilledButton.icon(onPressed: () async { final uri = Uri.tryParse(scannedValue!); if (uri != null) await launchUrl(uri, mode: LaunchMode.externalApplication); }, icon: const Icon(Icons.open_in_new), label: Text(scannerText('open'))),
