@@ -16,7 +16,7 @@ android {
     }
     defaultConfig {
         applicationId = "com.qrstudio.app"
-        minSdk = 21
+        minSdk = 23
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -27,8 +27,8 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
-    dependencies {
-        implementation("com.google.android.gms:play-services-code-scanner:16.1.0")
-    }
+}
+dependencies {
+    implementation("com.google.android.gms:play-services-code-scanner:16.1.0")
 }
 flutter { source = "../.." }
