@@ -794,9 +794,9 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
           Container(
             decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: const Color(0xFF286EFF), width: 2)),
             child: IconButton(
-              tooltip: scannerText(torchEnabled ? 'torchOn' : 'torchOff'),
-              onPressed: toggleScannerTorch,
-              icon: Icon(torchEnabled ? Icons.flashlight_on_rounded : Icons.flashlight_off_rounded, color: torchEnabled ? const Color(0xFFFFD45C) : Colors.white, size: 27),
+              tooltip: scannerText('scanButton'),
+              onPressed: _googleScannerBusy ? null : _startGoogleCodeScanner,
+              icon: const Icon(Icons.qr_code_scanner_rounded, color: Colors.white, size: 27),
             ),
           ),
         ]),
