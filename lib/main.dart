@@ -1457,20 +1457,52 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     ]),
   );
 
+  Future<String?> _readQrPngWithMlKit(Uint8List bytes) async {
+    final directory = await getTemporaryDirectory();
+    final file = File('${directory.path}/qr_studio_check_${DateTime.now().microsecondsSinceEpoch}.png');
+    try {
+      await file.writeAsBytes(bytes, flush: true);
+      final capture = await scannerController.analyzeImage(file.path);
+      if (capture == null) return null;
+      for (final barcode in capture.barcodes) {
+        final value = _readBarcodeText(barcode);
+        if (value.isNotEmpty) return value;
+      }
+      return null;
+    } finally {
+      try {
+        if (await file.exists()) await file.delete();
+      } catch (_) {}
+    }
+  }
+
   Future<void> checkQr() async {
     if (isCheckingQr) return;
-    final expected = data.trim();
-    if (expected.isEmpty) {
+    final expected = data;
+    if (expected.trim().isEmpty) {
       setState(() => qrCheckState = 'empty');
       return;
     }
     setState(() {
-      isCheckingQr = true;      qrCheckState = 'checking';
+      isCheckingQr = true;
+      qrCheckState = 'checking';
     });
     try {
-      // Scan the actual PNG rendered from the current QR design.
       final bytes = await pngBytes();
       if (bytes == null) throw StateError('QR image rendering returned no bytes');
+      final candidates = <String>[];
+
+      // ML Kit is the primary decoder. Its Android raw payload bytes avoid
+      // charset corruption for UTF-8 QR codes containing Georgian/Cyrillic.
+      try {
+        final mlKitText = await _readQrPngWithMlKit(bytes);
+        if (mlKitText != null) candidates.add(mlKitText);
+      } catch (_) {
+        // Keep the independent ZXing fallback available.
+      }
+
+      // Retain ZXing as a second decoder, and always try both polarities.
+      // A successful but garbled first result must not suppress the retry.
       final decodedImage = img.decodeImage(bytes);
       if (decodedImage == null) throw StateError('Generated PNG could not be decoded');
       final rgba = decodedImage.convert(numChannels: 4).getBytes(order: img.ChannelOrder.rgba);
@@ -1483,35 +1515,38 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
         final b = ((rgba[offset + 2] * alpha) + (255 * (255 - alpha))) ~/ 255;
         pixels[i] = 0xFF000000 | (r << 16) | (g << 8) | b;
       }
-      // First try standard QR polarity (dark modules on a light background).
-      // If the design uses a dark background with light modules, retry with
-      // inverted luminance so the checker can validate reverse-contrast QR.
-      Result? result;
-      try {
-        final source = RGBLuminanceSource(decodedImage.width, decodedImage.height, pixels);
-        final hints = DecodeHints()..put(DecodeHintType.characterSet, 'UTF-8');
-        result = QRCodeReader().decode(BinaryBitmap(HybridBinarizer(source)), hints: hints);
-      } catch (_) {
-        final invertedPixels = Int32List(pixels.length);
+      final hints = DecodeHints()..put(DecodeHintType.characterSet, 'UTF-8');
+      for (var attempt = 0; attempt < 2; attempt++) {
+        final scanPixels = Int32List(pixels.length);
         for (var i = 0; i < pixels.length; i++) {
           final p = pixels[i];
-          final r = 255 - ((p >> 16) & 0xFF);
-          final g = 255 - ((p >> 8) & 0xFF);
-          final b = 255 - (p & 0xFF);
-          invertedPixels[i] = 0xFF000000 | (r << 16) | (g << 8) | b;
+          if (attempt == 0) {
+            scanPixels[i] = p;
+          } else {
+            final r = 255 - ((p >> 16) & 0xFF);
+            final g = 255 - ((p >> 8) & 0xFF);
+            final b = 255 - (p & 0xFF);
+            scanPixels[i] = 0xFF000000 | (r << 16) | (g << 8) | b;
+          }
         }
-        final invertedSource = RGBLuminanceSource(decodedImage.width, decodedImage.height, invertedPixels);
-        final hints = DecodeHints()..put(DecodeHintType.characterSet, 'UTF-8');
-        result = QRCodeReader().decode(BinaryBitmap(HybridBinarizer(invertedSource)), hints: hints);
+        try {
+          final source = RGBLuminanceSource(decodedImage.width, decodedImage.height, scanPixels);
+          final result = QRCodeReader().decode(BinaryBitmap(HybridBinarizer(source)), hints: hints);
+          candidates.add(result.text);
+        } catch (_) {
+          // Continue to the opposite QR polarity.
+        }
       }
+
       if (!mounted) return;
-      // ZXing's Result.rawBytes contains encoded QR codewords, not a
-      // standalone UTF-8 string. Use the decoder's text result, which applies
-      // QR ECI/character-set rules before returning Unicode text.
-      final decodedText = result!.text;
-      setState(() => qrCheckState =
-          decodedText.trim() == expected ? 'success' : 'mismatch');
-    } catch (e) {
+      if (candidates.any((candidate) => candidate == expected)) {
+        setState(() => qrCheckState = 'success');
+      } else if (candidates.isNotEmpty) {
+        setState(() => qrCheckState = 'mismatch');
+      } else {
+        setState(() => qrCheckState = 'failed');
+      }
+    } catch (_) {
       if (!mounted) return;
       setState(() => qrCheckState = 'failed');
     } finally {
