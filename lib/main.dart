@@ -628,26 +628,30 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     return 'https://$value';
   }
 
-  // Prefer ML Kit's decoded value, but recover UTF-8 payload bytes when
-  // ML Kit has already substituted unsupported characters with U+FFFD.
+  // Use ML Kit's decoded payload bytes first. Unlike rawValue, these bytes
+  // are not converted through a platform text charset, so UTF-8 scripts remain
+  // intact even when the platform string contains replacement characters.
   String _readBarcodeText(Barcode barcode) {
-    final decoded = barcode.rawValue;
-    final bytes = barcode.rawBytes;
-    if (decoded != null && decoded.isNotEmpty &&
-        !decoded.contains('\uFFFD')) {
-      return decoded;
+    final decodedBytes = barcode.rawDecodedBytes;
+    Uint8List? payloadBytes;
+    if (decodedBytes is DecodedBarcodeBytes) {
+      payloadBytes = decodedBytes.bytes;
+    } else if (decodedBytes is DecodedVisionBarcodeBytes) {
+      payloadBytes = decodedBytes.bytes;
     }
-    if (bytes != null && bytes.isNotEmpty) {
+
+    if (payloadBytes != null && payloadBytes.isNotEmpty) {
       try {
-        final fromBytes = utf8.decode(bytes, allowMalformed: false);
-        if (fromBytes.isNotEmpty && !fromBytes.contains('\uFFFD')) {
-          return fromBytes;
-        }
+        final utf8Text = utf8.decode(payloadBytes, allowMalformed: false);
+        if (utf8Text.isNotEmpty) return utf8Text;
       } catch (_) {
-        // The scanner's raw bytes may include QR framing rather than UTF-8.
+        // The payload is not UTF-8; use the platform-decoded value below.
       }
     }
-    return decoded ?? '';
+
+    final decoded = barcode.rawValue;
+    if (decoded != null && decoded.isNotEmpty) return decoded;
+    return '';
   }
 
   Future<void> _handleScannedValue(String value) async {
