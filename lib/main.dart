@@ -303,19 +303,19 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   final designNames = const {
     'Русский': {
       'brand_instagram':'Instagram','brand_facebook':'Facebook','brand_tiktok':'TikTok','brand_youtube':'YouTube','brand_x':'X','brand_whatsapp':'WhatsApp','brand_telegram':'Telegram','brand_snapchat':'Snapchat','brand_discord':'Discord','brand_linkedin':'LinkedIn',
-      'shape_round_dots':'Круглые точки','shape_diamond':'Ромбы','shape_hexagon':'Шестиугольники','shape_rounded_squares':'Скруглённые','shape_droplet':'Капли','shape_stars':'Звёзды','shape_honeycomb':'Соты','shape_wave':'Волны','shape_lines':'Линии','shape_frame':'Рамка'
+      'shape_round_dots':'Круглые точки','shape_diamond':'Ромбы','shape_hexagon':'Шестиугольники','shape_rounded_squares':'Скруглённые','shape_droplet':'Капли','shape_stars':'Звёзды','shape_honeycomb':'Соты','shape_wave':'Волны'
     },
     'English': {
       'brand_instagram':'Instagram','brand_facebook':'Facebook','brand_tiktok':'TikTok','brand_youtube':'YouTube','brand_x':'X','brand_whatsapp':'WhatsApp','brand_telegram':'Telegram','brand_snapchat':'Snapchat','brand_discord':'Discord','brand_linkedin':'LinkedIn',
-      'shape_round_dots':'Round dots','shape_diamond':'Diamond','shape_hexagon':'Hexagon','shape_rounded_squares':'Rounded squares','shape_droplet':'Droplet','shape_stars':'Stars','shape_honeycomb':'Honeycomb','shape_wave':'Wave','shape_lines':'Lines','shape_frame':'Frame'
+      'shape_round_dots':'Round dots','shape_diamond':'Diamond','shape_hexagon':'Hexagon','shape_rounded_squares':'Rounded squares','shape_droplet':'Droplet','shape_stars':'Stars','shape_honeycomb':'Honeycomb','shape_wave':'Wave'
     },
     'Deutsch': {
       'brand_instagram':'Instagram','brand_facebook':'Facebook','brand_tiktok':'TikTok','brand_youtube':'YouTube','brand_x':'X','brand_whatsapp':'WhatsApp','brand_telegram':'Telegram','brand_snapchat':'Snapchat','brand_discord':'Discord','brand_linkedin':'LinkedIn',
-      'shape_round_dots':'Runde Punkte','shape_diamond':'Diamant','shape_hexagon':'Sechsecke','shape_rounded_squares':'Abgerundet','shape_droplet':'Tropfen','shape_stars':'Sterne','shape_honeycomb':'Waben','shape_wave':'Wellen','shape_lines':'Linien','shape_frame':'Rahmen'
+      'shape_round_dots':'Runde Punkte','shape_diamond':'Diamant','shape_hexagon':'Sechsecke','shape_rounded_squares':'Abgerundet','shape_droplet':'Tropfen','shape_stars':'Sterne','shape_honeycomb':'Waben','shape_wave':'Wellen'
     },
     'ქართული': {
       'brand_instagram':'Instagram','brand_facebook':'Facebook','brand_tiktok':'TikTok','brand_youtube':'YouTube','brand_x':'X','brand_whatsapp':'WhatsApp','brand_telegram':'Telegram','brand_snapchat':'Snapchat','brand_discord':'Discord','brand_linkedin':'LinkedIn',
-      'shape_round_dots':'მრგვალი წერტილები','shape_diamond':'რომბები','shape_hexagon':'ექვსკუთხედები','shape_rounded_squares':'მომრგვალებული','shape_droplet':'წვეთები','shape_stars':'ვარსკვლავები','shape_honeycomb':'ფიჭა','shape_wave':'ტალღები','shape_lines':'ხაზები','shape_frame':'ჩარჩო'
+      'shape_round_dots':'მრგვალი წერტილები','shape_diamond':'რომბები','shape_hexagon':'ექვსკუთხედები','shape_rounded_squares':'მომრგვალებული','shape_droplet':'წვეთები','shape_stars':'ვარსკვლავები','shape_honeycomb':'ფიჭა','shape_wave':'ტალღები'
     }
   };
 
@@ -931,8 +931,6 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
           designOption('shape_stars',const Color(0xFF5530A8),Colors.white),
           designOption('shape_honeycomb',const Color(0xFF171717),const Color(0xFFFFF9E8)),
           designOption('shape_wave',const Color(0xFF087FC3),Colors.white),
-          designOption('shape_lines',const Color(0xFF222222),Colors.white),
-          designOption('shape_frame',const Color(0xFF6032A8),const Color(0xFFFFFCF2)),
         ] : [
           _eyeStyleOption('square','Square'),
           _eyeStyleOption('rounded','Rounded'),
@@ -1602,12 +1600,20 @@ class ModuleStylePreviewPainter extends CustomPainter {
     final paper=Paint()..color=Colors.white;
     final ink=Paint()..color=Colors.black;
     canvas.drawRect(Offset.zero & size,paper);
-    const count=21;
-    final unit=size.width/count;
-    for(var y=0;y<count;y++) {
-      for(var x=0;x<count;x++) {
+
+    // Show an enlarged crop of the QR data modules, not a tiny complete QR.
+    // This makes the selected module geometry obvious in the design picker.
+    const cropStart=7;
+    const cropCount=7;
+    final unit=size.width/cropCount;
+    canvas.save();
+    canvas.clipRect(Offset.zero & size);
+    for(var row=0;row<cropCount;row++) {
+      for(var col=0;col<cropCount;col++) {
+        final x=cropStart+col;
+        final y=cropStart+row;
         if(!_dark(x,y)) continue;
-        final rect=Rect.fromLTWH(x*unit,y*unit,unit*.9,unit*.9);
+        final rect=Rect.fromLTWH(col*unit,row*unit,unit*.88,unit*.88);
         switch(style) {
           case 'shape_round_dots':
             canvas.drawCircle(rect.center,unit*.43,ink);
@@ -1641,19 +1647,12 @@ class ModuleStylePreviewPainter extends CustomPainter {
           case 'shape_wave':
             canvas.drawRRect(RRect.fromRectAndRadius(rect,Radius.circular(unit*.45)),ink);
             break;
-          case 'shape_lines':
-            canvas.drawRect(Rect.fromLTWH(rect.left,rect.center.dy-unit*.12,rect.width,unit*.24),ink);
-            break;
-          case 'shape_frame':
-            canvas.drawRect(rect,ink);
-            canvas.drawRect(rect.deflate(unit*.22),paper);
-            break;
           default:
             canvas.drawRect(rect,ink);
         }
       }
     }
-    _drawFinder(canvas,unit,ink,paper);
+    canvas.restore();
   }
 
   @override
