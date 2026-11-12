@@ -9,9 +9,13 @@ import android.os.Bundle
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
+import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
+import com.google.mlkit.vision.barcode.common.Barcode
 
 class MainActivity : FlutterActivity() {
     private val channelName = "qr_studio_notifications"
+    private val scannerChannelName = "qr_studio_code_scanner"
     private val notificationChannelId = "qr_studio_saved"
     private val notificationPermissionRequest = 1001
 
@@ -34,6 +38,24 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, scannerChannelName).setMethodCallHandler { call, result ->
+            if (call.method == "scanQr") {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                    result.error("UNSUPPORTED", "Google Code Scanner requires Android 6.0 or newer", null)
+                    return@setMethodCallHandler
+                }
+                val options = GmsBarcodeScannerOptions.Builder()
+                    .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+                    .enableAutoZoom()
+                    .build()
+                GmsBarcodeScanning.getClient(this, options).startScan()
+                    .addOnSuccessListener { barcode -> result.success(barcode.rawValue) }
+                    .addOnCanceledListener { result.success(null) }
+                    .addOnFailureListener { error -> result.error("SCAN_FAILED", error.localizedMessage, null) }
+            } else {
+                result.notImplemented()
+            }
+        }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, channelName).setMethodCallHandler { call, result ->
             if (call.method == "showSavedNotification") {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
