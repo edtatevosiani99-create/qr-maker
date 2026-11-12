@@ -13,6 +13,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
 import 'package:zxing2/qrcode.dart';
+import 'package:zxing2/zxing2.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -687,7 +688,8 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
         pixels[i] = 0xFF000000 | (r << 16) | (g << 8) | b;
       }
       final source = RGBLuminanceSource(decodedImage.width, decodedImage.height, pixels);
-      final result = QRCodeReader().decode(BinaryBitmap(HybridBinarizer(source)));
+      final hints = DecodeHints()..put(DecodeHintType.characterSet, 'UTF-8');
+      final result = QRCodeReader().decode(BinaryBitmap(HybridBinarizer(source)), hints: hints);
       if (mounted) await _handleScannedValue(result.text);
     } catch (_) {
       if (!mounted) return;
@@ -1465,7 +1467,8 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
       Result? result;
       try {
         final source = RGBLuminanceSource(decodedImage.width, decodedImage.height, pixels);
-        result = QRCodeReader().decode(BinaryBitmap(HybridBinarizer(source)));
+        final hints = DecodeHints()..put(DecodeHintType.characterSet, 'UTF-8');
+        result = QRCodeReader().decode(BinaryBitmap(HybridBinarizer(source)), hints: hints);
       } catch (_) {
         final invertedPixels = Int32List(pixels.length);
         for (var i = 0; i < pixels.length; i++) {
@@ -1476,7 +1479,8 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
           invertedPixels[i] = 0xFF000000 | (r << 16) | (g << 8) | b;
         }
         final invertedSource = RGBLuminanceSource(decodedImage.width, decodedImage.height, invertedPixels);
-        result = QRCodeReader().decode(BinaryBitmap(HybridBinarizer(invertedSource)));
+        final hints = DecodeHints()..put(DecodeHintType.characterSet, 'UTF-8');
+        result = QRCodeReader().decode(BinaryBitmap(HybridBinarizer(invertedSource)), hints: hints);
       }
       if (!mounted) return;
       // ZXing's Result.rawBytes contains encoded QR codewords, not a
