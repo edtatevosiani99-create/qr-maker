@@ -2,6 +2,7 @@ package com.example.qr_studio
 
 import android.Manifest
 import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
