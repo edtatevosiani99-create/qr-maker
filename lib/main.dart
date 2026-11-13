@@ -343,9 +343,6 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   @override void initState() {
     super.initState();
     _loadPreferences();
-    // Queue the launch interstitial immediately. If AdMob takes longer to respond,
-    // show it when it eventually loads instead of silently skipping the launch ad.
-    _pendingInterstitial = true;
     _mainInputFocusNode.addListener(() {
       if (mounted) setState(() => _mainInputFocused = _mainInputFocusNode.hasFocus);
     });
@@ -355,10 +352,10 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
 
 
   void _showAboutDialog() {
-    showAboutDialog(context: context, applicationName: 'QR Studio', applicationVersion: '1.0.7', applicationIcon: logo(48), children: const [
+    showAboutDialog(context: context, applicationName: 'QR Studio', applicationVersion: '1.0.3', applicationIcon: logo(48), children: const [
       Text('Developer nickname: EdStyle'),
       SizedBox(height: 8),
-      Text('Release version: 1.0.7'),
+      Text('Release version: 1.0.3'),
       SizedBox(height: 12),
       Text('Security information', style: TextStyle(fontWeight: FontWeight.w600)),
       SizedBox(height: 4),
