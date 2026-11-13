@@ -102,7 +102,7 @@ jobs:
               marker = "android {"
               if marker not in s:
                   raise SystemExit("Android block not found")
-              s = s.replace(marker, marker + '\\n    lint {\\n        checkReleaseBuilds = false\\n    }', 1)
+              s = s.replace(marker, marker + '\n    lint {\n        checkReleaseBuilds = false\n    }', 1)
           p.write_text(s)
           PY
 
