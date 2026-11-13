@@ -356,8 +356,16 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
 
   void _showAboutDialog() {
     showAboutDialog(context: context, applicationName: 'QR Studio', applicationVersion: '1.0.7', applicationIcon: logo(48), children: const [
-      Text('Create QR codes, customize their designs, add logos, save and share them. QR Studio also includes a QR scanner and a QR readability check.'),
+      Text('Developer nickname: EdStyle'),
+      SizedBox(height: 8),
+      Text('Release version: 1.0.7'),
       SizedBox(height: 12),
+      Text('Security information', style: TextStyle(fontWeight: FontWeight.w600)),
+      SizedBox(height: 4),
+      Text('QR codes may contain links or other information. Always check the content and destination before opening. QR Studio cannot guarantee the safety of external websites.'),
+      SizedBox(height: 12),
+      Text('Create QR codes, customize their designs, add logos, save and share them. QR Studio also includes a QR scanner and a QR readability check.'),
+      SizedBox(height: 8),
       Text('Features: QR creation • Custom designs • Logo support • QR scanner • QR verification', style: TextStyle(fontWeight: FontWeight.w600)),
     ]);
   }
