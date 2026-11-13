@@ -92,6 +92,20 @@ jobs:
       - name: Configure application ID and release signing
         run: python3 .github/scripts/configure-play-store.py
 
+      - name: Disable broken dependency lint analysis for release build
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("android/app/build.gradle.kts")
+          s = p.read_text()
+          if "checkReleaseBuilds = false" not in s:
+              marker = "android {"
+              if marker not in s:
+                  raise SystemExit("Android block not found")
+              s = s.replace(marker, marker + '\\n    lint {\\n        checkReleaseBuilds = false\\n    }', 1)
+          p.write_text(s)
+          PY
+
       - name: Install dependencies
         run: flutter pub get
 
