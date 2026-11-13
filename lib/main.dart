@@ -634,13 +634,6 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   // intact even when the platform string contains replacement characters.
   String _readBarcodeText(Barcode barcode) {
     final decodedBytes = barcode.rawDecodedBytes;
-    final debugBytes = decodedBytes is DecodedBarcodeBytes
-        ? decodedBytes.bytes
-        : decodedBytes is DecodedVisionBarcodeBytes
-            ? decodedBytes.bytes
-            : null;
-    final raw = barcode.rawValue ?? '';
-    scannerDiagnostic = 'bytesType=${decodedBytes.runtimeType}; bytes=${debugBytes == null ? 'null' : debugBytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join(' ')}; rawValue=$raw; rawCodePoints=${raw.runes.map((r) => r.toRadixString(16)).join(' ')}';
     Uint8List? payloadBytes;
     if (decodedBytes is DecodedBarcodeBytes) {
       payloadBytes = decodedBytes.bytes;
@@ -810,7 +803,22 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
                     },
                   )
                 else
-                  Container(color: const Color(0xFF20252D), child: const Center(child: Icon(Icons.check_circle_rounded, color: Colors.greenAccent, size: 58))),
+                  Container(
+                    color: const Color(0xFF20252D),
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(18),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.check_circle_rounded, color: Colors.greenAccent, size: 58),
+                            const SizedBox(height: 14),
+                            Text(scannedValue!, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 17)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 if (scannedValue == null) ...[
                   Container(color: Colors.black.withOpacity(.16)),
                   Center(child: Container(                    width: 230, height: 230,
@@ -836,8 +844,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
                       ),
                     ),
                   )),
-                ] else
-                  Padding(padding: const EdgeInsets.all(18), child: Center(child: Text(scannedValue!, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 15)))),
+                ],
               ]),
             ),          ),
           const SizedBox(height: 14),
@@ -853,8 +860,6 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
           if (scannedValue != null) ...[
             const SizedBox(height: 10),
             SelectableText(scannedValue!, textAlign: TextAlign.center, style: const TextStyle(color: Color(0xFF8FD8FF))),
-            if (scannerDiagnostic != null)
-              SelectableText('DEBUG: $scannerDiagnostic', textAlign: TextAlign.center, style: const TextStyle(color: Colors.orangeAccent, fontSize: 10)),
             const SizedBox(height: 10),
             if (Uri.tryParse(scannedValue!)?.hasScheme == true && ['http','https'].contains(Uri.tryParse(scannedValue!)!.scheme.toLowerCase()))
               FilledButton.icon(onPressed: () async { final uri = Uri.tryParse(scannedValue!); if (uri != null) await launchUrl(uri, mode: LaunchMode.externalApplication); }, icon: const Icon(Icons.open_in_new), label: Text(scannerText('open'))),
