@@ -18,6 +18,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,6 +42,11 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   bool _interstitialShowing = false;
   bool _pendingInterstitial = false;
   bool _interstitialLoadInProgress = false;
+  static const String _noAdsProductId = 'qr_studio_no_ads_149';
+  bool _noAdsEnabled = false;
+  bool _purchasePending = false;
+  ProductDetails? _noAdsProduct;
+  StreamSubscription<List<PurchaseDetails>>? _purchaseSubscription;
   Timer? _bannerRetryTimer;
   Timer? _interstitialRetryTimer;
 
@@ -48,15 +54,14 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     try {
       await MobileAds.instance.initialize();
       if (!mounted) return;
-      _loadBannerAd();
-      _loadInterstitialAd();
+      if (!_noAdsEnabled) { _loadBannerAd(); _loadInterstitialAd(); }
     } catch (_) {
       // Ads must never prevent the app interface from starting.
     }
   }
 
   void _loadBannerAd() {
-    if (!mounted) return;
+    if (!mounted || _noAdsEnabled) return;
     _bannerRetryTimer?.cancel();
     final ad = BannerAd(
       adUnitId: _bannerTestUnitId,
@@ -83,7 +88,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   }
 
   void _loadInterstitialAd() {
-    if (!mounted || _interstitialLoadInProgress || _interstitialAd != null) return;
+    if (!mounted || _noAdsEnabled || _interstitialLoadInProgress || _interstitialAd != null) return;
     _interstitialLoadInProgress = true;
     _interstitialRetryTimer?.cancel();
     InterstitialAd.load(
@@ -135,6 +140,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
   }
 
   void _onQrSaved() {
+    if (_noAdsEnabled) return;
     _savedQrCount++;
     if (_savedQrCount >= 6) {
       _savedQrCount = 0;
@@ -161,6 +167,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
       final savedTheme = prefs.getString('qr_studio_theme');
       final savedLanguage = prefs.getString('qr_studio_language');
       final welcomeShown = prefs.getBool('qr_studio_welcome_shown') ?? false;
+      final noAds = prefs.getBool('qr_studio_no_ads') ?? false;
       final deviceLanguage = WidgetsBinding.instance.platformDispatcher.locale.languageCode.toLowerCase();
       final welcomeLanguage = deviceLanguage == 'ru' ? 'Русский' : deviceLanguage == 'de' ? 'Deutsch' : deviceLanguage == 'ka' ? 'ქართული' : 'English';
       if (!mounted) return;
@@ -170,10 +177,12 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
         lang = supportedLanguages.contains(savedLanguage) ? savedLanguage! : 'English';
         _welcomeLanguage = welcomeLanguage;
         _showWelcome = !welcomeShown;
+        _noAdsEnabled = noAds;
         _preferencesLoaded = true;
       });
+      if (!noAds) _initializeAds();
     } catch (_) {
-      if (mounted) setState(() => _preferencesLoaded = true);
+      if (mounted) { setState(() => _preferencesLoaded = true); _initializeAds(); }
     }
   }
 
@@ -345,13 +354,69 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     // Queue the launch interstitial immediately. If AdMob takes longer to respond,
     // show it when it eventually loads instead of silently skipping the launch ad.
     _pendingInterstitial = true;
-    _initializeAds();
+    _purchaseSubscription = InAppPurchase.instance.purchaseStream.listen(_onPurchaseUpdates);
+    _loadNoAdsProduct();
     _mainInputFocusNode.addListener(() {
       if (mounted) setState(() => _mainInputFocused = _mainInputFocusNode.hasFocus);
     });
     _scanLineController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500))..repeat(reverse: true);
   }
-  @override void dispose() { _bannerRetryTimer?.cancel(); _interstitialRetryTimer?.cancel(); _bannerAd?.dispose(); _interstitialAd?.dispose(); _logoRefreshTimer?.cancel(); _scanLineController.dispose(); _mainInputFocusNode.dispose(); scannerController.dispose(); photoImage?.dispose(); qrLogoImage?.dispose(); for (final x in c.values) x.dispose(); super.dispose(); }
+  @override void dispose() { _purchaseSubscription?.cancel(); _bannerRetryTimer?.cancel(); _interstitialRetryTimer?.cancel(); _bannerAd?.dispose(); _interstitialAd?.dispose(); _logoRefreshTimer?.cancel(); _scanLineController.dispose(); _mainInputFocusNode.dispose(); scannerController.dispose(); photoImage?.dispose(); qrLogoImage?.dispose(); for (final x in c.values) x.dispose(); super.dispose(); }
+
+
+  Future<void> _loadNoAdsProduct() async {
+    try {
+      final result = await InAppPurchase.instance.queryProductDetails({_noAdsProductId});
+      if (mounted && result.productDetails.isNotEmpty) setState(() => _noAdsProduct = result.productDetails.first);
+    } catch (_) {}
+  }
+  Future<void> _onPurchaseUpdates(List<PurchaseDetails> purchases) async {
+    for (final purchase in purchases) {
+      if (purchase.productID != _noAdsProductId) continue;
+      if (purchase.status == PurchaseStatus.purchased || purchase.status == PurchaseStatus.restored) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('qr_studio_no_ads', true);
+        if (mounted) { setState(() { _noAdsEnabled = true; _purchasePending = false; }); _disableAds(); }
+      } else if (purchase.status == PurchaseStatus.error || purchase.status == PurchaseStatus.canceled) {
+        if (mounted) setState(() => _purchasePending = false);
+      }
+      if (purchase.pendingCompletePurchase) await InAppPurchase.instance.completePurchase(purchase);
+    }
+  }
+  void _disableAds() {
+    _pendingInterstitial = false; _bannerRetryTimer?.cancel(); _interstitialRetryTimer?.cancel();
+    _bannerAd?.dispose(); _bannerAd = null; _interstitialAd?.dispose(); _interstitialAd = null;
+    _interstitialShowing = false;
+    if (mounted) setState(() => _bannerLoaded = false);
+  }
+  Future<void> _buyNoAds() async {
+    if (_noAdsEnabled || _purchasePending) return;
+    if (_noAdsProduct == null) await _loadNoAdsProduct();
+    final product = _noAdsProduct;
+    if (product == null) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Purchase is not available yet.'))); return; }
+    setState(() => _purchasePending = true);
+    final started = await InAppPurchase.instance.buyNonConsumable(purchaseParam: PurchaseParam(productDetails: product));
+    if (!started && mounted) setState(() => _purchasePending = false);
+  }
+  Future<void> _restoreNoAds() => InAppPurchase.instance.restorePurchases();
+  void _showAboutDialog() {
+    showAboutDialog(context: context, applicationName: 'QR Studio', applicationVersion: '1.0.7', applicationIcon: logo(48), children: const [
+      Text('Create QR codes, customize their designs, add logos, save and share them. QR Studio also includes a QR scanner and a QR readability check.'),
+      SizedBox(height: 12),
+      Text('Features: QR creation • Custom designs • Logo support • QR scanner • QR verification', style: TextStyle(fontWeight: FontWeight.w600)),
+    ]);
+  }
+  void _showNoAdsDialog() {
+    showDialog<void>(context: context, builder: (dialogContext) => AlertDialog(
+      title: const Text('No Ads'),
+      content: Text(_noAdsEnabled ? 'Ads are disabled.' : 'One-time purchase for \${_noAdsProduct?.price ?? '€1.49'}. Disable all ads permanently. No subscription.'),
+      actions: [
+        TextButton(onPressed: () { Navigator.pop(dialogContext); _restoreNoAds(); }, child: const Text('Restore purchase')),
+        if (!_noAdsEnabled) FilledButton(onPressed: _purchasePending ? null : () { Navigator.pop(dialogContext); _buyNoAds(); }, child: Text(_purchasePending ? 'Please wait…' : 'Remove ads')),
+        TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Close')),
+      ],
+    ));
+  }
 
   Future<ui.Image> _makeQrLogo(ui.Image source, Color borderColor) async {
     const canvasSize = 1000.0;
@@ -575,6 +640,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
       ])),
       languageButton(), const SizedBox(width:4),
       IconButton(onPressed:(){setState(()=>themeMode=themeMode==ThemeMode.light?ThemeMode.dark:ThemeMode.light);_savePreferences();},icon:Icon(themeMode==ThemeMode.light?Icons.dark_mode:Icons.light_mode)),
+      PopupMenuButton<String>(icon: const Icon(Icons.more_vert), onSelected:(value){if(value=='about') _showAboutDialog(); if(value=='noads') _showNoAdsDialog();}, itemBuilder:(_)=>[const PopupMenuItem(value:'about',child:Text('About app')),const PopupMenuItem(value:'noads',child:Text('No Ads'))]),
     ]),
   );
 
@@ -845,6 +911,15 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
                     ),
                   )),
                 ],
+                if (scannedValue == null)
+                  Positioned(top: 12, right: 12, child: Material(
+                    color: Colors.black.withOpacity(.62), shape: const CircleBorder(),
+                    child: IconButton(
+                      tooltip: torchEnabled ? 'Turn flashlight off' : 'Turn flashlight on',
+                      onPressed: toggleScannerTorch,
+                      icon: Icon(torchEnabled ? Icons.flash_on_rounded : Icons.flash_off_rounded, color: torchEnabled ? Colors.amberAccent : Colors.white, size: 27),
+                    ),
+                  )),
               ]),
             ),          ),
           const SizedBox(height: 14),
