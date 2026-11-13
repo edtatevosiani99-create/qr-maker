@@ -360,19 +360,42 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
 
 
   void _showAboutDialog() {
-    showAboutDialog(context: context, applicationName: 'QR Studio', applicationVersion: '1.0.3', applicationIcon: logo(48), children: const [
-      Text('Developer nickname: EdStyle'),
-      SizedBox(height: 8),
-      Text('Release version: 1.0.3'),
-      SizedBox(height: 12),
-      Text('Security information', style: TextStyle(fontWeight: FontWeight.w600)),
-      SizedBox(height: 4),
-      Text('QR codes may contain links or other information. Always check the content and destination before opening. QR Studio cannot guarantee the safety of external websites.'),
-      SizedBox(height: 12),
-      Text('Create QR codes, customize their designs, add logos, save and share them. QR Studio also includes a QR scanner and a QR readability check.'),
-      SizedBox(height: 8),
-      Text('Features: QR creation • Custom designs • Logo support • QR scanner • QR verification', style: TextStyle(fontWeight: FontWeight.w600)),
-    ]);
+    if (!mounted) return;
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Row(children: [
+          logo(40),
+          const SizedBox(width: 12),
+          const Expanded(child: Text('QR Studio')),
+        ]),
+        content: SingleChildScrollView(
+          child: const Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Version 1.0.5'),
+              SizedBox(height: 8),
+              Text('Developer: EdStyle'),
+              SizedBox(height: 12),
+              Text('Security information', style: TextStyle(fontWeight: FontWeight.w700)),
+              SizedBox(height: 4),
+              Text('QR codes may contain links or other information. Always check the content and destination before opening. QR Studio cannot guarantee the safety of external websites.'),
+              SizedBox(height: 12),
+              Text('Create QR codes, customize their designs, add logos, save and share them. QR Studio also includes a QR scanner and a QR readability check.'),
+              SizedBox(height: 8),
+              Text('Features: QR creation • Custom designs • Logo support • QR scanner • QR verification', style: TextStyle(fontWeight: FontWeight.w600)),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
   Future<ui.Image> _makeQrLogo(ui.Image source, Color borderColor) async {
     const canvasSize = 1000.0;
@@ -594,9 +617,38 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
         ShaderMask(shaderCallback:(r)=>const LinearGradient(colors:[Color(0xFF0077CC),Color(0xFF6545C4),Color(0xFFDB4F9B)]).createShader(r),child:Text(t('title'),style:const TextStyle(fontSize:25,fontWeight:FontWeight.w800,color:Colors.white))),
         Text(t('subtitle'),style:const TextStyle(fontSize:11,color:Colors.black)),
       ])),
-      languageButton(), const SizedBox(width:4),
-      IconButton(onPressed:(){setState(()=>themeMode=themeMode==ThemeMode.light?ThemeMode.dark:ThemeMode.light);_savePreferences();},icon:Icon(themeMode==ThemeMode.light?Icons.dark_mode:Icons.light_mode)),
-      PopupMenuButton<String>(icon: const Icon(Icons.more_vert), onSelected:(value){if(value=='about') _showAboutDialog();}, itemBuilder:(_)=>[const PopupMenuItem(value:'about',child:Text('About app'))]),
+      const SizedBox(width:4),
+      Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          SizedBox(
+            height: 30,
+            child: PopupMenuButton<String>(
+              padding: EdgeInsets.zero,
+              iconSize: 25,
+              icon: const Icon(Icons.more_horiz),
+              onSelected: (value) {
+                if (value == 'about') _showAboutDialog();
+              },
+              itemBuilder: (_) => const [
+                PopupMenuItem(value: 'about', child: Text('About app')),
+              ],
+            ),
+          ),
+          Row(mainAxisSize: MainAxisSize.min, children: [
+            languageButton(),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              onPressed: () {
+                setState(() => themeMode = themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light);
+                _savePreferences();
+              },
+              icon: Icon(themeMode == ThemeMode.light ? Icons.dark_mode : Icons.light_mode),
+            ),
+          ]),
+        ],
+      ),
     ]),
   );
 
