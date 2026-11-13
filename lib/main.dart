@@ -687,22 +687,40 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
       final picked = await picker.pickImage(source: ImageSource.gallery);
       if (picked == null) return;
       final bytes = await picked.readAsBytes();
-      final decodedImage = img.decodeImage(bytes);
-      if (decodedImage == null) throw StateError('Image decode failed');
-      final rgba = decodedImage.convert(numChannels: 4).getBytes(order: img.ChannelOrder.rgba);
-      final pixels = Int32List(decodedImage.width * decodedImage.height);
-      for (var i = 0; i < pixels.length; i++) {
-        final offset = i * 4;
-        final alpha = rgba[offset + 3];
-        final r = ((rgba[offset] * alpha) + (255 * (255 - alpha))) ~/ 255;
-        final g = ((rgba[offset + 1] * alpha) + (255 * (255 - alpha))) ~/ 255;
-        final b = ((rgba[offset + 2] * alpha) + (255 * (255 - alpha))) ~/ 255;
-        pixels[i] = 0xFF000000 | (r << 16) | (g << 8) | b;
+
+      // Use the same ML Kit decoder as QR verification and the live camera.
+      // ML Kit exposes the original decoded payload bytes, preserving UTF-8
+      // text such as Georgian and Cyrillic instead of relying on ZXing's
+      // platform-dependent string conversion.
+      String? value;
+      try {
+        value = await _readQrPngWithMlKit(bytes);
+      } catch (_) {
+        // Try the independent ZXing fallback below.
       }
-      final source = RGBLuminanceSource(decodedImage.width, decodedImage.height, pixels);
-      final hints = DecodeHints()..put(DecodeHintType.characterSet, 'UTF-8');
-      final result = QRCodeReader().decode(BinaryBitmap(HybridBinarizer(source)), hints: hints);
-      if (mounted) await _handleScannedValue(result.text);
+
+      if (value == null || value.isEmpty) {
+        final decodedImage = img.decodeImage(bytes);
+        if (decodedImage == null) throw StateError('Image decode failed');
+        final rgba = decodedImage.convert(numChannels: 4).getBytes(order: img.ChannelOrder.rgba);
+        final pixels = Int32List(decodedImage.width * decodedImage.height);
+        for (var i = 0; i < pixels.length; i++) {
+          final offset = i * 4;
+          final alpha = rgba[offset + 3];
+          final r = ((rgba[offset] * alpha) + (255 * (255 - alpha))) ~/ 255;
+          final g = ((rgba[offset + 1] * alpha) + (255 * (255 - alpha))) ~/ 255;
+          final b = ((rgba[offset + 2] * alpha) + (255 * (255 - alpha))) ~/ 255;
+          pixels[i] = 0xFF000000 | (r << 16) | (g << 8) | b;
+        }
+        final source = RGBLuminanceSource(decodedImage.width, decodedImage.height, pixels);
+        final hints = DecodeHints()..put(DecodeHintType.characterSet, 'UTF-8');
+        final result = QRCodeReader().decode(BinaryBitmap(HybridBinarizer(source)), hints: hints);
+        value = result.text;
+      }
+
+      if (mounted && value != null && value.isNotEmpty) {
+        await _handleScannedValue(value);
+      }
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(scannerText('galleryError'))));
