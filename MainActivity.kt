@@ -26,7 +26,7 @@ class MainActivity : FlutterActivity() {
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(notificationChannelId, "QR Studio", NotificationChannel.IMPORTANCE_DEFAULT)
+            val channel = NotificationChannel(notificationChannelId, "QR Studio", NotificationManager.IMPORTANCE_DEFAULT)
             channel.description = "QR Studio saved QR notifications"
             getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
         }
