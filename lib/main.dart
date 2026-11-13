@@ -361,37 +361,58 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
 
   void _showAboutDialog() {
     if (!mounted) return;
+    final isRu = lang == 'Русский';
+    final isDe = lang == 'Deutsch';
+    final isKa = lang == 'ქართული';
+    final title = isRu ? 'О приложении' : isDe ? 'Über die App' : isKa ? 'აპლიკაციის შესახებ' : 'About app';
+    final developer = isRu ? 'Разработчик: EdStyle' : isDe ? 'Entwickler: EdStyle' : isKa ? 'შემქმნელი: EdStyle' : 'Developer: EdStyle';
+    final security = isRu ? 'Безопасность' : isDe ? 'Sicherheit' : isKa ? 'უსაფრთხოება' : 'Security';
+    final warning = isRu
+      ? 'QR-коды могут содержать ссылки и другие данные. Проверяйте содержимое и адрес перед открытием. QR Studio не гарантирует безопасность внешних сайтов.'
+      : isDe
+        ? 'QR-Codes können Links und andere Daten enthalten. Prüfe Inhalt und Zieladresse vor dem Öffnen. QR Studio kann die Sicherheit externer Websites nicht garantieren.'
+        : isKa
+          ? 'QR კოდები შეიძლება შეიცავდეს ბმულებსა და სხვა ინფორმაციას. გახსნამდე ყოველთვის შეამოწმეთ შინაარსი და მისამართი. QR Studio არ იძლევა გარე ვებსაიტების უსაფრთხოების გარანტიას.'
+          : 'QR codes may contain links or other information. Always check the content and destination before opening. QR Studio cannot guarantee the safety of external websites.';
+    final description = isRu
+      ? 'Создавайте QR-коды, настраивайте дизайн, добавляйте логотипы, сохраняйте и делитесь ими. В приложении также есть сканер и проверка читаемости QR-кодов.'
+      : isDe
+        ? 'Erstelle QR-Codes, passe das Design an, füge Logos hinzu und speichere oder teile sie. Die App enthält auch einen Scanner und eine Lesbarkeitsprüfung.'
+        : isKa
+          ? 'შექმენით QR კოდები, შეცვალეთ დიზაინი, დაამატეთ ლოგოები, შეინახეთ და გააზიარეთ. აპლიკაციას ასევე აქვს სკანერი და QR კოდის წაკითხვის შემოწმება.'
+          : 'Create QR codes, customize their designs, add logos, save and share them. QR Studio also includes a QR scanner and a QR readability check.';
     showDialog<void>(
-      context: context,
+      context: _navigatorKey.currentContext ?? context,
+      useRootNavigator: true,
       builder: (dialogContext) => AlertDialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: Row(children: [
-          logo(40),
-          const SizedBox(width: 12),
-          const Expanded(child: Text('QR Studio')),
+          logo(36),
+          const SizedBox(width: 10),
+          Expanded(child: Text(title, style: const TextStyle(fontSize: 19))),
         ]),
         content: SingleChildScrollView(
-          child: const Column(
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Version 1.0.5'),
-              SizedBox(height: 8),
-              Text('Developer: EdStyle'),
-              SizedBox(height: 12),
-              Text('Security information', style: TextStyle(fontWeight: FontWeight.w700)),
-              SizedBox(height: 4),
-              Text('QR codes may contain links or other information. Always check the content and destination before opening. QR Studio cannot guarantee the safety of external websites.'),
-              SizedBox(height: 12),
-              Text('Create QR codes, customize their designs, add logos, save and share them. QR Studio also includes a QR scanner and a QR readability check.'),
-              SizedBox(height: 8),
-              Text('Features: QR creation • Custom designs • Logo support • QR scanner • QR verification', style: TextStyle(fontWeight: FontWeight.w600)),
+              const Text('QR Studio  •  1.0.5', style: TextStyle(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 8),
+              Text(developer),
+              const SizedBox(height: 14),
+              Text(security, style: const TextStyle(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 5),
+              Text(warning),
+              const SizedBox(height: 12),
+              Text(description),
             ],
           ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('OK'),
+            onPressed: () => Navigator.of(dialogContext, rootNavigator: true).pop(),
+            child: Text(isRu ? 'Закрыть' : isDe ? 'Schließen' : isKa ? 'დახურვა' : 'Close'),
           ),
         ],
       ),
@@ -629,10 +650,18 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
               iconSize: 25,
               icon: const Icon(Icons.more_horiz),
               onSelected: (value) {
-                if (value == 'about') _showAboutDialog();
+                if (value == 'about') {
+                  // Wait until the popup route is fully dismissed before opening the dialog.
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) _showAboutDialog();
+                  });
+                }
               },
-              itemBuilder: (_) => const [
-                PopupMenuItem(value: 'about', child: Text('About app')),
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  value: 'about',
+                  child: Text(lang == 'Русский' ? 'О приложении' : lang == 'Deutsch' ? 'Über die App' : lang == 'ქართული' ? 'აპლიკაციის შესახებ' : 'About app'),
+                ),
               ],
             ),
           ),
