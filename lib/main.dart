@@ -172,9 +172,17 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
         _showWelcome = !welcomeShown;
         _preferencesLoaded = true;
       });
-      _initializeAds();
+      // Ads are initialized after the first screen is visible to avoid startup crashes.
+      Future<void>.delayed(const Duration(seconds: 8), () {
+        if (mounted) _initializeAds();
+      });
     } catch (_) {
-      if (mounted) { setState(() => _preferencesLoaded = true); _initializeAds(); }
+      if (mounted) {
+        setState(() => _preferencesLoaded = true);
+        Future<void>.delayed(const Duration(seconds: 8), () {
+          if (mounted) _initializeAds();
+        });
+      }
     }
   }
 
