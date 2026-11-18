@@ -16,6 +16,7 @@ import 'package:zxing2/qrcode.dart';
 import 'package:zxing2/zxing2.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
@@ -31,6 +32,121 @@ class QRStudioApp extends StatefulWidget {
 }
 
 class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStateMixin {
+  static const String _bannerTestUnitId = 'ca-app-pub-3904535066175358/9214105998';
+  static const String _interstitialTestUnitId = 'ca-app-pub-3904535066175358/9429728416';
+  BannerAd? _bannerAd;
+  bool _bannerLoaded = false;
+  InterstitialAd? _interstitialAd;
+  int _savedQrCount = 0;
+  bool _interstitialShowing = false;
+  bool _pendingInterstitial = false;
+  bool _interstitialLoadInProgress = false;
+  Timer? _bannerRetryTimer;
+  Timer? _interstitialRetryTimer;
+
+  Future<void> _initializeAds() async {
+    try {
+      await MobileAds.instance.initialize();
+      if (!mounted) return;
+      _loadBannerAd();
+      _loadInterstitialAd();
+    } catch (_) {
+      // Ads must never prevent the app interface from starting.
+    }
+  }
+
+  void _loadBannerAd() {
+    if (!mounted) return;
+    _bannerRetryTimer?.cancel();
+    final ad = BannerAd(
+      adUnitId: _bannerTestUnitId,
+      request: const AdRequest(),
+      size: AdSize.banner,
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          _bannerRetryTimer?.cancel();
+          if (!mounted) { ad.dispose(); return; }
+          setState(() => _bannerLoaded = true);
+        },
+        onAdFailedToLoad: (ad, error) {
+          ad.dispose();
+          if (!mounted) return;
+          setState(() => _bannerLoaded = false);
+          // Retry transient failures; an unavailable AdMob fill may still need account-side review.
+          _bannerRetryTimer?.cancel();
+          _bannerRetryTimer = Timer(const Duration(seconds: 30), _loadBannerAd);
+        },
+      ),
+    );
+    _bannerAd = ad;
+    ad.load();
+  }
+
+  void _loadInterstitialAd() {
+    if (!mounted || _interstitialLoadInProgress || _interstitialAd != null) return;
+    _interstitialLoadInProgress = true;
+    _interstitialRetryTimer?.cancel();
+    InterstitialAd.load(
+      adUnitId: _interstitialTestUnitId,
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          _interstitialLoadInProgress = false;
+          _interstitialRetryTimer?.cancel();
+          _interstitialAd?.dispose();
+          _interstitialAd = ad;
+          ad.fullScreenContentCallback = FullScreenContentCallback(
+            onAdDismissedFullScreenContent: (ad) {
+              ad.dispose();
+              _interstitialAd = null;
+              _interstitialShowing = false;
+              _loadInterstitialAd();
+            },
+            onAdFailedToShowFullScreenContent: (ad, error) {
+              ad.dispose();
+              _interstitialAd = null;
+              _interstitialShowing = false;
+              _loadInterstitialAd();
+            },
+          );
+          if (_pendingInterstitial && !_interstitialShowing) {
+            _showPendingInterstitial();
+          }
+        },
+        onAdFailedToLoad: (error) {
+          _interstitialLoadInProgress = false;
+          _interstitialAd = null;
+          if (!mounted) return;
+          _interstitialRetryTimer?.cancel();
+          _interstitialRetryTimer = Timer(const Duration(seconds: 30), () {
+            if (mounted) _loadInterstitialAd();
+          });
+        },
+      ),
+    );
+  }
+
+  void _showPendingInterstitial() {
+    final ad = _interstitialAd;
+    if (ad == null || _interstitialShowing) return;
+    _pendingInterstitial = false;
+    _interstitialShowing = true;
+    ad.show();
+  }
+
+  void _onQrSaved() {
+    _savedQrCount++;
+    if (_savedQrCount >= 6) {
+      _savedQrCount = 0;
+      _pendingInterstitial = true;
+      if (_interstitialAd != null) {
+        _showPendingInterstitial();
+      } else {
+        _loadInterstitialAd();
+      }
+    }
+  }
+
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   ThemeMode themeMode = ThemeMode.light;
   String lang = 'English';
@@ -56,9 +172,16 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
         _showWelcome = !welcomeShown;
         _preferencesLoaded = true;
       });
+      // Ads are initialized after the first screen is visible to avoid startup crashes.
+      Future<void>.delayed(const Duration(seconds: 8), () {
+        if (mounted) _initializeAds();
+      });
     } catch (_) {
       if (mounted) {
         setState(() => _preferencesLoaded = true);
+        Future<void>.delayed(const Duration(seconds: 8), () {
+          if (mounted) _initializeAds();
+        });
       }
     }
   }
@@ -233,7 +356,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
     });
     _scanLineController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500))..repeat(reverse: true);
   }
-  @override void dispose() { _logoRefreshTimer?.cancel(); _scanLineController.dispose(); _mainInputFocusNode.dispose(); scannerController.dispose(); photoImage?.dispose(); qrLogoImage?.dispose(); for (final x in c.values) x.dispose(); super.dispose(); }
+  @override void dispose() { _bannerRetryTimer?.cancel(); _interstitialRetryTimer?.cancel(); _bannerAd?.dispose(); _interstitialAd?.dispose(); _logoRefreshTimer?.cancel(); _scanLineController.dispose(); _mainInputFocusNode.dispose(); scannerController.dispose(); photoImage?.dispose(); qrLogoImage?.dispose(); for (final x in c.values) x.dispose(); super.dispose(); }
 
 
   void _showAboutDialog() {
@@ -403,6 +526,7 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
         if (!ok) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text(t('permission')))); return; }
       }
       await Gal.putImageBytes(b, album:'QR Studio');
+      _onQrSaved();
       try { await const MethodChannel('qr_studio_notifications').invokeMethod('showSavedNotification'); } catch (_) {}
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text(t('saved'))));
     } catch (_) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text(t('permission')))); }
@@ -477,6 +601,16 @@ class _QRStudioAppState extends State<QRStudioApp> with SingleTickerProviderStat
          ),
        ),
       home:Scaffold(
+        bottomNavigationBar: _bannerLoaded && _bannerAd != null
+            ? SafeArea(
+                top: false,
+                child: SizedBox(
+                  height: _bannerAd!.size.height.toDouble(),
+                  width: _bannerAd!.size.width.toDouble(),
+                  child: Center(child: AdWidget(ad: _bannerAd!)),
+                ),
+              )
+            : null,
         body:SafeArea(child:LayoutBuilder(builder:(ctx,box) {
           final wide = box.maxWidth > 820;
           return SingleChildScrollView(
