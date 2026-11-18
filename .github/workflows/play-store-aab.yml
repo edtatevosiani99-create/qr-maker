@@ -24,7 +24,6 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.50.0'
           channel: stable
           cache: true
 
@@ -42,15 +41,10 @@ jobs:
           Path("android/app/src/main/kotlin/com/edtatevosiani99/qrstudioapp/MainActivity.kt").write_text(src)
           p = Path("android/app/src/main/AndroidManifest.xml")
           s = p.read_text()
-          if "com.google.android.gms.permission.AD_ID" not in s:
               pos = s.find(">", s.find("<manifest"))
-              s = s[:pos + 1] + '\n    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />' + s[pos + 1:]
           if "android.permission.POST_NOTIFICATIONS" not in s:
               pos = s.find(">", s.find("<manifest"))
               s = s[:pos + 1] + '\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />' + s[pos + 1:]
-          app_meta = '        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3904535066175358~4536494382" />'
-          if "com.google.android.gms.ads.APPLICATION_ID" not in s:
-              s = s.replace("</application>", app_meta + "\n    </application>")
           p.write_text(s)
           PY
 
